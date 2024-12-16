@@ -17,19 +17,6 @@ from django.conf.urls.static import static
 
 from pathlib import Path
 import os 
-import environ
-
-# Initialiser django-environ
-env = environ.Env()
-environ.Env.read_env()  # Lire le fichier .env
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')  # Récupérer l'email depuis .env
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')  # Récupérer le mot de passe depuis .env
-DEFAULT_FROM_EMAIL = env('EMAIL_HOST_USER')  # Utiliser l'email comme expéditeur par défaut
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
