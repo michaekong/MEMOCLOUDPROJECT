@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card p-6 rounded-lg shadow-lg bg-white dark:bg-gray-800 transition">
+    <h2 class="text-2xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">Modifier Profil</h2>
+
+    <!-- Formulaire de profil -->
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Grille de profil -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+
+            <!-- Nom et Prénom -->
+            <div>
+                <label for="nom"class="text-lg font-semibold mt-4 mb-2 flex items-center">Nom</label>
+                <input 
+                    type="text" 
+                    name="nom" 
+                    id="nom" 
+                    value="{{ request.user.nom }}" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="prenom"class="text-lg font-semibold mt-4 mb-2 flex items-center">Prénom</label>
+                <input 
+                    type="text" 
+                    name="prenom" 
+                    id="prenom" 
+                    value="{{ request.user.prenom }}" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+
+            <!-- Date de naissance et Sexe -->
+            <div>
+                <label for="birthday"class="text-lg font-semibold mt-4 mb-2 flex items-center">Date de naissance</label>
+                <input 
+                    type="date" 
+                    name="birthday" 
+                    id="birthday" 
+                    value="{{ user.birthday|date:'Y-m-d' }}" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+
+            <div>
+                <label for="sexe"class="text-lg font-semibold mt-4 mb-2 flex items-center">Sexe</label>
+                <select 
+                    name="sexe" 
+                    id="sexe" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    <option value="M" {% if request.user.sexe == 'M' %}selected{% endif %}>Masculin</option>
+                    <option value="F" {% if request.user.sexe == 'F' %}selected{% endif %}>Féminin</option>
+                </select>
+            </div>
+
+            <!-- Type et LinkedIn -->
+            <div>
+                <label for="type"class="text-lg font-semibold mt-4 mb-2 flex items-center">Type</label>
+                <select 
+                    name="type" 
+                    id="type" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Admin</option>
+                    <option value="User" {% if request.user.type == 'User' %}selected{% endif %}>Utilisateur</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="realisation_linkedin"class="text-lg font-semibold mt-4 mb-2 flex items-center">LinkedIn</label>
+                <input 
+                    type="url" 
+                    name="realisation_linkedin" 
+                    id="realisation_linkedin" 
+                    value="{{ request.user.realisation_linkedin }}" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+
+            <!-- Photo de profil -->
+            <div>
+                <label for="photo_profil"class="text-lg font-semibold mt-4 mb-2 flex items-center">Photo de profil</label>
+                <input 
+                    type="file" 
+                    name="photo_profil" 
+                    id="photo_profil" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+
+        </div>
+
+        <div class="mt-6 text-center">
+            <button 
+                type="submit" 
+                class="px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 transition">
+                Sauvegarder
+            </button>
+        </div>
+    </form>
+
+    <!-- Formulaire de changement de mot de passe -->
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold mt-4 mb-2 flex items-center">Changer le mot de passe</h3>
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div class="flex flex-col space-y-2">
+                <label for="new_password"class="text-lg font-semibold mt-4 mb-2 flex items-center">Nouveau mot de passe</label>
+                <input 
+                    type="password" 
+                    name="new_password" 
+                    id="new_password" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+            <div class="flex flex-col space-y-2">
+                <label for="confirm_password"class="text-lg font-semibold mt-4 mb-2 flex items-center">Confirmer le mot de passe</label>
+                <input 
+                    type="password" 
+                    name="confirm_password" 
+                    id="confirm_password" 
+                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+            </div>
+            <div class="mt-6 text-center">
+                <button 
+                    type="submit" 
+                    class="px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 transition">
+                    Changer le mot de passe
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

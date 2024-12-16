@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block acount %}{% endblock acount %}
+
+{% block content %}
+<!-- Formulaire de Recherche -->
+<form method="get" class="space-y-6">
+    <div class="space-y-6">
+        
+
+        <!-- Sélecteurs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Sélecteur de domaine -->
+            <select 
+                name="domaine" 
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-400 dark:focus:ring-green-400 transition"
+            >
+                <option value="">Tous les domaines</option>
+                {% for domaine in domaines %}
+                    <option value="{{ domaine }}" {% if request.GET.domaine == domaine %}selected{% endif %}>
+                        {{ domaine }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Sélecteur d'année -->
+            <select 
+                name="annee" 
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-400 dark:focus:ring-green-400 transition"
+            >
+                <option value="">Toutes les années</option>
+                {% for annee in annees %}
+                    <option value="{{ annee }}" {% if request.GET.annee == annee|stringformat:"s" %}selected{% endif %}>
+                        {{ annee }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Sélecteur d'encadreur -->
+            <select 
+                name="encadreur" 
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-400 dark:focus:ring-green-400 transition"
+            >
+                <option value="">Tous les encadreurs</option>
+                {% for encadreur in encadreurs %}
+                    <option value="{{ encadreur.id }}" {% if request.GET.encadreur == encadreur.id|stringformat:"s" %}selected{% endif %}>
+                        {{ encadreur.nom }} {{ encadreur.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Sélecteur d'auteur -->
+            <select 
+                name="auteur" 
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-400 dark:focus:ring-green-400 transition"
+            >
+                <option value="">Tous les auteurs</option>
+                {% for auteur in auteurs %}
+                    <option value="{{ auteur.id }}" {% if request.GET.auteur == auteur.id|stringformat:"s" %}selected{% endif %}>
+                        {{ auteur.nom }} {{ auteur.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <!-- Champ de recherche -->
+    <div class="relative">
+        <input 
+            type="text" 
+            name="q" 
+            placeholder="Rechercher un mémoire..." 
+            value="{{ request.GET.q }}" 
+            class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-300 focus:ring-2 focus:ring-blue-400 dark:focus:ring-green-400 transition"
+        >
+        <svg 
+            class="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24" 
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+    </div>
+
+    <!-- Boutons -->
+    <div class="mt-4 flex flex-col md:flex-row justify-between">
+        <button 
+            type="submit" 
+            class="w-full md:w-auto px-10 py-3 rounded-lg text-white font-medium bg-blue-500 hover:bg-blue-600 transition"
+        >
+            Rechercher
+        </button>
+        <a 
+            href="{% url 'liste_memoires' %}" 
+            class="mt-2 md:mt-0 w-full md:w-auto px-10 py-3 rounded-lg text-white font-medium bg-gray-400 hover:bg-gray-500 transition"
+        >
+            Réinitialiser
+        </a>
+    </div>
+</form>
+
+<!-- Liste des Mémoires -->
+<div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for memoire in memoires %}
+        <div class="card p-6 rounded-lg shadow-md bg-white dark:bg-gray-800 transition">
+            {% if memoire.images %}
+            <div class="relative h-40 overflow-hidden rounded-lg">
+                <img 
+                    src="{{ memoire.images.url }}" 
+                    alt="{{ memoire.titre }}" 
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            {% endif %}
+            
+            <!-- Titre du mémoire -->
+            <h2 class="text-lg font-semibold mt-4 mb-2 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-500 dark:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7-7-7 7" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z" />
+                </svg>
+                {{ memoire.titre }}
+            </h2>
+            
+            <!-- Domaine -->
+            <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V3m0 3l4 4m-4-4l-4 4m8 4h-1m-6 0H6" />
+                </svg>
+                {{ memoire.domaine }}
+            </p>
+        
+            <div class="mt-6">
+                <!-- Auteur -->
+                <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-orange-500 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
+                    </svg>
+                    Par 
+                    <a href="{{ memoire.auteur.realisation_linkedin }}" class="text-blue-600 dark:text-teal-300 ml-1">
+                        {{ memoire.auteur.prenom }} {{ memoire.auteur.nom }}
+                    </a>
+                </p>
+        
+                <!-- Nombre de téléchargements -->
+                <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-purple-500 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v12m0 0l-3-3m3 3l3-3" />
+                    </svg>
+                    Nombre de téléchargements : {{ memoire.nombre_telechargements }}
+                </p>
+                
+                <!-- Liste des encadreurs -->
+                <div class="flex items-center text-gray-400 mt-4">
+                    <svg class="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
+                    </svg>
+                    <span class="font-semibold text-lg">Encadreurs :</span>
+                </div>
+                
+                <ul class="list-none mt-4 space-y-2">
+                    {% for encadrement in memoire.encadrements.all %}
+                    <li class="flex items-center">
+                        <span class="font-bold text-blue-600 dark:text-teal-300">-</span>
+                        <a href="{{ encadrement.encadrant.realisation_linkedin }}" class="ml-2 text-lg font-semibold text-blue-600 dark:text-teal-300">
+                            {{ encadrement.encadrant.prenom }} {{ encadrement.encadrant.nom }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Téléchargement -->
+            <div class="flex justify-between items-center mt-6">
+                <a 
+                    href="{{ memoire.fichier_memoire.url }}" 
+                    class="px-6 py-3 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 text-white hover:opacity-90 transition-all"
+                    target="_blank"
+                    download="fichier.pdf"
+                    onclick="submitMemoireForm('{{ memoire.id }}')"
+                >
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 16v-8M16 12l-4 4-4-4" />
+                    </svg>
+                    Télécharger
+                </a>
+        
+                <!-- Formulaire caché -->
+                <form id="memoireForm" method="POST" action="{% url 'telecharger_pdf' %}" style="display: none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="memoire_id" id="memoire_id">
+                </form>
+        
+                <div x-data="{ showResume: false }" class="relative">
+                    <button 
+                        x-on:click="showResume = !showResume"
+                        class="px-6 py-3 rounded-xl bg-gradient-to-r from-green-400 to-blue-500 text-white hover:opacity-90 transition-all"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12M6 12h12" />
+                        </svg>
+                        <span x-text="showResume ? 'Masquer le Résumé' : 'Voir le Résumé'"></span>
+                    </button>
+        
+                    <div 
+                        x-show="showResume" 
+                        x-transition
+                        class="absolute z-10 mt-4 p-4 w-auto max-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 shadow-lg rounded-lg"
+                    >
+                        <button 
+                            x-on:click="showResume = false" 
+                            class="absolute top-2 right-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                        <p class="text-gray-800 dark:text-gray-200 text-sm leading-relaxed">
+                            {{ memoire.resume|truncatewords:30 }} 
+                            <a 
+                                href="{{ memoire.fichier_memoire.url }}" 
+                                class="text-blue-500 hover:underline"
+                                target="_blank"
+                                download="fichier.pdf"
+                                onclick="submitMemoireForm('{{ memoire.id }}')"
+                            >
+                                lire_plus
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% endfor %}
+    </div>
+</div>
+<script>
+    function submitMemoireForm(memoireId) {
+        // Remplir l'ID du mémoire dans le champ caché
+        document.getElementById('memoire_id').value = memoireId;
+
+        // Soumettre le formulaire caché
+        document.getElementById('memoireForm').submit();
+    }
+</script>
+
+{% endblock %}

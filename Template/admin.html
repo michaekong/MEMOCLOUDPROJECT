@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+<div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+    <div class="col-span-1 max-w-xs"> <!-- Limiter la largeur du menu -->
+        <!-- Sidebar Menu -->
+        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md">
+            <h2 class="text-lg font-semibold mb-4">Menu</h2>
+            <ul class="space-y-2">
+                <li>
+                    <button x-on:click="activeSection = 'dashboard'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Tableau de bord
+                    </button>
+                </li>
+                <li>
+                    <button x-on:click="activeSection = 'users'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Gestion des utilisateurs
+                    </button>
+                </li>
+                <li>
+                    <button x-on:click="activeSection = 'memoirs'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                            Gestion des Mémoires
+                    </button>
+                </li>
+                <li>
+                    <button x-on:click="activeSection = 'encadrements'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Gestion des Encadrements
+                    </button>
+                </li>
+                 <li>
+                    <button x-on:click="activeSection = 'visiteurs'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        voir les visiteurs
+                    </button>
+                </li>
+            
+                <li>
+                    <button x-on:click="activeSection = 'TELECHARGEMENTS'"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        voir les Telechargements
+                    </button>
+                </li>
+            
+            </ul>
+        </aside>
+    </div>
+
+    <div class="col-span-2">
+        <!-- Content Sections -->
+        <section x-show="activeSection === 'dashboard'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition">
+            <h2 class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">Tableau de bord</h2>
+
+            <div  class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition"id="dashboard-container"></div>
+           
+        </section>
+        {% include "sectiontelechargement.html" %}
+        {% include "sectionvisiteur.html" %}
+        
+        
+        
+
+     
+        {% include "sectionuser.html" %}
+        {% include "sectionmemoire.html" %}
+        {% include "sectionencadrement.html" %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('dashboard', () => ({
+            activeSection: 'dashboard', // Section active par défaut
+        }));
+    });
+    function deleteUser(userId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+            $.ajax({
+                url: '/delete_user/',  // URL vers la vue delete_user
+                type: 'POST',
+                data: {
+                    'user_id': userId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Token CSRF pour la sécurité
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        showTooltip("utilisateur supprimer avec succès !", false,"ov3","tol3","mes3");
+                    } 
+                    else {
+                        showTooltip("utilisateur supprimer avec succès !", false,"ov3","tol3","mes3");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    showTooltip(" erreurs  de la supression de l'utilisateur ,Veuillez reessayer !", true,"ov3","tol3","mes3");
+                }
+            });
+        }
+       
+    }
+    // Script pour récupérer l'ID du mémoire et le remplir dans le formulaire de la modal
+// Soumission du formulaire de modification de mémoire
+$('#editMemoireForm').on('submit', function(event) {
+    event.preventDefault();  // Empêcher la soumission par défaut du formulaire
+
+    var form = $(this);
+    var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+
+    // Envoyer les données via Ajax
+    $.ajax({
+        url: form.attr('action'),  // URL de la vue pour modifier un mémoire
+        method: 'POST',
+        data: formData,
+        processData: false,  // Ne pas traiter les données
+        contentType: false,  // Ne pas définir de content-type
+        success: function(response) {
+            if (response.status === 'success') {
+                // Fermer la modal de modification
+                $('#editMemoireModal').modal('hide');
+
+               
+                
+               
+                    showTooltip("memoire modifier avec succès !", false,"ov","tol","mes");
+            } else {
+                showTooltip("memoire modifier avec succès !", false,"ov","tol","mes");
+                 }
+        },
+        error: function() {
+            
+             showTooltip('Une erreur est survenue. Veuillez réessayer.', true,"ov","tol","mes");
+        }
+    });
+});
+
+// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
+$('#editMemoireModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var memoireId = button.data('id');  // Récupérer l'ID du mémoire
+    var modal = $(this);
+
+    // Remplir les champs du formulaire avec les données du mémoire
+    modal.find('#memoire_id').val(memoireId);
+    modal.find('#titre').val(button.data('titre'));
+    modal.find('#domaine').val(button.data('domaine'));
+    modal.find('#annee_publication').val(button.data('annee_publication'));
+    modal.find('#resume').val(button.data('resume'));
+    modal.find('#lien_telecharger').val(button.data('lien_telecharger'));
+});
+
+    function deleteMemoire(memoireId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce mémoire ?')) {
+            $.ajax({
+                url: '/delete_memoire/',  // URL vers la vue delete_memoire
+                type: 'POST',
+                data: {
+                    'memoire_id': memoireId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        $('#editEncadrementModal').modal('hide');
+                        showTooltip("memoire supprimer avec succès !", false,"ov","tol","mes");
+                
+               
+                        
+                    } else {
+                        showTooltip("memoire supprimer avec succès !", false,"ov","tol","mes");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    shshowTooltip(" erreurs  de la supression du memoire ,Veuillez reessayer !", true,"ov","tol","mes");
+                }
+            });
+        }
+       
+    }
+    // Script pour récupérer l'ID de l'encadrement et le remplir dans le formulaire de la modal
+// Soumission Ajax pour le formulaire de modification de l'encadrement
+$('#editEncadrementForm').on('submit', function(event) {
+    event.preventDefault();  // Empêcher la soumission par défaut du formulaire
+
+    var form = $(this);
+    var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+
+    // Envoyer les données via Ajax
+    $.ajax({
+        url: form.attr('action'),  // URL de la vue pour modifier l'encadrement
+        method: 'POST',
+        data: formData,
+        processData: false,  // Ne pas traiter les données
+        contentType: false,  // Ne pas définir de content-type
+        success: function(response) {
+            if (response.status === 'success') {
+                // Fermer la modal de modification
+                $('#editEncadrementModal').modal('hide');
+                
+               
+                showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
+                   
+                
+                
+               
+                // Rafraîchir la page pour afficher les modifications
+                
+            } else {
+                showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
+            }
+        },
+        error: function() {
+            showTooltip(" erreurs  de modification du lien d'encadrement ,Veuillez reessayer !", true,"ov2","tol2","mes2");
+        }
+    });
+});
+
+// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
+$('#editEncadrementModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var encadrementId = button.data('encadrement_id');  // ID de l'encadrement
+    var memoireId = button.data('memoire');  // ID du mémoire
+    var encadrantId = button.data('encadrant');  // ID de l'encadrant
+
+    var modal = $(this);
+    
+    // Remplir les champs du formulaire avec les données de l'encadrement
+    modal.find('#encadrement_id').val(encadrementId);
+    modal.find('#memoire').val(memoireId);
+    modal.find('#encadrant').val(encadrantId);
+});
+
+// Script pour récupérer l'ID de l'utilisateur et remplir la modal avec ses données
+$('#editUserModal').on('show.bs.modal', function (event) {
+var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+var userId = button.data('id');  // Récupère l'ID de l'utilisateur
+var modal = $(this);
+
+// Remplir le champ caché avec l'ID de l'utilisateur
+modal.find('#user_id').val(userId);
+
+// Vous pouvez également remplir d'autres champs du formulaire si nécessaire
+// Exemple :
+modal.find('#nom').val(button.data('nom'));
+modal.find('#prenom').val(button.data('prenom'));
+modal.find('#email').val(button.data('email'));
+modal.find('#birthday').val(button.data('birthday'));
+modal.find('#sexe').val(button.data('sexe'));
+modal.find('#type').val(button.data('type'));
+modal.find('#realisation_linkedin').val(button.data('linkedin'));
+
+});
+$('#editUserForm').on('submit', function (event) {
+    event.preventDefault();  // Empêche la soumission normale du formulaire
+
+    var form = $(this);
+    var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+
+    // Envoi du formulaire via Ajax
+    $.ajax({
+        url: form.attr('action'),  // URL de la vue qui traite le formulaire
+        method: 'POST',
+        data: formData,
+        processData: false,  // Ne pas traiter les données
+        contentType: false,  // Ne pas définir de content-type pour l'envoi des données
+        success: function(response) {
+            if (response.status === 'success') {
+                // Fermer la modal
+                $('#editUserModal').modal('hide');
+                
+                showTooltip("utilisateur modifier avec succès !", false,"ov3","tol3","mes3");
+            } else {
+                // Afficher un message d'erreur
+                showTooltip("utilisateur supprimer avec succès !", false,"ov3","tol3","mes3");
+            }
+        },
+        error: function() {
+            // Gérer les erreurs réseau
+        
+            showTooltip("Une erreur est survenue. Veuillez réessayer.", true,"ov3","tol3","mes3");
+        }
+    });
+});
+
+
+    
+    
+    function deleteEncadrement(encadrementId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet encadrement ?')) {
+            $.ajax({
+                url: '/delete_encadrement/',  // URL vers la vue delete_encadrement
+                type: 'POST',
+                data: {
+                    'encadrement_id': encadrementId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Exemple d'utilisation
+// Afficher une infobulle de succès
+
+                                    showTooltip("lien d'encadrement supprimer avec succès !", false,"ov2","tol2","mes2");
+                    } else {
+                        showTooltip("lien d'encadrement supprimer avec succès !", false,"ov2","tol2","mes2");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    showTooltip(" erreurs  de supression du lien d'encadrement ,Veuillez reessayer !", true,"ov2","tol2","mes2");
+                }
+            });
+        }
+       
+    }
+   
+    function showEditUserForm() {
+        document.getElementById("editUserForm").style.display = "block";
+    }
+    function showEditMemoireForm() {
+        document.getElementById("editMemoireForm").style.display = "block";
+    }
+    function showEditEncadrementForm() {
+        document.getElementById("editEncadrementForm").style.display = "block";
+    }
+    function showTooltip(message, isError = false, id1,id2,id3 ) {
+        var tooltip = document.getElementById(id2);
+        var overlay = document.getElementById(id1);
+        var tooltipMessage = document.getElementById(id3);
+    
+        // Afficher l'overlay (empêche les interactions)
+        overlay.style.display = 'block';
+    
+        // Afficher l'infobulle
+        tooltip.style.display = 'block';
+        tooltip.classList.add('show');
+        tooltipMessage.textContent = message;
+    
+        // Si c'est une erreur, changer la couleur de l'infobulle
+        if (isError) {
+            tooltip.style.backgroundColor = '#f44336'; // Rouge pour les erreurs
+        } else {
+            tooltip.style.backgroundColor = '#4CAF50'; // Vert pour le succès
+        }
+    }
+    
+    // Fonction pour fermer l'infobulle et recharger la page
+    function closeTooltip(id1,id2) {
+        var tooltip = document.getElementById(id2);
+        var overlay = document.getElementById(id1);
+    
+        // Cacher l'infobulle et l'overlay
+        tooltip.style.display = 'none';
+        overlay.style.display = 'none';
+    
+        // Recharger la page
+        window.location.reload();
+    }
+    
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const dashboard = new AdvancedDashboard('dashboard-container');
+        
+        // Fonction pour récupérer les données et afficher un graphique
+        const fetchAndDisplayChart = (url, chartType, title) => {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erreur HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data.labels || !data.data) {
+                        throw new Error("Données manquantes ou incorrectes");
+                    }
+    
+                    // Structure des données pour Chart.js
+                    const chartData = {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.data,
+                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40']
+                        }]
+                    };
+    
+                    // Appel à la méthode pour ajouter un graphique
+                    dashboard.addChart(chartType, chartData, { title });
+                })
+                .catch(error => {
+                    console.error("Erreur de récupération des données : ", error);
+                    alert("Une erreur est survenue lors du chargement des données.");
+                });
+        };
+    
+        // Appels aux API pour récupérer les données et afficher les graphiques
+        
+        fetchAndDisplayChart('/api/memoires-by-year/', 'bar', "Nombre de mémoires par année");
+        fetchAndDisplayChart('/api/memoires-by-domaine/', 'bar', "Nombre de mémoires par domaine");
+        fetchAndDisplayChart('/api/downloads-by-memoire/', 'pie', "Téléchargements par mémoire");
+        fetchAndDisplayChart('/api/encadrements-by-user/', 'bar', "Répartition des encadrements par encadreurs");
+        fetchAndDisplayChart('/api/downloads-by-year/', 'line', "Téléchargements par année");
+
+
+        fetchAndDisplayChart('/api/visiteurs/', 'pie', "Répartition des visites par utilisateur");
+
+        fetchAndDisplayChart('/api/visitors-by-date/', 'line', "Visiteurs par date");
+        fetchAndDisplayChart('/api/memoires-by-author/', 'bar', "Mémoires par auteur");
+    });
+    
+// Exemple de graphique nuage de points (scatter)
+
+</script>
+
+{% endblock %}  

@@ -1,0 +1,166 @@
+<section x-show="activeSection === 'memoirs'" class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
+    <h2 class="text-xl font-semibold mb-4">Mémoires</h2>
+    
+
+    <!-- Bouton pour ajouter un mémoire -->
+    <button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#addMemoireModal">
+        Ajouter un Mémoire
+    </button>
+
+    <!-- Liste des mémoires -->
+    <h2 class="mt-5 text-lg font-medium">Liste des Mémoires</h2>
+    <div class="overflow-x-auto mt-4">
+        <table class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Titre</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Domaine</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Auteur</th>
+                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for memoire in memoires %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ memoire.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ memoire.titre }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ memoire.domaine }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ memoire.auteur.nom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteMemoire({{ memoire.id }})">
+                            Supprimer
+                        </button>
+                      
+                        <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" 
+data-bs-toggle="modal" 
+data-bs-target="#editMemoireModal"
+data-id="{{ memoire.id }}"
+data-titre="{{ memoire.titre }}"
+data-domaine="{{ memoire.domaine }}"
+data-annee_publication="{{ memoire.annee_publication }}"
+data-resume="{{ memoire.resume }}"
+data-lien_telecharger="{{ memoire.lien_telecharger }}">
+Modifier
+</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal pour modifier un mémoire -->
+    <div class="modal fade" id="editMemoireModal" tabindex="-1" aria-labelledby="editMemoireModalLabel" aria-hidden="true">
+        <div class="modal-dialog">Memoire
+            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editMemoireModalLabel">Modifier le Mémoire</h5>
+                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form  class="myForm"id="editMemoireForm" action="{% url 'edit_memoire' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" id="memoire_id" name="memoire_id">
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">Titre</label>
+                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="domaine" class="form-label">Domaine</label>
+                            <input type="text" class="form-control bg-gray-100 darMemoirek:bg-gray-700 dark:text-gray-300" id="domaine" name="domaine" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="annee_publication" class="form-label">Année de publication</label>
+                            <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resume" class="form-label">Résumé</label>
+                            <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lien_telecharger" class="form-label">emplacement du memoire</label>
+                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="images" class="form-label">Image</label>
+                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="auteur" class="form-label">Auteur</label>
+                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
+                                {% for user in utilisateurs %}
+                                <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                            Enregistrer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour ajouter un mémoire -->
+    <div class="modal fade" id="addMemoireModal" tabindex="-1" aria-labelledby="addMemoireModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addMemoireModalLabel">Ajouter un Mémoire</h5>
+                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form class="myForm" id="addMemoireForm" enctype="multipart/form-data" action="{% url 'add_memoire' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="titre" class="form-label">Titre</label>
+                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="domaine" class="form-label">Domaine</label>
+                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="domaine" name="domaine" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="annee_publication" class="form-label">Année de publication</label>
+                            <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="resume" class="form-label">Résumé</label>
+                            <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="lien_telecharger" class="form-label">emplacement du memoire</label>
+                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="images" class="form-label">Image</label>
+                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images"required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="auteur" class="form-label">Auteur</label>
+                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
+                                {% for user in utilisateurs %}
+                                <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                            Ajouter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ov" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
+
+<!-- Infobulle -->
+<div id="tol" class="tooltip" style="display:none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background-color: #4CAF50; color: white; border-radius: 5px; z-index: 10000;">
+<span id="mes"></span>
+<button onclick="closeTooltip('ov','tol')">Fermer</button>
+</div>
+
+</section>
+
