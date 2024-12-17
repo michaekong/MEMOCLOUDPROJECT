@@ -5,7 +5,7 @@
     <h2 class="text-2xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">Modifier Profil</h2>
 
     <!-- Formulaire de profil -->
-    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form method="POST" enctype="multipart/form-data" class="space-y-6" action="edit_profile">
         {% csrf_token %}
         
         <!-- Grille de profil -->
@@ -101,7 +101,7 @@
     <!-- Formulaire de changement de mot de passe -->
     <div class="mt-8">
         <h3 class="text-lg font-semibold mt-4 mb-2 flex items-center">Changer le mot de passe</h3>
-        <form method="POST" class="space-y-4">
+        <form method="POST" class="space-y-4" action="edit_profile">
             {% csrf_token %}
             <div class="flex flex-col space-y-2">
                 <label for="new_password"class="text-lg font-semibold mt-4 mb-2 flex items-center">Nouveau mot de passe</label>

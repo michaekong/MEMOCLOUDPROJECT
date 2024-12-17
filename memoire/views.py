@@ -28,7 +28,6 @@ from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
 
 
-@login_required
 def edit_profile(request):
     # Récupérer l'utilisateur connecté
    
@@ -175,7 +174,7 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
-@login_required
+
 def profil(request):
     """
     Vue pour afficher les informations du profil de l'utilisateur connecté.
