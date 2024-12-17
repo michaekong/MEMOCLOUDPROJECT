@@ -126,9 +126,9 @@
                 
             </div>
            
-        </div>
+    
         
-            </div>
+          
         </section>
         
         {% include "sectiontelechargement.html" %}
@@ -148,22 +148,7 @@
     
 
 
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('theme', () => ({
-            isDarkMode: localStorage.getItem('theme') === 'dark',
 
-            toggleTheme() {
-                this.isDarkMode = !this.isDarkMode;
-                if (this.isDarkMode) {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                }
-            }
-        }));
-    });
 
 
     document.addEventListener('alpine:init', () => {
@@ -171,6 +156,7 @@
             activeSection: 'dashboard', // Section active par défaut
         }));
     });
+
     function deleteUser(userId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
             $.ajax({
