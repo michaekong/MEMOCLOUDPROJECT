@@ -308,7 +308,7 @@ def common(request,*args, **kwargs):
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from .models import *
-
+from django.db.models.functions import ExtractMonth
 # Vue principale qui charge les données pour le tableau de bord
 def admins(request, *args, **kwargs):
     # Fetching data for memoires, users, and encadrements
@@ -317,6 +317,14 @@ def admins(request, *args, **kwargs):
     encadrements = Encadrement.objects.all()
     vis = visiteur.objects.all()
     tel = telechargement.objects.all()
+    # Récupération des données
+    total_users = UserProfile.objects.count()
+    total_memoires = Memoire.objects.count()
+    total_encadrements = Encadrement.objects.count()
+    total_telechargements = telechargement.objects.count()
+    total_visites=visiteur.objects.count()
+
+    
     
     try:
         idp = request.session['user_id']
@@ -334,6 +342,12 @@ def admins(request, *args, **kwargs):
         'visiteurs': vis,
         'telechargement': tel,
         'user': user,
+        'total_users': total_users,
+        'total_memoires': total_memoires,
+        'total_encadrements': total_encadrements,
+        'total_telechargements': total_telechargements,
+        'total_visites':total_visites
+       
     }
     
     return render(request, "admin.html", context)

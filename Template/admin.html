@@ -52,42 +52,85 @@
 
     <div class="col-span-2">
         <!-- Content Sections -->
-        <section x-show="activeSection === 'dashboard'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition">
-            <h2 class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">Tableau de bord</h2>
-
-            <div class="container-fluid">
-                <h1 class="text-center my-4">Tableau de Bord</h1>
-                
-                <div class="row">
-                    <!-- Graphique de Ventes -->
-                    <div class="col-md-6">
-                        <div class="dashboard-card">
-                            <h3>Ventes Mensuelles</h3>
-                            <div id="sales-chart" class="chart-container"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Graphique Circulaire -->
-                    <div class="col-md-6">
-                        <div class="dashboard-card">
-                            <h3>Répartition des Revenus</h3>
-                            <div id="revenue-chart" class="chart-container"></div>
-                        </div>
-                    </div>
+        <section x-show="activeSection === 'dashboard'" class="p-8 bg-white dark:bg-gray-900 rounded-lg shadow-lg transition-all ease-in-out">
+            <!-- Title Section with theme toggle -->
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h2 class="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Tableau de Bord Administrateur</h2>
+                    <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300">Statistiques Globales</h3>
                 </div>
         
-                <!-- Graphique Combiné -->
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="dashboard-card">
-                            <h3>Performance Globale</h3>
-                            <div id="combo-chart" class="chart-container"></div>
-                        </div>
+                <!-- Theme Toggle Icon (Sun/Moon) -->
+                <button @click="toggleTheme" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 transition duration-300 hover:bg-gray-300 dark:hover:bg-gray-600">
+                    <svg x-show="!isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h2M3 12H1m16.24-7.76l1.42 1.42M4.22 19.78l1.42-1.42M18.36 19.78l1.42-1.42M4.22 4.22l1.42 1.42" />
+                    </svg>
+                    <svg x-show="isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h2M3 12H1m16.24-7.76l1.42 1.42M4.22 19.78l1.42-1.42M18.36 19.78l1.42-1.42M4.22 4.22l1.42 1.42" />
+                    </svg>
+                </button>
+            </div>
+        
+            <!-- Statistiques Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Users -->
+                        <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i>
                     </div>
                 </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Mémoires -->
+                        <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Encadrements -->
+                        <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Téléchargements</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Téléchargements -->
+                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Visites (Visitors) -->
+                        <i class="fas fa-user text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                
             </div>
            
+        </div>
+        
+            </div>
         </section>
+        
         {% include "sectiontelechargement.html" %}
         {% include "sectionvisiteur.html" %}
         
@@ -102,6 +145,27 @@
 </div>
 
 <script>
+    
+
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('theme', () => ({
+            isDarkMode: localStorage.getItem('theme') === 'dark',
+
+            toggleTheme() {
+                this.isDarkMode = !this.isDarkMode;
+                if (this.isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                }
+            }
+        }));
+    });
+
+
     document.addEventListener('alpine:init', () => {
         Alpine.data('dashboard', () => ({
             activeSection: 'dashboard', // Section active par défaut
@@ -386,59 +450,8 @@ $('#editUserForm').on('submit', function (event) {
         window.location.reload();
     }
     
-    Highcharts.chart('sales-chart', {
-        title: { text: 'Ventes Mensuelles' },
-        xAxis: { 
-            categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'] 
-        },
-        yAxis: { 
-            title: { text: 'Montant des Ventes' } 
-        },
-        series: [{
-            name: 'Ventes',
-            data: [50000, 60000, 55000, 70000, 65000, 80000]
-        }]
-    });
+   
 
-    // Graphique Circulaire des Revenus
-    Highcharts.chart('revenue-chart', {
-        chart: { type: 'pie' },
-        title: { text: 'Répartition des Revenus' },
-        series: [{
-            name: 'Revenus',
-            data: [
-                { name: 'Produits Électroniques', y: 45 },
-                { name: 'Vêtements', y: 25 },
-                { name: 'Alimentaire', y: 15 },
-                { name: 'Autres', y: 15 }
-            ]
-        }]
-    });
-
-    // Graphique Combiné
-    Highcharts.chart('combo-chart', {
-        title: { text: 'Performance Globale' },
-        xAxis: { 
-            categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'] 
-        },
-        yAxis: [
-            { title: { text: 'Ventes' } },
-            { title: { text: 'Bénéfice' }, opposite: true }
-        ],
-        series: [
-            {
-                name: 'Ventes',
-                type: 'column',
-                data: [50000, 60000, 55000, 70000, 65000, 80000]
-            },
-            {
-                name: 'Bénéfice',
-                type: 'line',
-                yAxis: 1,
-                data: [10000, 12000, 11000, 14000, 13000, 16000]
-            }
-        ]
-    });
 
 </script>
 
