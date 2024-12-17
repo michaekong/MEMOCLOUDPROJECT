@@ -583,14 +583,16 @@ def telecharger_pdf(request):
 
     
     if request.method == "POST":
-        idm = request.POST.get('memoire_id')
-        
-        emails=request.session.get('emailv')
-        me = get_object_or_404(Memoire, id=idm)
-        print(f"Le mémoire avec l'ID {emails} a été téléchargé.")
-        telechargement.objects.create(memoire=me,emailt=emails)
-       
-        return redirect("liste_memoires/")
+        try:
+            idm = request.POST.get('memoire_id')
+            
+            emails=request.session.get('emailv')
+            me = get_object_or_404(Memoire, id=idm)
+            print(f"Le mémoire avec l'ID {emails} a été téléchargé.")
+            telechargement.objects.create(memoire=me,emailt=emails)
+            return redirect("liste_memoires/")
+        except:
+            return redirect("liste_memoires/")
     else:
         return redirect("liste_memoires/")
 from django.db.models import Count    
