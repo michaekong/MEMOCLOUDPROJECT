@@ -55,7 +55,37 @@
         <section x-show="activeSection === 'dashboard'" class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg transition">
             <h2 class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">Tableau de bord</h2>
 
-            <div  class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition"id="dashboard-container"></div>
+            <div class="container-fluid">
+                <h1 class="text-center my-4">Tableau de Bord</h1>
+                
+                <div class="row">
+                    <!-- Graphique de Ventes -->
+                    <div class="col-md-6">
+                        <div class="dashboard-card">
+                            <h3>Ventes Mensuelles</h3>
+                            <div id="sales-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Graphique Circulaire -->
+                    <div class="col-md-6">
+                        <div class="dashboard-card">
+                            <h3>Répartition des Revenus</h3>
+                            <div id="revenue-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+        
+                <!-- Graphique Combiné -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="dashboard-card">
+                            <h3>Performance Globale</h3>
+                            <div id="combo-chart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
            
         </section>
         {% include "sectiontelechargement.html" %}
@@ -356,59 +386,59 @@ $('#editUserForm').on('submit', function (event) {
         window.location.reload();
     }
     
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const dashboard = new AdvancedDashboard('dashboard-container');
-        
-        // Fonction pour récupérer les données et afficher un graphique
-        const fetchAndDisplayChart = (url, chartType, title) => {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Erreur HTTP: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data.labels || !data.data) {
-                        throw new Error("Données manquantes ou incorrectes");
-                    }
-    
-                    // Structure des données pour Chart.js
-                    const chartData = {
-                        labels: data.labels,
-                        datasets: [{
-                            data: data.data,
-                            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#FF9F40']
-                        }]
-                    };
-    
-                    // Appel à la méthode pour ajouter un graphique
-                    dashboard.addChart(chartType, chartData, { title });
-                })
-                .catch(error => {
-                    console.error("Erreur de récupération des données : ", error);
-                    alert("Une erreur est survenue lors du chargement des données du graphe.");
-                });
-        };
-
-    
-        // Appels aux API pour récupérer les données et afficher les graphiques
-        
-        fetchAndDisplayChart('/api/memoires-by-year/', 'bar', "Nombre de mémoires par année");
-        fetchAndDisplayChart('/api/memoires-by-domaine/', 'bar', "Nombre de mémoires par domaine");
-        fetchAndDisplayChart('/api/downloads-by-memoire/', 'pie', "Téléchargements par mémoire");
-        fetchAndDisplayChart('/api/encadrements-by-user/', 'bar', "Répartition des encadrements par encadreurs");
-        fetchAndDisplayChart('/api/downloads-by-year/', 'line', "Téléchargements par année");
-
-
-        fetchAndDisplayChart('/api/visiteurs/', 'pie', "Répartition des visites par utilisateur");
-
-        fetchAndDisplayChart('/api/visitors-by-date/', 'line', "Visiteurs par date");
-        fetchAndDisplayChart('/api/memoires-by-author/', 'bar', "Mémoires par auteur");
+    Highcharts.chart('sales-chart', {
+        title: { text: 'Ventes Mensuelles' },
+        xAxis: { 
+            categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'] 
+        },
+        yAxis: { 
+            title: { text: 'Montant des Ventes' } 
+        },
+        series: [{
+            name: 'Ventes',
+            data: [50000, 60000, 55000, 70000, 65000, 80000]
+        }]
     });
-    
-// Exemple de graphique nuage de points (scatter)
+
+    // Graphique Circulaire des Revenus
+    Highcharts.chart('revenue-chart', {
+        chart: { type: 'pie' },
+        title: { text: 'Répartition des Revenus' },
+        series: [{
+            name: 'Revenus',
+            data: [
+                { name: 'Produits Électroniques', y: 45 },
+                { name: 'Vêtements', y: 25 },
+                { name: 'Alimentaire', y: 15 },
+                { name: 'Autres', y: 15 }
+            ]
+        }]
+    });
+
+    // Graphique Combiné
+    Highcharts.chart('combo-chart', {
+        title: { text: 'Performance Globale' },
+        xAxis: { 
+            categories: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'] 
+        },
+        yAxis: [
+            { title: { text: 'Ventes' } },
+            { title: { text: 'Bénéfice' }, opposite: true }
+        ],
+        series: [
+            {
+                name: 'Ventes',
+                type: 'column',
+                data: [50000, 60000, 55000, 70000, 65000, 80000]
+            },
+            {
+                name: 'Bénéfice',
+                type: 'line',
+                yAxis: 1,
+                data: [10000, 12000, 11000, 14000, 13000, 16000]
+            }
+        ]
+    });
 
 </script>
 

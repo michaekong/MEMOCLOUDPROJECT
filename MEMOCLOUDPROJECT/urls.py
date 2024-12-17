@@ -60,6 +60,8 @@ urlpatterns = [
     path('api/users-by-type/', users_by_type),  # Ajout de la vue pour les utilisateurs par type
     path('api/visitors-by-date/', visitors_by_date),  # Ajout de la vue pour les visiteurs par date
     path('api/memoires-by-author/', memoires_by_author),
+     path('send_welcome_email', send_welcome_email,name="send_welcome_email"),
+    
 
 
     

@@ -231,18 +231,16 @@ def logout(request):
 
 from django.shortcuts import render
 from django.db.models import Q, Prefetch
-
-
 def liste_memoires(request):
-    # Récupérer tous les mémoires avec préfetch des encadreurs
+    # Récupérer tous les mémoires avec préfetch des encadreurs et compter les téléchargements
     memoires = Memoire.objects.prefetch_related(
         Prefetch(
             'encadrements',
             queryset=Encadrement.objects.select_related('encadrant'),
             to_attr='encadreur_list'
         )
-    )
-
+    ).annotate(nbr_telechargements=Count('telechargements'))  # Ajout du comptage des téléchargements
+    
     # Filtres de recherche
     query = request.GET.get('q')
     if query:
@@ -277,7 +275,7 @@ def liste_memoires(request):
     annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
     encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
     auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
-    
+
     # Préparer le contexte
     context = {
         'memoires': memoires,
@@ -314,37 +312,30 @@ from .models import *
 # Vue principale qui charge les données pour le tableau de bord
 def admins(request, *args, **kwargs):
     # Fetching data for memoires, users, and encadrements
-    memoires = Memoire.objects.all()
+    memoires = Memoire.objects.all().annotate(nbr_telechargements=Count('telechargements'))  # Comptage des téléchargements pour chaque mémoire
     utilisateurs = UserProfile.objects.all()
     encadrements = Encadrement.objects.all()
     vis = visiteur.objects.all()
-    tel=telechargement.objects.all()
-    try:
-        
+    tel = telechargement.objects.all()
     
-        idp=request.session['user_id']
+    try:
+        idp = request.session['user_id']
     except:
         return redirect('logout')
     
     user = UserProfile.objects.get(id=idp)
-   
-   
- 
-        
+  
     
-        
-
     # Context for rendering the page
     context = {
         'memoires': memoires,
         'utilisateurs': utilisateurs,
         'encadrements': encadrements,
         'visiteurs': vis,
-        'telechargement':tel,
+        'telechargement': tel,
         'user': user,
     }
     
-
     return render(request, "admin.html", context)
 
 # Supprimer un mémoire
@@ -685,3 +676,53 @@ def memoires_by_author(request):
     labels = [f"{entry['auteur__prenom']} {entry['auteur__nom']}" for entry in data]
     counts = [entry['count'] for entry in data]
     return JsonResponse({'labels': labels, 'data': counts})
+
+from django.shortcuts import render
+
+import os
+import sys
+import django
+from django.core.mail import send_mail, EmailMultiAlternatives
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'votre_projet.settings')
+django.setup()
+
+def send_welcome_email():
+    try:
+        # Test email simple
+        print("Test d'envoi d'email simple...")
+        send_mail(
+            'Test Email Simple',
+            'Ceci est un test d\'envoi d\'email.',
+            'memecloudenstp@gmail.com',
+            ['destinataire@example.com'],
+            fail_silently=False,
+        )
+        print("Email simple envoyé avec succès !")
+
+        # Test email HTML
+        print("\nTest d'envoi d'email HTML...")
+        email = EmailMultiAlternatives(
+            subject='Test Email HTML',
+            body='Version texte brut',
+            from_email='memecloudenstp@gmail.com',
+            to=['destinataire@example.com']
+        )
+        
+        html_content = '''
+        <html>
+            <body>
+                <h1>Test Email HTML</h1>
+                <p>Ceci est un test d'email HTML complet</p>
+                <p>Détails du test : <strong>Envoi réussi</strong></p>
+            </body>
+        </html>
+        '''
+        
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        print("Email HTML envoyé avec succès !")
+
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email : {e}")
+

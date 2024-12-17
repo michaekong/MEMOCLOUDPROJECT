@@ -628,5 +628,3 @@ _getMarkersInsidePolygon(polygon) {
     }
     
 }
-
-
