@@ -1,0 +1,62 @@
+<section x-show="activeSection === 'comment'" class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
+    <h2 class="text-xl font-semibold mb-4">COMMENTAIES ET NOTATIONS</h2>
+    
+
+    
+    <!-- Search and Filter Section for Mémoires -->
+<div class="mt-4">
+    <input type="text" id="commentSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('commentTable', 'commentSearchInput')">
+    <input type="text" id="commentmemoireFilter" placeholder="Filtrer par memoire" class="px-4 py-2 border rounded-md" onkeyup="filterTable('commentTable', 'commentmemoireFilter', 1)">
+    <input type="text" id="commentAuteurFilter" placeholder="Filtrer par Auteur" class="px-4 py-2 border rounded-md" onkeyup="filterTable('commentTable', 'commentAuteurFilter', 3)">
+    <button onclick="clearFilters('commentTable', 'commentSearchInput', 'commentmemoireFilter', 'commentAuteurFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
+
+<!-- Mémoires Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="commentTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">MEMEOIRE</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">COMMENTAIRE</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Auteur</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">NOTE</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DATE_CREATION</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in comments %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.memoire.titre }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.commentaire }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.utilisateur.nom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.note }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ comment.date_creation }}</td>
+                    
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deletecomment({{ comment.id }})">
+                            Supprimer
+                        </button>
+                        
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+    
+    
+    <div id="ovc" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
+
+<!-- Infobulle -->
+<div id="tolc" class="tooltip" style="display:none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background-color: #4CAF50; color: white; border-radius: 5px; z-index: 10000;">
+<span id="mesc"></span>
+<button onclick="closeTooltip('ovc','tolc')">Fermer</button>
+</div>
+
+</section>
+

@@ -3,52 +3,71 @@
 
 {% block content %}
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-    <div class="col-span-1 max-w-xs"> <!-- Limiter la largeur du menu -->
+    <div class="col-span-1 max-w-xs">
         <!-- Sidebar Menu -->
-        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md">
-            <h2 class="text-lg font-semibold mb-4">Menu</h2>
-            <ul class="space-y-2">
+        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
+            <!-- Bouton pour afficher/masquer le menu -->
+            <button @click="adminMenu = !adminMenu" class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                <span>Menu Admin</span>
+                <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+    
+            <!-- Menu déroulant -->
+            <ul x-show="adminMenu" x-transition @click.outside="adminMenu = false" class="mt-4 space-y-2">
                 <li>
-                    <button x-on:click="activeSection = 'dashboard'"
+                    <button @click="activeSection = 'dashboard'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Tableau de bord
                     </button>
                 </li>
                 <li>
-                    <button x-on:click="activeSection = 'users'"
+                    <button @click="activeSection = 'users'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Gestion des utilisateurs
                     </button>
                 </li>
                 <li>
-                    <button x-on:click="activeSection = 'memoirs'"
+                    <button @click="activeSection = 'memoirs'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                            Gestion des Mémoires
+                        Gestion des Mémoires
                     </button>
                 </li>
                 <li>
-                    <button x-on:click="activeSection = 'encadrements'"
+                    <button @click="activeSection = 'encadrements'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Gestion des Encadrements
                     </button>
                 </li>
-                 <li>
-                    <button x-on:click="activeSection = 'visiteurs'"
-                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                        voir les visiteurs
-                    </button>
-                </li>
-            
                 <li>
-                    <button x-on:click="activeSection = 'TELECHARGEMENTS'"
+                    <button @click="activeSection = 'comment'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                        voir les Telechargements
+                        Commentaires et notations
                     </button>
                 </li>
-            
+                <li>
+                    <button @click="activeSection = 'DOMAINES'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Voir les Domaines
+                    </button>
+                </li>
+                <li>
+                    <button @click="activeSection = 'visiteurs'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Voir les visiteurs
+                    </button>
+                </li>
+                <li>
+                    <button @click="activeSection = 'TELECHARGEMENTS'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Voir les Téléchargements
+                    </button>
+                </li>
             </ul>
         </aside>
     </div>
+    
 
     <div class="col-span-2">
         <!-- Content Sections -->
@@ -71,65 +90,85 @@
                 </button>
             </div>
         
-            <!-- Statistiques Section -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Users -->
-                        <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Mémoires -->
-                        <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Encadrements -->
-                        <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Téléchargements</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Téléchargements -->
-                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Visites (Visitors) -->
-                        <i class="fas fa-user text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                
-            </div>
-           
+         <!-- Statistiques Section -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i> <!-- Utilisez cette icône -->
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-file-alt text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-user-tie text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Commentaires</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-comments text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Domaines</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-globe text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
+        </div>
+    </div>
+
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-chart-line text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
+        </div>
+    </div>
+</div>
     
         
           
         </section>
+
+        {% include "sectiondomaine.html" %}
+        {% include "sectioncomment.html" %}
         
         {% include "sectiontelechargement.html" %}
         {% include "sectionvisiteur.html" %}
@@ -145,6 +184,8 @@
 </div>
 
 <script>
+    
+       
     
 
 
@@ -231,6 +272,7 @@ $('#editMemoireModal').on('show.bs.modal', function(event) {
     modal.find('#lien_telecharger').val(button.data('lien_telecharger'));
 });
 
+
     function deleteMemoire(memoireId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce mémoire ?')) {
             $.ajax({
@@ -258,6 +300,7 @@ $('#editMemoireModal').on('show.bs.modal', function(event) {
         }
        
     }
+    
     // Script pour récupérer l'ID de l'encadrement et le remplir dans le formulaire de la modal
 // Soumission Ajax pour le formulaire de modification de l'encadrement
 $('#editEncadrementForm').on('submit', function(event) {
@@ -294,6 +337,50 @@ $('#editEncadrementForm').on('submit', function(event) {
             showTooltip(" erreurs  de modification du lien d'encadrement ,Veuillez reessayer !", true,"ov2","tol2","mes2");
         }
     });
+});
+$('#editdomaineForm').on('submit', function(event) {
+    event.preventDefault();  // Empêcher la soumission par défaut du formulaire
+
+    var form = $(this);
+    var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+
+    // Envoyer les données via Ajax
+    $.ajax({
+        url: form.attr('action'),  // URL de la vue pour modifier un mémoire
+        method: 'POST',
+        data: formData,
+        processData: false,  // Ne pas traiter les données
+        contentType: false,  // Ne pas définir de content-type
+        success: function(response) {
+            if (response.status === 'success') {
+                // Fermer la modal de modification
+                $('#editdomaineModal').modal('hide');
+
+               
+                
+               
+                    showTooltip("Domaine modifier avec succès !", false,"ovm","tolm","mesm");
+            } else {
+                showTooltip("Domaine modifier avec succès !", false,"ovm","tolm","mesm");
+                 }
+        },
+        error: function() {
+            
+             showTooltip('Une erreur est survenue. Veuillez réessayer.', true,"ovm","tolm","mesm");
+        }
+    });
+});
+
+// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
+$('#editdomaineModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var domaineId = button.data('id');  // Récupérer l'ID du mémoire
+    var modal = $(this);
+
+    // Remplir les champs du formulaire avec les données du mémoire
+    modal.find('#domaine_id').val(domaineId);
+    modal.find('#nom').val(button.data('nom'));
+ 
 });
 
 // Remplir les champs du formulaire de modification lors de l'ouverture de la modal
@@ -392,6 +479,36 @@ $('#editUserForm').on('submit', function (event) {
         }
        
     }
+    function deletecomment(commentId) {
+       
+        
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire?')) {
+            $.ajax({
+                url: '/delete_comment/',  // URL vers la vue delete_encadrement
+                type: 'POST',
+                data: {
+                    'comment_id': commentId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Exemple d'utilisation
+// Afficher une infobulle de succès
+
+                                    showTooltip("commentaire supprimer avec succès !", false,"ovc","tolc","mesc");
+                    } else {
+                        showTooltip("commentaire supprimer avec succès !", false,"ovc","tolc","mesc");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                   
+                    showTooltip(" erreurs  de supression du commentaire,Veuillez reessayer !", true,"ovc","tolc","mesc");
+                }
+            });
+        }
+       
+    }
    
     function showEditUserForm() {
         document.getElementById("editUserForm").style.display = "block";
@@ -401,6 +518,9 @@ $('#editUserForm').on('submit', function (event) {
     }
     function showEditEncadrementForm() {
         document.getElementById("editEncadrementForm").style.display = "block";
+    }
+    function showEditdomaineForm() {
+        document.getElementById("editdomaineForm").style.display = "block";
     }
     function showTooltip(message, isError = false, id1,id2,id3 ) {
         var tooltip = document.getElementById(id2);
@@ -434,9 +554,53 @@ $('#editUserForm').on('submit', function (event) {
     
         // Recharger la page
         window.location.reload();
+
     }
     
-   
+    
+        // Search function for multiple tables
+        function searchTable(tableId, inputId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName('tr');
+    
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+                for (let j = 0; j < cells.length - 1; j++) {
+                    if (cells[j].textContent.toLowerCase().includes(filter)) {
+                        found = true;
+                        break;
+                    }
+                }
+                rows[i].style.display = found ? '' : 'none';
+            }
+        }
+    
+        // Filter function for multiple tables
+        function filterTable(tableId, filterInputId, columnIndex) {
+            const filterInput = document.getElementById(filterInputId);
+            const filter = filterInput.value.toLowerCase();
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName('tr');
+    
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const match = cells[columnIndex].textContent.toLowerCase().includes(filter);
+                rows[i].style.display = match ? '' : 'none';
+            }
+        }
+    
+        // Clear filters for multiple tables
+        function clearFilters(tableId, searchInputId, ...filterInputIds) {
+            document.getElementById(searchInputId).value = '';
+            filterInputIds.forEach(id => document.getElementById(id).value = '');
+            searchTable(tableId, searchInputId);
+            filterInputIds.forEach(id => filterTable(tableId, id, filterInputIds.indexOf(id) + 1));
+        }
+    
+       
 
 
 </script>

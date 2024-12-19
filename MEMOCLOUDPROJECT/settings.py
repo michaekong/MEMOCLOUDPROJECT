@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from django.conf import settings
 from django.conf.urls.static import static
 
-
+from decouple import config
 
 from pathlib import Path
 import os 
@@ -28,14 +28,7 @@ TEMPLATES__DIR= os.path.join(BASE_DIR,"Template")
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-# Configuration Email
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='memecloudenstp@gmail.com')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='memo@1234Enstp')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 
@@ -44,7 +37,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x_rd@@&n458dn1a^#@cqcm+w*ytgse70$im#0mwrvoyf0*cvq='
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -148,3 +141,12 @@ MEDIA_ROOT=os.path.join(BASE_DIR,"Template/media/")
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuration Email
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_USE_TLS =config('EMAIL_USE_TLS')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER =config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD =config('EMAIL_HOST_PASSWORD')
+

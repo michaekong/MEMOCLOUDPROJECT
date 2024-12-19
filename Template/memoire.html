@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% block acount %}{% endblock acount %}
+
+
 
 {% block content %}
 <!-- Formulaire de Recherche -->
@@ -101,7 +102,7 @@
 
 <!-- Liste des Mémoires -->
 <div class="container mx-auto px-4 py-8">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {% for memoire in memoires %}
         <div class="card p-6 rounded-lg shadow-md bg-white dark:bg-gray-800 transition">
             {% if memoire.images %}
@@ -124,17 +125,15 @@
                 {{ memoire.titre }}
             </h2>
             
-            <!-- Domaine -->
             <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V3m0 3l4 4m-4-4l-4 4m8 4h-1m-6 0H6" />
                 </svg>
-                Domaine:
-                {{ memoire.domaine }}
+                Domaines:
+                {{ memoire.domaines.all|join:", " }}
             </p>
         
-            <div class="mt-6">
-                <!-- Auteur -->
+            
                 <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-orange-500 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
@@ -143,6 +142,12 @@
                     <a href="{{ memoire.auteur.realisation_linkedin }}" class="text-blue-600 dark:text-teal-300 ml-1">
                         {{ memoire.auteur.prenom }} {{ memoire.auteur.nom }}
                     </a>
+                </p>
+                <p class="text-lg font-semibold mt-4 mb-2 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-yellow-500 dark:text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v12M6 12h12" />
+                    </svg>
+                    Note moyenne: {{ memoire.note_moyenne|default:"Non noté" }}/5
                 </p>
         
                 <!-- Nombre de téléchargements -->
@@ -154,24 +159,24 @@
                 </p>
                 
                 <!-- Liste des encadreurs -->
-                <div class="flex items-center text-gray-400 mt-4">
+                <div class="text-lg font-semibold mt-4 mb-2 flex items-center">
                     <svg class="w-6 h-6 mr-3 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
                     </svg>
-                    <span class="font-semibold text-lg">Encadreurs :</span>
+                    Encadreurs :<ul class="list-none mt-4 space-y-2">
+                        {% for encadrement in memoire.encadrements.all %}
+                        <li class="flex items-center">
+                            <span class="font-bold text-blue-600 dark:text-teal-300">-</span>
+                            <a href="{{ encadrement.encadrant.realisation_linkedin }}" class="ml-2 text-lg font-semibold text-blue-600 dark:text-teal-300">
+                                {{ encadrement.encadrant.prenom }} {{ encadrement.encadrant.nom }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
                 
-                <ul class="list-none mt-4 space-y-2">
-                    {% for encadrement in memoire.encadrements.all %}
-                    <li class="flex items-center">
-                        <span class="font-bold text-blue-600 dark:text-teal-300">-</span>
-                        <a href="{{ encadrement.encadrant.realisation_linkedin }}" class="ml-2 text-lg font-semibold text-blue-600 dark:text-teal-300">
-                            {{ encadrement.encadrant.prenom }} {{ encadrement.encadrant.nom }}
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
+                
+            
             
             <!-- Téléchargement -->
             <div class="flex justify-between items-center mt-6">

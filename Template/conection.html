@@ -70,7 +70,7 @@
             {% endfor %}
         </div>
         {% endif %}
-        <form action="connection" method="POST">
+        <form action="send_welcome_email" method="POST">
             {% csrf_token %}
             <div class="form-row">
                 <input type="email" name="email" class="input-field" placeholder="Entrez votre adresse Email" required>

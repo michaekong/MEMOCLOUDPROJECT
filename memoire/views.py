@@ -13,6 +13,10 @@ from django.db.models import Q
 from .models import *
 
 from django.db.models import Prefetch, Q
+from django.db.models import Count
+from django.http import JsonResponse
+from django.db.models.functions import TruncMonth
+from .models import UserProfile, Memoire, Telechargement as telechargement, Encadrement,   Visiteur as visiteur
 
 
 
@@ -106,8 +110,7 @@ def register_user(request, *args, **kwargs):
             return redirect('/register')
 
         try:
-            # Génération du code de vérification à 6 chiffres
-            verification_code = random.randint(100000, 999999)
+            
 
             # Hachage du mot de passe
             hashed_password = make_password(password)
@@ -125,35 +128,32 @@ def register_user(request, *args, **kwargs):
                 password=hashed_password,  # Enregistrer le mot de passe haché
             )
             user.save()
+            subjet='verification code '
+            email=request.POST.get("email")
+            # Génération du code de vérification à 6 chiffres
+            verification_code = random.randint(100000, 999999)
+            request.session['verification_code'] = verification_code
+            request.session['user_email'] = email  
+            
+            user = UserProfile.objects.get(email=email)
+            template='template.html'
+            context={
+                'date':datetime.today().date,
+                'email':email,
+                'user':user,
+                'verification_code':verification_code,
+                
+                
+                    }
+            receivers=[email]
+            send_advanced_email(recipient =receivers, subject=subjet, template=template, context=context)
 
-            # Envoi de l'email avec le code de vérification
-            subject = "Votre code de vérification"
-            email_body = (
-                f"Bonjour {prenom} {nom},\n\n"
-                f"Merci pour votre inscription sur notre plateforme.\n"
-                f"Voici votre code de vérification : {verification_code}\n\n"
-                f"Veuillez entrer ce code pour activer votre compte.\n\n"
-                "Cordialement,\nL'équipe de notre plateforme"
-            )
-            verification_email = EmailMessage(
-                subject=subject,
-                body=email_body,
-                from_email='michaelndekebai@gmail.com',  # Remplacez par votre email
-                to=[email],
-            )
 
-            try:
-                verification_email.send()  # Envoi de l'email
-                messages.success(request, "Inscription réussie ! Un code de vérification a été envoyé à votre email.")
-
-                # Enregistrez le code de vérification en session
-                request.session['verification_code'] = verification_code
-                request.session['user_email'] = email  # Adresse e-mail sous forme de chaîne
-                return redirect('/verification_page')  # Redirigez vers une page de vérification
-            except Exception as e:
-                messages.error(request, f"L'envoi du code de vérification a échoué : {str(e)}")
-                user.delete()  # Supprimez l'utilisateur si l'email échoue
-                return redirect('/register')
+# Envoi de l'
+          # Enregistrez le code de vérification en session
+                # Adresse e-mail sous forme de chaîne
+            return render(request, "verified.html")  # Redirigez vers une page de vérification
+            
 
         except Exception as e:
             messages.error(request, f"Une erreur est survenue : {str(e)}")
@@ -202,8 +202,15 @@ def login(request, *args, **kwargs):
                 # Simule une connexion (vous pouvez utiliser des sessions)
                 request.session['user_id'] = user.id
                 request.session['user_email'] = user.email
+                request.session['emailv'] = user.email
                 messages.success(request, "Connexion réussie. Bienvenue !")
-                return redirect('/admins')  # Redirige vers la page d'accueil
+                
+                if(user.type == "admin" or  user.type=="superadmin"):
+                    return redirect('/admins') 
+                else:
+                    return redirect('liste_memoires')
+                    
+                    # Redirige vers la page d'accueil
             else:
                 messages.error(request, "Mot de passe incorrect.")
         except UserProfile.DoesNotExist:
@@ -231,35 +238,52 @@ def logout(request):
 
 from django.shortcuts import render
 from django.db.models import Q, Prefetch
+from django.db.models import Q, Count, Avg, Prefetch
+from django.shortcuts import render
+from .models import Memoire, Domaine, Encadrement, UserProfile
+
+from django.db.models import Count, Avg, Prefetch, Q
+
 def liste_memoires(request):
-    # Récupérer tous les mémoires avec préfetch des encadreurs et compter les téléchargements
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    
+    user = UserProfile.objects.get(id=idp)
+    
+    # Récupérer tous les mémoires avec leurs relations
     memoires = Memoire.objects.prefetch_related(
         Prefetch(
             'encadrements',
             queryset=Encadrement.objects.select_related('encadrant'),
             to_attr='encadreur_list'
-        )
-    ).annotate(nbr_telechargements=Count('telechargements'))  # Ajout du comptage des téléchargements
-    
+        ),
+        'domaines'  # Préfetch des domaines
+    ).annotate(
+        nbr_telechargements=Count('telechargements'),  # Nombre de téléchargements
+        note_moyenne=Avg('notations__note')  # Moyenne des notes
+    )
+
     # Filtres de recherche
     query = request.GET.get('q')
     if query:
         memoires = memoires.filter(
             Q(titre__icontains=query) |
-            Q(domaine__icontains=query) |
+            Q(domaines__nom__icontains=query) |
             Q(auteur__prenom__icontains=query) |
             Q(auteur__nom__icontains=query) |
             Q(resume__icontains=query)
-        )
+        ).distinct()
 
-    # Filtres supplémentaires
-    domaine = request.GET.get('domaine')
+    # Filtres additionnels
+    domaine_id = request.GET.get('domaine')
     annee = request.GET.get('annee')
     encadreur_id = request.GET.get('encadreur')
     auteur_id = request.GET.get('auteur')
 
-    if domaine:
-        memoires = memoires.filter(domaine=domaine)
+    if domaine_id:
+        memoires = memoires.filter(domaines__id=domaine_id)
 
     if annee:
         memoires = memoires.filter(annee_publication=annee)
@@ -270,13 +294,14 @@ def liste_memoires(request):
     if auteur_id:
         memoires = memoires.filter(auteur__id=auteur_id)
 
-    # Récupérer les domaines, années, encadreurs et auteurs uniques pour les filtres
-    domaines_uniques = Memoire.objects.values_list('domaine', flat=True).distinct()
+    # Données pour les filtres
+    domaines_uniques = Domaine.objects.all()
     annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
     encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
     auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
+    
 
-    # Préparer le contexte
+    # Contexte pour le template
     context = {
         'memoires': memoires,
         'domaines': domaines_uniques,
@@ -284,24 +309,18 @@ def liste_memoires(request):
         'encadreurs': encadreurs_uniques,
         'auteurs': auteurs_uniques,
         'query_params': request.GET,
-        'champs': ['domaine', 'annee', 'encadreur', 'auteur'],  # Utilisation de liste pour le template
+        'user':user,
+        'champs': ['domaine', 'annee', 'encadreur', 'auteur'],  # Utilisé pour simplifier les templates
     }
-    
+
     return render(request, 'memoire.html', context)
 
+
+
 def common(request,*args, **kwargs):
-    memoires = Memoire.objects.all()
-    utilisateurs = UserProfile.objects.all()
-    encadrements = Encadrement.objects.all()
+   
 
-    # Context for rendering the page
-    context = {
-        'memoires': memoires,
-        'utilisateurs': utilisateurs,
-        'encadrements': encadrements,
-    }
-
-    return render(request, "index.html", context)
+    return render(request, "index.html")
     
     
    
@@ -312,9 +331,23 @@ from django.db.models.functions import ExtractMonth
 # Vue principale qui charge les données pour le tableau de bord
 def admins(request, *args, **kwargs):
     # Fetching data for memoires, users, and encadrements
-    memoires = Memoire.objects.all().annotate(nbr_telechargements=Count('telechargements'))  # Comptage des téléchargements pour chaque mémoire
+    memoires = Memoire.objects.prefetch_related(
+        Prefetch(
+            'encadrements',
+            queryset=Encadrement.objects.select_related('encadrant'),
+            to_attr='encadreur_list'
+        ),
+        'domaines'  # Préfetch des domaines
+    ).annotate(
+        nbr_telechargements=Count('telechargements'),  # Nombre de téléchargements
+        note_moyenne=Avg('notations__note')  # Moyenne des notes
+    )  # Comptage des téléchargements pour chaque mémoire
     utilisateurs = UserProfile.objects.all()
     encadrements = Encadrement.objects.all()
+    comments=NotationCommentaire.objects.all()
+    total_comments=NotationCommentaire.objects.count()
+    total_dom = Domaine.objects.count()
+    dom = Domaine.objects.all()
     vis = visiteur.objects.all()
     tel = telechargement.objects.all()
     # Récupération des données
@@ -346,7 +379,12 @@ def admins(request, *args, **kwargs):
         'total_memoires': total_memoires,
         'total_encadrements': total_encadrements,
         'total_telechargements': total_telechargements,
-        'total_visites':total_visites
+        'total_visites':total_visites,
+        'domaines':dom,
+        'comments':comments,
+        'total_dom':total_dom,
+        'total_comments':total_comments,
+        
        
     }
     
@@ -362,6 +400,25 @@ def delete_memoire(request):
             return JsonResponse({'status': 'success', 'message': 'Mémoire supprimé avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+def delete_comment(request):
+    if request.method == 'POST':
+        comment_id = request.POST.get('comment_id')
+        try:
+            comment = get_object_or_404(NotationCommentaire, id=comment_id)
+            comment.delete()
+            return JsonResponse({'status': 'success', 'message': 'commentaire supprimé avec succès.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})        
+def delete_domaine(request):
+    if request.method == 'POST':
+        domaine_id = request.POST.get('domaine_id')
+        print(domaine_id)
+        try:
+            domaine = get_object_or_404(Domaine, id=domaine_id)
+            domaine.delete()
+            return JsonResponse({'status': 'success', 'message': 'Domaine supprimé avec succès.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})        
 
 # Supprimer un utilisateur
 def delete_user(request):
@@ -435,6 +492,19 @@ def add_memoire(request):
         except :
             messages.error(request, "erreur d'ajout du lien d'encadrement.")
             return redirect("admins")
+def add_domaine(request):
+    if request.method == 'POST':
+        
+        try:
+            Domaine.objects.create(
+                nom=request.POST.get('nom'),
+               
+                
+            )
+            return redirect("admins")
+        except :
+            messages.error(request, "erreur d'ajout du domaine.")
+            return redirect("admins")
 
 # Ajouter un encadrement
 def add_encadrement(request):
@@ -496,6 +566,17 @@ def edit_memoire(request):
             return JsonResponse({'status': 'success', 'message': 'Mémoire modifié avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+def edit_domaine(request):
+    if request.method == 'POST':
+        try:
+            domaine_id = request.POST.get('domaine_id')
+            domaine = get_object_or_404(Domaine, id=domaine_id)
+            domaine.nom = request.POST.get('nom')
+
+            domaine.save()
+            return JsonResponse({'status': 'success', 'message': 'domaine modifié avec succès.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})        
 
 # Modifier un encadrement
 def edit_encadrement(request):
@@ -597,148 +678,37 @@ def telecharger_pdf(request):
         return redirect("liste_memoires/")
 from django.db.models import Count    
 # Vue pour obtenir la répartition des utilisateurs par type
-def user_type_distribution(request):
-    data = UserProfile.objects.values('type').annotate(count=Count('id'))
-    labels = [entry['type'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
 
-# Vue pour obtenir la répartition des utilisateurs par sexe
-from django.db.models import Count
-from django.http import JsonResponse
-from django.db.models.functions import TruncMonth
-from .models import UserProfile, Memoire, telechargement, Encadrement, visiteur
-
-# 1. Vue pour la répartition des utilisateurs par sexe
-def user_sexe_distribution(request):
-    data = UserProfile.objects.values('sexe').annotate(count=Count('id'))
-    labels = [entry['sexe'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 2. Vue pour le nombre de mémoires par domaine
-def memoires_by_domaine(request):
-    data = Memoire.objects.values('domaine').annotate(count=Count('id'))
-    labels = [entry['domaine'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 3. Vue pour le nombre de mémoires téléchargés
-def downloads_by_memoire(request):
-    data = telechargement.objects.values('memoire__titre').annotate(count=Count('id'))
-    labels = [entry['memoire__titre'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 4. Vue pour le nombre de mémoires par année de publication
-def memoires_by_year(request):
-    data = Memoire.objects.values('annee_publication').annotate(count=Count('id'))
-    labels = [entry['annee_publication'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 5. Vue pour la répartition des encadrements par utilisateur
-def encadrements_by_user(request):
-    data = Encadrement.objects.values('encadrant__prenom', 'encadrant__nom').annotate(count=Count('id'))
-    labels = [f"{entry['encadrant__prenom']} {entry['encadrant__nom']}" for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 6. Vue pour les téléchargements par année
-def downloads_by_year(request):
-    data = Memoire.objects.annotate(count=Count('telechargements')).values('annee_publication', 'count')
-    labels = [entry['annee_publication'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 7. Vue pour les mémoires par type
-def memoires_by_type(request):
-    data = Memoire.objects.values('type').annotate(count=Count('id'))
-    labels = [entry['type'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 8. Vue pour les encadrements par mois
-def encadrements_by_month(request):
-    data = Encadrement.objects.annotate(month=TruncMonth('memoire__date_publication')).values('month').annotate(count=Count('id')).order_by('month')
-    labels = [entry['month'].strftime('%B %Y') for entry in data]  # Format de date mois-année
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 9. Vue pour les visiteurs
-def visiteurs(request):
-    data = visiteur.objects.values('emailv').annotate(count=Count('id')).order_by('-count')
-    labels = [entry['emailv'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 10. Vue pour les utilisateurs par type
-def users_by_type(request):
-    data = UserProfile.objects.values('type').annotate(count=Count('id'))
-    labels = [entry['type'] for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 11. Vue pour la répartition des visiteurs par date
-def visitors_by_date(request):
-    data = visiteur.objects.annotate(date=TruncMonth('datev')).values('date').annotate(count=Count('id')).order_by('date')
-    labels = [entry['date'].strftime('%B %Y') for entry in data]  # Format de date mois-année
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
-
-# 12. Vue pour la répartition des mémoires par auteur
-def memoires_by_author(request):
-    data = Memoire.objects.values('auteur__prenom', 'auteur__nom').annotate(count=Count('id'))
-    labels = [f"{entry['auteur__prenom']} {entry['auteur__nom']}" for entry in data]
-    counts = [entry['count'] for entry in data]
-    return JsonResponse({'labels': labels, 'data': counts})
 
 from django.shortcuts import render
+from datetime import datetime
+from .utils import *
 
-import os
-import sys
-import django
-from django.core.mail import send_mail, EmailMultiAlternatives
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'votre_projet.settings')
-django.setup()
-
-def send_welcome_email():
-    try:
-        # Test email simple
-        print("Test d'envoi d'email simple...")
-        send_mail(
-            'Test Email Simple',
-            'Ceci est un test d\'envoi d\'email.',
-            'memecloudenstp@gmail.com',
-            ['destinataire@example.com'],
-            fail_silently=False,
-        )
-        print("Email simple envoyé avec succès !")
-
-        # Test email HTML
-        print("\nTest d'envoi d'email HTML...")
-        email = EmailMultiAlternatives(
-            subject='Test Email HTML',
-            body='Version texte brut',
-            from_email='memecloudenstp@gmail.com',
-            to=['destinataire@example.com']
-        )
+def send_welcome_email(request, *args, **kwargs):
+    ctx={}
+    
+    if request.method == "POST":
+        subjet='verification code '
+        email=request.POST.get("email")
+        # Génération du code de vérification à 6 chiffres
+        verification_code = random.randint(100000, 999999)
+        request.session['verification_code'] = verification_code
+        request.session['user_email'] = email  
         
-        html_content = '''
-        <html>
-            <body>
-                <h1>Test Email HTML</h1>
-                <p>Ceci est un test d'email HTML complet</p>
-                <p>Détails du test : <strong>Envoi réussi</strong></p>
-            </body>
-        </html>
-        '''
-        
-        email.attach_alternative(html_content, "text/html")
-        email.send()
-        print("Email HTML envoyé avec succès !")
-
-    except Exception as e:
-        print(f"Erreur lors de l'envoi de l'email : {e}")
-
+        user = UserProfile.objects.get(email=email)
+        template='template.html'
+        context={
+            'date':datetime.today().date,
+            'email':email,
+            'user':user,
+            'verification_code':verification_code,
+            
+            
+                 }
+        receivers=[email]
+        has_send=send_advanced_email(recipient =receivers, subject=subjet, template=template, context=context)
+        if has_send:
+            ctx={ 'messages':"Mail envoyes avec success ,consulter votre boite email."}
+            return redirect('/verification_page')
+        ctx={ 'messages':'ERREUR d envoie du mails .'}
+    return render(request,"verified.html",ctx) 

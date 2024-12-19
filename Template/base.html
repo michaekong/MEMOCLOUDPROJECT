@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque des Mémoires</title>
     <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
@@ -172,6 +176,11 @@ body {
             background-color: var(--accent-primary-dark);
             color: var(--bg-primary-dark);
         }
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f2f2f2; cursor: pointer; }
+        .hidden { display: none; }
         
     </style>
 </head>
@@ -203,7 +212,12 @@ body {
                     </button>
                     <div x-show="accountMenu" @click.outside="accountMenu = false" class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-md py-2">
                         <a href="/liste_memoires" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Liste des memoires</a>
+                       {% if user.type == 'admin' or user.type == 'superadmin' %}
+                        <a href="/admins" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Page admin</a>
+                        
+                        {% endif %}
                         <a href="/profil" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Voir Profil</a>
+
                         <a href="/edit_profile" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Modifier Profil</a>
                         <a href="/logout" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">Se Déconnecter</a>
                     </div>

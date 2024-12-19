@@ -50,29 +50,36 @@
         </div>
     </div>
     
- 
-    <h2 class="mt-5 text-lg font-medium">Liste des Encadrements</h2>
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-            <thead>
-                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Mémoire</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Encadrant</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for encadrement in encadrements %}
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.id }}</td>
-                        <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.memoire.titre }}</td>
-                        <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.encadrant.nom }}</td>
-                        <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
-                            <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteEncadrement({{ encadrement.id }})">
-                                Supprimer
-                            </button>
-                            <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none"
+ <!-- Search and Filter Section for Encadrements -->
+<div class="mt-4">
+    <input type="text" id="encadrementSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('encadrementTable', 'encadrementSearchInput')">
+    <input type="text" id="encadrementMemoireFilter" placeholder="Filtrer par Mémoire" class="px-4 py-2 border rounded-md" onkeyup="filterTable('encadrementTable', 'encadrementMemoireFilter', 1)">
+    <input type="text" id="encadrementEncadrantFilter" placeholder="Filtrer par Encadrant" class="px-4 py-2 border rounded-md" onkeyup="filterTable('encadrementTable', 'encadrementEncadrantFilter', 2)">
+    <button onclick="clearFilters('encadrementTable', 'encadrementSearchInput', 'encadrementMemoireFilter', 'encadrementEncadrantFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
+
+<!-- Encadrements Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="encadrementTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Mémoire</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Encadrant</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for encadrement in encadrements %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.memoire.titre }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ encadrement.encadrant.nom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteEncadrement({{ encadrement.id }})">
+                            Supprimer
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" 
                             data-bs-toggle="modal" 
                             data-bs-target="#editEncadrementModal"
                             data-encadrement_id="{{ encadrement.id }}"
@@ -80,23 +87,21 @@
                             data-encadrant="{{ encadrement.encadrant.id }}">
                             Modifier
                         </button>
-                        
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% if messages %}
-<div class="messages" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;">>
-    {% for message in messages %}
-        <p>{{ message }}</p>
-    {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-{% endif %}
-
+    {% if messages %}
+    <div class="messages" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+   
     
-
     <!-- Modal pour ajouter un encadrement -->
     <div class="modal fade" id="addEncadrementModal" tabindex="-1" aria-labelledby="addEncadrementModalLabel" aria-hidden="true">
         <div class="modal-dialog">

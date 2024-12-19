@@ -1,0 +1,108 @@
+<section x-show="activeSection === 'DOMAINES'" class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
+    <h2 class="text-xl font-semibold mb-4">LISTE LES DOMAINES</h2>
+   
+<!-- Bouton pour ajouter un mémoire -->
+<button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#adddomaineModal">
+    Ajouter un domaine
+</button>
+   
+
+    <!-- Search and Filter Section -->
+<div class="mt-4">
+    <input type="text" id="DOMAINESearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('DOMAINETable', 'DOMAINESearchInput')">
+</div>
+
+<!-- Téléchargements Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="DOMAINETable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DOMAINE</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ACTIONS</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for domaine in domaines %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ domaine.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ domaine.nom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deletedomaine({{ domaine.id }})">
+                            Supprimer
+                        </button>
+                        <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#editdomaineModal"
+                            data-id="{{ domaine.id }}"
+                            data-nom="{{ domaine.nom }}"
+                        >
+                            Modifier
+                        </button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- Modal pour modifier un mémoire -->
+<div class="modal fade" id="editdomaineModal" tabindex="-1" aria-labelledby="editdomaineModalLabel" aria-hidden="true">
+    <div class="modal-dialog">DOMAINES
+        <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editdomaineModalLabel">Modifier le domaine</h5>
+                <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form  class="myForm"id="editdomaineForm" action="{% url 'edit_domaine' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="domaine_id" name="domaine_id">
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">nom</label>
+                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="nom" name="nom" required>
+                    </div>
+                   
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                        Enregistrer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un mémoire -->
+<div class="modal fade" id="adddomaineModal" tabindex="-1" aria-labelledby="adddomaineModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adddomaineModalLabel">Ajouter un Domaine</h5>
+                <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="myForm" id="adddomaineForm" enctype="multipart/form-data" action="{% url 'add_domaine' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">nom</label>
+                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="nom" name="nom" required>
+                    </div>
+                   
+                    
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                        Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ovm" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
+
+<!-- Infobulle -->
+<div id="tolm" class="tooltip" style="display:none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background-color: #4CAF50; color: white; border-radius: 5px; z-index: 10000;">
+<span id="mesm"></span>
+<button onclick="closeTooltip('ovm','tolm')">Fermer</button>
+</div>
+    
+</section>

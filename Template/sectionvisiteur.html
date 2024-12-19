@@ -1,39 +1,38 @@
 <section x-show="activeSection === 'visiteurs'" class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
-
+    <h2 class="text-xl font-semibold mb-4">LISTE DES VISITEURS </h2>
    
 
    
 
-    
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-            <thead>
-                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">EMAIL</th>
+    <!-- Search and Filter Section -->
+<div class="mt-4">
+    <input type="text" id="visiteurSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('visiteurTable', 'visiteurSearchInput')">
+    <input type="text" id="visiteurEmailFilter" placeholder="Filtrer par Email" class="px-4 py-2 border rounded-md" onkeyup="filterTable('visiteurTable', 'visiteurEmailFilter', 1)">
+    <input type="text" id="visiteurdateFilter" placeholder="Filtrer par date" class="px-4 py-2 border rounded-md" onkeyup="filterTable('visiteurTable', 'visiteurdateFilter', 2)">
+    <button onclick="clearFilters('visiteurTable', 'visiteurSearchInput', 'visiteurEmailFilter','visiteurdateFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
 
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DATE</th>
-                    
-                </tr>
-            </thead>
-            <tbody>
-                {% for users in visiteurs %}
-              
-                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+<!-- Visiteurs Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="visiteurTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">EMAIL</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for users in visiteurs %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.emailv}}</td>
-
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.datev}}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.emailv }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.datev }}</td>
                 </tr>
-
-                
-              
-               
-              
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
     
 

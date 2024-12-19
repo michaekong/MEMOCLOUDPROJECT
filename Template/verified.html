@@ -76,6 +76,10 @@
                 <input type="text" name="verification_code" class="input-field" placeholder="Entrez votre code" required>
             </div>
             <button type="submit" class="verify-button">Vérifier</button>
+            <div>
+                <a href="{% url 'send_welcome_email' %}" class="register-link">je n'ai pas recu de mail ?renvoyer</a>
+            </div>
+
         </form>
     </div>
 </body>

@@ -8,81 +8,76 @@
 
     <!-- Liste des utilisateurs -->
     <h2 class="mt-5 text-lg font-medium">Liste des Utilisateurs</h2>
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-            <thead>
-                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Nom</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Prénom</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Email</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Type</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for users in utilisateurs %}
-              
-                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+ <!-- Search and Filter Section -->
+<div class="mt-4">
+    <input type="text" id="utilisateurSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('utilisateurTable', 'utilisateurSearchInput')">
+    <input type="text" id="utilisateurEmailFilter" placeholder="Filtrer par Email" class="px-4 py-2 border rounded-md" onkeyup="filterTable('utilisateurTable', 'utilisateurEmailFilter', 3)">
+    <input type="text" id="utilisateurTypeFilter" placeholder="Filtrer par Type" class="px-4 py-2 border rounded-md" onkeyup="filterTable('utilisateurTable', 'utilisateurTypeFilter', 4)">
+    <button onclick="clearFilters('utilisateurTable', 'utilisateurSearchInput', 'utilisateurEmailFilter', 'utilisateurTypeFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
+
+<!-- Utilisateurs Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="utilisateurTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Nom</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Prénom</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Email</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Type</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for users in utilisateurs %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.nom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.prenom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.email }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.type }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
-                        {% if user.type == "superadmin"  %}
-                       
-                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
-                            Supprimer
-                        </button>
-                      
-                        <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserModal"
-                            data-id="{{ users.id }}"
-                            data-nom="{{ users.nom }}"
-                            data-prenom="{{ users.prenom }}"
-                            data-email="{{ users.email }}"
-                            data-birthday="{{ users.birthday }}"
-                            data-sexe="{{ users.sexe }}"
-                            data-type="{{ users.type }}"
-                            data-linkedin="{{ users.realisation_linkedin }}">
-                            Modifier
-                        </button>
-                    
-
-
-                         {% else %}
-                         {% if user.type == "admin"  and users.type == "standard"   %}
-                       
-                        <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
-                            Supprimer
-                        </button>
-                      
-                        <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserModal"
-                            data-id="{{ users.id }}"
-                            data-nom="{{ users.nom }}"
-                            data-prenom="{{ users.prenom }}"
-                            data-email="{{ users.email }}"
-                            data-birthday="{{ users.birthday }}"
-                            data-sexe="{{ users.sexe }}"
-                            data-type="{{ users.type }}"
-                            data-linkedin="{{ users.realisation_linkedin }}">
-                            Modifier
-                        </button>
+                        {% if user.type == "superadmin" %}
+                            <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
+                                Supprimer
+                            </button>
+                            <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                data-id="{{ users.id }}"
+                                data-nom="{{ users.nom }}"
+                                data-prenom="{{ users.prenom }}"
+                                data-email="{{ users.email }}"
+                                data-birthday="{{ users.birthday }}"
+                                data-sexe="{{ users.sexe }}"
+                                data-type="{{ users.type }}"
+                                data-linkedin="{{ users.realisation_linkedin }}">
+                                Modifier
+                            </button>
                         {% else %}
-                        
-                        {% endif %}
+                            {% if user.type == "admin" and users.type == "standard" %}
+                                <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
+                                    Supprimer
+                                </button>
+                                <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                    data-id="{{ users.id }}"
+                                    data-nom="{{ users.nom }}"
+                                    data-prenom="{{ users.prenom }}"
+                                    data-email="{{ users.email }}"
+                                    data-birthday="{{ users.birthday }}"
+                                    data-sexe="{{ users.sexe }}"
+                                    data-type="{{ users.type }}"
+                                    data-linkedin="{{ users.realisation_linkedin }}">
+                                    Modifier
+                                </button>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-                
-              
-               
-              
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
     <!-- Modal pour modifier un utilisateur -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">

@@ -4,37 +4,36 @@
 
    
 
-    <!-- Liste des utilisateurs -->
-    <h2 class="mt-5 text-lg font-medium">Liste des Telechargements</h2>
-    <div class="overflow-x-auto mt-4">
-        <table class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
-            <thead>
-                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">EMAIL</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">MEMOIRE TELECHARGER</th>
-                    <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DATE</th>
-                    
-                </tr>
-            </thead>
-            <tbody>
-                {% for users in telechargement %}
-              
-                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+    <!-- Search and Filter Section -->
+<div class="mt-4">
+    <input type="text" id="telechargementSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('telechargementTable', 'telechargementSearchInput')">
+    <input type="text" id="telechargementEmailFilter" placeholder="Filtrer par Email" class="px-4 py-2 border rounded-md" onkeyup="filterTable('telechargementTable', 'telechargementEmailFilter', 1)">
+    <input type="text" id="telechargementMemoireFilter" placeholder="Filtrer par Mémoire" class="px-4 py-2 border rounded-md" onkeyup="filterTable('telechargementTable', 'telechargementMemoireFilter', 2)">
+    <button onclick="clearFilters('telechargementTable', 'telechargementSearchInput', 'telechargementEmailFilter', 'telechargementMemoireFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
+
+<!-- Téléchargements Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="telechargementTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">EMAIL</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">MEMOIRE TÉLÉCHARGÉE</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">DATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for users in telechargement %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.emailt}}</td>
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.memoire.titre}}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.emailt }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.memoire.titre }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.datet }}</td>
                 </tr>
-
-                
-              
-               
-              
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
     
 </section>

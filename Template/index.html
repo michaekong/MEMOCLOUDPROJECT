@@ -1,123 +1,114 @@
-{% load static %}
-
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test du Tableau de Bord Avancé</title>
+    <title>Bienvenue sur MemoCloud</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --text-primary: #e6f1ff;
+            --text-secondary: #8892b0;
+            --accent-primary: #64ffda;
+            --btn-hover: #2d8b8f;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fc;
+            font-family: 'Space Grotesk', sans-serif;
             margin: 0;
             padding: 0;
-        }
-        #dashboardContainer {
-            width: 100%;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             height: 100vh;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .hero-container {
+            max-width: 800px;
             padding: 20px;
-            box-sizing: border-box;
+            border-radius: 12px;
+            background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        .hero-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--accent-primary);
+            text-shadow: 0 4px 10px rgba(100, 255, 218, 0.5);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            color: var(--text-secondary);
+        }
+
+        .get-started-btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+            border-radius: 30px;
+            text-decoration: none;
+            box-shadow: 0 6px 15px rgba(100, 255, 218, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .get-started-btn:hover {
+            background: var(--btn-hover);
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(100, 255, 218, 0.6);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+
+        footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div id="dashboardContainer"></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Importation du fichier contenant votre classe JavaScript -->
-
-    <script>
-        // Initialisation du tableau de bord et ajout des graphiques
-        const dashboard = new AdvancedDashboard('dashboardContainer');
-
-        // Exemple de graphique linéaire
-        dashboard.addChart('line', {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            datasets: [{
-                label: 'Ventes',
-                data: [10, 20, 30, 40, 50]
-            }]
-        }, { 
-            title: 'Graphique Linéaire',
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique à barres
-        dashboard.addChart('bar', {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            datasets: [{
-                label: 'Revenus',
-                data: [15, 25, 35, 45, 55]
-            }]
-        }, { 
-            title: 'Graphique à Barres', 
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique à secteurs
-        dashboard.addChart('pie', {
-            labels: ['Rouge', 'Bleu', 'Vert'],
-            datasets: [{
-                data: [300, 50, 100]
-            }]
-        }, { 
-            title: 'Graphique à Secteurs', 
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique radar
-        dashboard.addChart('radar', {
-            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            datasets: [{
-                label: 'Performance',
-                data: [80, 70, 90, 60, 85]
-            }]
-        }, { 
-            title: 'Graphique Radar',
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique polar area
-        dashboard.addChart('polarArea', {
-            labels: ['A', 'B', 'C', 'D', 'E'],
-            datasets: [{
-                data: [40, 60, 80, 90, 55]
-            }]
-        }, { 
-            title: 'Graphique Polar Area',
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique doughnut
-        dashboard.addChart('doughnut', {
-            labels: ['Option A', 'Option B', 'Option C'],
-            datasets: [{
-                data: [25, 35, 40]
-            }]
-        }, { 
-            title: 'Graphique Doughnut',
-             // Couleurs spécifiées
-        });
-
-        // Exemple de graphique nuage de points (scatter)
-        dashboard.addChart('scatter', {
-            datasets: [{
-                label: 'Nuage de Points',
-                data: [
-                    { x: 1, y: 10 },
-                    { x: 2, y: 20 },
-                    { x: 3, y: 30 },
-                    { x: 4, y: 40 },
-                    { x: 5, y: 50 }
-                ]
-            }]
-        }, { 
-            title: 'Graphique Nuage de Points',
-             // Couleurs spécifiées
-        });
-
-    </script>
+    <div class="hero-container">
+        <h1 class="hero-title">Bienvenue sur MemoCloud</h1>
+        <p class="hero-subtitle">La plateforme idéale pour consulter des  mémoires d'ainee accademique.</p>
+        <a href="login" class="get-started-btn">Get Started</a>
+        <footer>
+            <p>Besoin d'aide ? <a href="memocloudenstp@gmail.com">Contactez-nous</a></p>
+        </footer>
+    </div>
 </body>
 </html>
