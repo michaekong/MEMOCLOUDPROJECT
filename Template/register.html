@@ -40,11 +40,14 @@
             background-color: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+            overflow-x: hidden;
+            height: 100%; /* S'assurer que le corps prend toute la hauteur de l'écran */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            flex-direction: column; /* Permet de centrer tout le contenu sur l'écran */
         }
 
         .register-container {
@@ -53,9 +56,11 @@
             border-radius: 12px;
             border: 1px solid rgba(100, 255, 218, 0.1);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 90%;
+            width: 100%;
             max-width: 600px;
             text-align: center;
+            overflow-y: auto; /* Permet de scroller si nécessaire */
+            max-height: 90vh; /* Limite la hauteur du formulaire à 90% de la hauteur de l'écran */
         }
 
         .register-title {
@@ -69,10 +74,12 @@
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .form-row.full-width {
             flex-direction: column;
+            width: 100%;
         }
 
         .input-field {
@@ -84,6 +91,7 @@
             color: var(--text-primary);
             font-size: 1em;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .input-field:focus {
@@ -144,6 +152,7 @@
         @media (max-width: 768px) {
             .form-row {
                 flex-direction: column;
+                gap: 10px;
             }
 
             .register-title {
@@ -151,6 +160,11 @@
             }
 
             .register-button {
+                font-size: 1em;
+            }
+
+            .input-field {
+                padding: 12px;
                 font-size: 1em;
             }
         }
@@ -187,7 +201,6 @@
                 <select name="type" class="input-field" required>
                     <option value="" disabled selected>Type d'utilisateur</option>
                     <option value="standard">Standard</option>
-                    
                 </select>
             </div>
             <div class="form-row full-width">

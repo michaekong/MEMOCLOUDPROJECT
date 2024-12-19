@@ -47,7 +47,7 @@
                     </button>
                 </li>
                 <li>
-                    <button @click="activeSection = 'DOMAINES'; adminMenu = false"
+                    <button @click="activeSection = 'domaine'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Voir les Domaines
                     </button>
@@ -90,78 +90,81 @@
                 </button>
             </div>
         
-         <!-- Statistiques Section -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i> <!-- Utilisez cette icône -->
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-file-alt text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-user-tie text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Commentaires</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-comments text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Domaines</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-globe text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
-        </div>
-    </div>
-
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-chart-line text-xl text-gray-800 dark:text-white"></i> <!-- Remplacez avec cette icône -->
-        </div>
-    </div>
-</div>
+            <!-- Statistiques Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Users -->
+                        <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Mémoires -->
+                        <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Encadrements -->
+                        <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Téléchargements -->
+                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">COMMENTAIRES</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Téléchargements -->
+                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">DOMAINES</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom}}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Téléchargements -->
+                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
+                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+                        <!-- Icon for Total Visites (Visitors) -->
+                        <i class="fas fa-user text-xl text-gray-800 dark:text-white"></i>
+                    </div>
+                </div>
+                
+            </div>
+           
     
         
           

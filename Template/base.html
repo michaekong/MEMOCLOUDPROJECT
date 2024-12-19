@@ -54,6 +54,7 @@
     z-index: 9998;
     display: none; /* Initialement caché */
 }
+
 body {
     background-color: #f4f6f9;
 }
@@ -181,6 +182,20 @@ body {
         th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
         th { background-color: #f2f2f2; cursor: pointer; }
         .hidden { display: none; }
+        
+        .scrollable-container {
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .scrollable-container input {
+            margin-right: 10px;
+        }
+        
+        .scrollable-container label {
+            display: inline-block;
+        }
         
     </style>
 </head>

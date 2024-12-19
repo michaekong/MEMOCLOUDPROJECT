@@ -466,31 +466,45 @@ def add_user(request):
         return redirect('admins')  # Redirection après l'opération
 
 # Ajouter un mémoire
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Memoire, Domaine, UserProfile
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Memoire, Domaine, UserProfile
+
 def add_memoire(request):
     if request.method == 'POST':
-        
         try:
             auteur_id = request.POST.get('auteur')
             auteur = get_object_or_404(UserProfile, id=auteur_id)
+            
+            # Récupérer les domaines sélectionnés depuis les cases à cocher
+            domaines_ids = request.POST.getlist('domaines')  # Liste des IDs des domaines sélectionnés
+            domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les objets Domaine correspondants
+
             if 'lien_telecharger' in request.FILES:
-                
                 fich = request.FILES.get('lien_telecharger')
-                print(fich)
-            Memoire.objects.create(
+                print(fich)  # Pour déboguer, vous pouvez afficher le fichier téléchargé
+
+            # Création de l'objet Memoire
+            memoire = Memoire.objects.create(
                 titre=request.POST.get('titre'),
-                domaine=request.POST.get('domaine'),
                 annee_publication=request.POST.get('annee_publication'),
                 images=request.FILES.get('images'),
                 auteur=auteur,
                 resume=request.POST.get('resume'),
-                
-                
-                fichier_memoire = fich
-                
+                fichier_memoire=fich
             )
+            
+            # Associer les domaines sélectionnés à ce mémoire
+            memoire.domaines.set(domaines)  # Utilisation de la méthode set() pour associer les domaines
+            memoire.save()
+
             return redirect("admins")
-        except :
-            messages.error(request, "erreur d'ajout du lien d'encadrement.")
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'ajout du mémoire: {str(e)}")
             return redirect("admins")
 def add_domaine(request):
     if request.method == 'POST':
@@ -544,28 +558,45 @@ def edit_user(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 # Modifier un mémoire
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from .models import Memoire, UserProfile, Domaine
+from django.core.exceptions import ValidationError
+
 def edit_memoire(request):
     if request.method == 'POST':
         try:
             memoire_id = request.POST.get('memoire_id')
             memoire = get_object_or_404(Memoire, id=memoire_id)
             memoire.titre = request.POST.get('titre')
-            memoire.domaine = request.POST.get('domaine')
             memoire.annee_publication = request.POST.get('annee_publication')
             memoire.resume = request.POST.get('resume')
-            if 'lien_telecharger' in request.FILES:
-                
-                memoire.fichier_memoire = request.FILES.get('lien_telecharger')
-                print(memoire.fichier_memoire)
+            
+            # Mettre à jour l'image (si présente)
             if 'images' in request.FILES:
                 memoire.images = request.FILES.get('images')
-                print(memoire.images)
+
+            # Mettre à jour le fichier du mémoire (si présent)
+            if 'lien_telecharger' in request.FILES:
+                memoire.fichier_memoire = request.FILES.get('lien_telecharger')
+
+            # Mettre à jour l'auteur
             auteur_id = request.POST.get('auteur')
             memoire.auteur = get_object_or_404(UserProfile, id=auteur_id)
+            
+            # Mettre à jour les domaines associés au mémoire
+            domaines_ids = request.POST.getlist('domaines')  # Liste des domaines sélectionnés
+            domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les domaines sélectionnés
+            memoire.domaines.set(domaines)  # Mettre à jour la relation ManyToMany
+
+            # Sauvegarder le mémoire modifié
             memoire.save()
+
             return JsonResponse({'status': 'success', 'message': 'Mémoire modifié avec succès.'})
+        
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+
 def edit_domaine(request):
     if request.method == 'POST':
         try:

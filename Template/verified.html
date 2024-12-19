@@ -73,7 +73,7 @@
         <form action="verification_page" method="POST">
             {% csrf_token %}
             <div class="form-row">
-                <input type="text" name="verification_code" class="input-field" placeholder="Entrez votre code" required>
+                <input type="text" name="verification_code" class="input-field" placeholder="Entrez votre code recu par mail." required>
             </div>
             <button type="submit" class="verify-button">Vérifier</button>
             <div>

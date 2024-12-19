@@ -57,110 +57,160 @@
 </div>
 
 
-    <!-- Modal pour modifier un mémoire -->
-    <div class="modal fade" id="editMemoireModal" tabindex="-1" aria-labelledby="editMemoireModalLabel" aria-hidden="true">
-        <div class="modal-dialog">Memoire
-            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editMemoireModalLabel">Modifier le Mémoire</h5>
-                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form  class="myForm"id="editMemoireForm" action="{% url 'edit_memoire' %}" method="POST" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <input type="hidden" id="memoire_id" name="memoire_id">
-                        <div class="mb-3">
-                            <label for="titre" class="form-label">Titre</label>
-                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+   <!-- Modal pour modifier un mémoire -->
+<div class="modal fade" id="editMemoireModal" tabindex="-1" aria-labelledby="editMemoireModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMemoireModalLabel">Modifier le Mémoire</h5>
+                <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="myForm" id="editMemoireForm" action="{% url 'edit_memoire' %}" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="memoire_id" name="memoire_id">
+                    
+                    <!-- Champ Titre -->
+                    <div class="mb-3">
+                        <label for="titre" class="form-label">Titre</label>
+                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+                    </div>
+                    
+                    <!-- Champ Domaine (Multiple Selection) -->
+                    <div class="mb-3">
+                        <label class="form-label">Domaines</label><br>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            {% for domaine in domaines %}
+                            <div>
+                                <input type="checkbox" name="domaines" value="{{ domaine.id }}" id="domaine_{{ domaine.id }}" 
+                                {% if domaine in memoire.domaines.all %}checked{% endif %}>
+                                <label for="domaine_{{ domaine.id }}">{{ domaine.nom }}</label>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            <label for="domaine" class="form-label">Domaine</label>
-                            <input type="text" class="form-control bg-gray-100 darMemoirek:bg-gray-700 dark:text-gray-300" id="domaine" name="domaine" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="annee_publication" class="form-label">Année de publication</label>
-                            <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="resume" class="form-label">Résumé</label>
-                            <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="lien_telecharger" class="form-label">emplacement du memoire</label>
-                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="images" class="form-label">Image</label>
-                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="auteur" class="form-label">Auteur</label>
-                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
-                                {% for user in utilisateurs %}
-                                <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
-                            Enregistrer
-                        </button>
-                    </form>
-                </div>
+                    </div>
+                    
+                
+                    <!-- Champ Année de Publication -->
+                    <div class="mb-3">
+                        <label for="annee_publication" class="form-label">Année de publication</label>
+                        <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
+                    </div>
+                    
+                    <!-- Champ Résumé -->
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">Résumé</label>
+                        <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
+                    </div>
+                    
+                    <!-- Champ Lien de téléchargement (fichier du mémoire) -->
+                    <div class="mb-3">
+                        <label for="lien_telecharger" class="form-label">Emplacement du mémoire</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger">
+                    </div>
+                    
+                    <!-- Champ Image -->
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Image</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images">
+                    </div>
+                    
+                    <!-- Champ Auteur -->
+                    <div class="mb-3">
+                        <label for="auteur" class="form-label">Auteur</label>
+                        <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
+                            {% for user in utilisateurs %}
+                                <option value="{{ user.id }}" {% if user.id == memoire.auteur.id %}selected{% endif %}>{{ user.prenom }} {{ user.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Bouton de soumission -->
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                        Enregistrer
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
     <!-- Modal pour ajouter un mémoire -->
-    <div class="modal fade" id="addMemoireModal" tabindex="-1" aria-labelledby="addMemoireModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addMemoireModalLabel">Ajouter un Mémoire</h5>
-                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form class="myForm" id="addMemoireForm" enctype="multipart/form-data" action="{% url 'add_memoire' %}" method="POST">
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            <label for="titre" class="form-label">Titre</label>
-                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+<div class="modal fade" id="addMemoireModal" tabindex="-1" aria-labelledby="addMemoireModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMemoireModalLabel">Ajouter un Mémoire</h5>
+                <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="myForm" id="addMemoireForm" enctype="multipart/form-data" action="{% url 'add_memoire' %}" method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Champ Titre -->
+                    <div class="mb-3">
+                        <label for="titre" class="form-label">Titre</label>
+                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Domaines</label><br>
+                        <!-- Utilisation de la classe CSS pour le défilement -->
+                        <div class="scrollable-container">
+                            {% for domaine in domaines %}
+                            <div>
+                                <input type="checkbox" name="domaines" value="{{ domaine.id }}" id="domaine_{{ domaine.id }}" 
+                                {% if domaine in memoire.domaines.all %}checked{% endif %}>
+                                <label for="domaine_{{ domaine.id }}">{{ domaine.nom }}</label>
+                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="mb-3">
-                            <label for="domaine" class="form-label">Domaine</label>
-                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="domaine" name="domaine" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="annee_publication" class="form-label">Année de publication</label>
-                            <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="resume" class="form-label">Résumé</label>
-                            <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="lien_telecharger" class="form-label">emplacement du memoire</label>
-                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="images" class="form-label">Image</label>
-                            <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images"required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="auteur" class="form-label">Auteur</label>
-                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
-                                {% for user in utilisateurs %}
+                    </div>
+                    
+
+                    <!-- Champ Année de Publication -->
+                    <div class="mb-3">
+                        <label for="annee_publication" class="form-label">Année de publication</label>
+                        <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
+                    </div>
+                    
+                    <!-- Champ Résumé -->
+                    <div class="mb-3">
+                        <label for="resume" class="form-label">Résumé</label>
+                        <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
+                    </div>
+
+                    <!-- Champ Lien de téléchargement (fichier du mémoire) -->
+                    <div class="mb-3">
+                        <label for="lien_telecharger" class="form-label">Emplacement du mémoire</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger" required>
+                    </div>
+                    
+                    <!-- Champ Image -->
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Image</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="images" name="images" required>
+                    </div>
+                    
+                    <!-- Champ Auteur -->
+                    <div class="mb-3">
+                        <label for="auteur" class="form-label">Auteur</label>
+                        <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="auteur" name="auteur" required>
+                            {% for user in utilisateurs %}
                                 <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
-                            Ajouter
-                        </button>
-                    </form>
-                </div>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Bouton de soumission -->
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                        Ajouter
+                    </button>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
     <div id="ov" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
 
 <!-- Infobulle -->
