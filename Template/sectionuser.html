@@ -124,6 +124,10 @@
                             <option value="admin">Administrateur</option>
                             <option value="superadmin">superAdministrateur</option>
                             {% endif %}
+                            {% if user.type == 'admin' %}
+                    
+                            <option value="admin">Administrateur</option>
+                    {% endif %}
                             </select>
                         </div>
 

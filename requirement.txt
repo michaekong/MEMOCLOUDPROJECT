@@ -1,5 +1,708 @@
-asgiref==3.8.1
-Django==5.1.4
-pillow==11.0.0
-sqlparse==0.5.3
-typing_extensions==4.12.2
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="mb-4">
+        <button class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">
+            <i class="fa fa-filter"></i> Filtrer les mémoires
+        </button>
+    </div>
+
+    <!-- Formulaire de filtrage qui se cache au départ -->
+    <div id="filterForm" >
+        <form method="GET" action="{% url 'liste_memoires' %}">
+            <!-- Recherche par mot-clé -->
+            <div class="form-group">
+                <label for="q"  >Rechercher</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ query_params.q }}" placeholder="Rechercher un titre, un auteur, etc.">
+            </div>
+
+            <!-- Filtre par domaine -->
+            <div class="form-group">
+                <label for="domaine"  >Domaine</label>
+                <select class="form-control" id="domaine" name="domaine">
+                    <option value="">Sélectionner un domaine</option>
+                    {% for domaine in domaines %}
+                        <option value="{{ domaine.id }}" {% if domaine.id == query_params.domaine %}selected{% endif %}>{{ domaine.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par année -->
+            <div class="form-group">
+                <label for="annee"  >Année de publication</label>
+                <select class="form-control" id="annee" name="annee">
+                    <option value="">Sélectionner une année</option>
+                    {% for annee in annees %}
+                        <option value="{{ annee }}" {% if annee == query_params.annee %}selected{% endif %}>{{ annee }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par encadrant -->
+            <div class="form-group">
+                <label for="encadreur" >Encadrant</label>
+                <select class="form-control" id="encadreur" name="encadreur">
+                    <option value="">Sélectionner un encadrant </option>
+                    {% for encadreur in encadreurs %}
+                        <option value="{{ encadreur.id }}" {% if encadreur.id == query_params.encadreur %}selected{% endif %}>{{ encadreur.nom }} {{ encadreur.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par auteur -->
+            <div class="form-group">
+                <label for="auteur" class="font-weight-bold">Auteur</label>
+                <select class="form-control" id="auteur" name="auteur">
+                    <option value="">Sélectionner un auteur</option>
+                    {% for auteur in auteurs %}
+                        <option value="{{ auteur.id }}" {% if auteur.id == query_params.auteur %}selected{% endif %}>{{ auteur.nom }} {{ auteur.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">Filtrer</button>
+                <a href="{% url 'liste_memoires' %}" class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">Réinitialiser les filtres</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+       
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+
+        {% for memoire in memoires %}
+        <div class="mb-4">
+            {% if memoire.fichiers.image %}
+            <div class="relative h-40 overflow-hidden rounded-lg">
+                <img 
+                    src="{{ memoire.fichiers.image }}" 
+                    alt="{{ memoire.titre }}" 
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            {% endif %}
+            <h2 class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 9l-7-7-7 7m14 14H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"/>
+                </svg>
+                Titre: {{ memoire.titre }}
+            </h2>
+            
+            <p class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16M4 16h16M4 8h16" />
+                </svg>
+                Domaines: 
+                {% for domaine in memoire.domaines %}
+                    {{ domaine.nom }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            
+            <p class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-orange-500 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
+                </svg>
+                Par 
+                <a href="{{ memoire.auteur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                    {{ memoire.auteur.prenom }} {{ memoire.auteur.nom }}
+                </a>
+            </p>
+                <p class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M4 6h16M4 10h16M4 14h16M4 18h16M4 22h16" />
+                    </svg>
+                    <strong>Année de publication :</strong> {{ memoire.annee_publication }}
+                </p>
+            
+           
+                <p class="flex items-center text-lg">
+                    <svg class="w-6 h-6 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zM12 14v7M4 18h16" />
+                    </svg>
+                    <strong class="mr-1">Encadreurs :</strong>
+                    <span class="flex flex-wrap">
+                        {% for encadreur in memoire.encadreurs %}
+                            <a href="{{ encadreur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                                {{ encadreur.prenom }} {{ encadreur.nom }}{% if not forloop.last %}, {% endif %}
+                            </a>
+                        {% endfor %}
+                    </span>
+                </p>
+            
+
+            <div class="memoire-stats mt-2">
+                
+                 
+                
+               
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button data-toggle="modal" data-target="#commentModal{{ memoire.id }}" title="Cliquez pour voir les commentaires">
+                    <span class="note-badge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                        {% if memoire.statistiques.note_moyenne > 0 %}
+                                {{ memoire.statistiques.note_moyenne }}/5
+                            {% else %}
+                                Non noté
+                            {% endif %}
+                    </span>
+    
+                </button>
+                <a 
+                                        href="{{ memoire.fichier_memoire.url }}" 
+                                        class="btn btn-info d-flex align-items-center gap-2"
+                                        target="_blank"
+                                        download="fichier.pdf"
+                                        onclick="submitMemoireForm('{{ memoire.id }}')"
+                                        title="Télécharger le fichier pdf"
+                                    >
+                                        <!-- Logo de téléchargement -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                                        </svg>
+                                        <span class="text-lg font-semibold text-blue-800">+{{ memoire.statistiques.nbr_telechargements }}</span>
+                                    </a>
+                
+                <!-- Modal pour afficher les commentaires -->
+                <div class="modal fade" id="commentModal{{ memoire.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ memoire.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="commentModalLabel{{ memoire.id }}">Commentaires pour {{ memoire.titre }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                {% if memoire.notations %}
+                                    {% for notation in memoire.notations %}
+                                    <div class="comment border-b border-gray-300 dark:border-gray-700 pb-2 mb-2">
+                                        <p class="font-semibold text-gray-700 dark:text-gray-300">
+                                           
+                                            <a href="{{notation.utilisateur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                                                {{ notation.utilisateur.prenom }} {{ notation.utilisateur.nom }} :
+                                            </a>
+                                            
+                                          
+                                          
+                                        </p>
+                                        <p class="italic text-gray-600 dark:text-gray-400">{{ notation.commentaire }}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-500">
+                                            Note : {{ notation.note }} | Date : {{ notation.date }}
+                                        </p>
+                                        
+                                        
+                                    </div>
+                                    
+                                    {% endfor %}
+                                   
+                                    
+                                {% else %}
+                                    <p class="text-gray-600 dark:text-gray-400">Aucun commentaire disponible.</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button class="btn btn-info" data-toggle="modal" data-target="#addCommentModal{{ memoire.id }}">Ajouter un commentaire</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="addCommentModal{{ memoire.id }}" tabindex="-1" aria-labelledby="addCommentModalLabel{{ memoire.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCommentModalLabel{{ memoire.id }}">Ajouter un commentaire pour {{ memoire.titre }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'ajouter_commentaire' memoire.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="note" class="font-weight-bold">Note</label>
+                                        <div class="rating d-flex align-items-center">
+                                            <input type="hidden" id="note-{{ memoire.id }}" name="note" value="0">
+                                            <span class="star" data-value="1" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="2" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="3" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="4" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="5" data-id="{{ memoire.id }}">&#9733;</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="commentaire" class="font-weight-bold">Commentaire</label>
+                                        <textarea class="form-control" id="commentaire" name="commentaire" rows="4" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Ajouter le commentaire</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+             
+                
+                
+               <!-- 'mode' peut être 'day-mode' ou 'night-mode' -->
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resumeModal1">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                            <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
+                            <path d="M6 6h12M6 10h12M6 14h12M6 18h12"/>
+                        </svg>
+                        Résumé
+                    </button>
+               
+                    <div class="modal fade" id="resumeModal{{ memoire.id }}" tabindex="-1" aria-labelledby="resumeModalLabel{{ memoire.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="resumeModalLabel{{ memoire.id }}">Résumé du mémoire: {{ memoire.titre }}</h5>
+                                    <button type="button" class="close" aria-label="Close" onclick="closeModal('{{ memoire.id }}')">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    {{ memoire.resume|truncatewords:30 }} 
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onclick="closeModal('{{ memoire.id }}')">Fermer</button>
+                                    <a 
+                                        href="{{ memoire.fichier_memoire.url }}" 
+                                        class="btn btn-info d-flex align-items-center gap-2"
+                                        target="_blank"
+                                        download="fichier.pdf"
+                                        onclick="submitMemoireForm('{{ memoire.id }}')"
+                                        title="Télécharger le fichier pdf"
+                                    >
+                                        <!-- Logo de téléchargement -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                                        </svg>
+                                        <span class="text-lg font-semibold text-blue-800">Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                   
+                
+            <!-- Téléchargement -->
+<div class="flex justify-between items-center mt-6">
+
+    <form id="memoireForm" method="POST" action="{% url 'telecharger_pdf' %}" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="memoire_id" id="memoire_id">
+    </form>
+</div>
+            </div>
+            
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</div>
+
+
+
+<script>
+    function submitMemoireForm(memoireId) {
+        document.getElementById('memoire_id').value = memoireId;
+        document.getElementById('memoireForm').submit();
+    }
+    document.getElementById('toggleFilterForm').addEventListener('click', function() {
+        var filterForm = document.getElementById('filterForm');
+        if (filterForm.classList.contains('collapse')) {
+            filterForm.classList.remove('collapse');
+        } else {
+            filterForm.classList.add('collapse');
+        }
+    });
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function () {
+            const rating = this.getAttribute('data-value'); // Récupère la note sélectionnée
+            const memoireId = this.getAttribute('data-id'); // ID du mémoire pour distinguer les modaux
+            const hiddenInput = document.getElementById(`note-${memoireId}`); // Trouve le champ caché correspondant
+    
+            // Met à jour la valeur du champ caché
+            hiddenInput.value = rating;
+    
+            // Change l'apparence des étoiles sélectionnées
+            document.querySelectorAll(`.star[data-id="${memoireId}"]`).forEach(s => {
+                s.style.color = s.getAttribute('data-value') <= rating ? 'gold' : 'gray';
+            });
+        });
+    });
+   
+    function closeModal(memoireId) {
+        $('#resumeModal' + memoireId).modal('hide');
+        $('.modal-backdrop').remove(); // Supprime le fond sombre manuellement
+    }
+    
+</script>
+
+{% endblock %}
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="mb-4">
+        <button class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">
+            <i class="fa fa-filter"></i> Filtrer les mémoires
+        </button>
+    </div>
+
+    <!-- Formulaire de filtrage qui se cache au départ -->
+    <div id="filterForm" >
+        <form method="GET" action="{% url 'liste_memoires' %}">
+            <!-- Recherche par mot-clé -->
+            <div class="form-group">
+                <label for="q"  >Rechercher</label>
+                <input type="text" class="form-control" id="q" name="q" value="{{ query_params.q }}" placeholder="Rechercher un titre, un auteur, etc.">
+            </div>
+
+            <!-- Filtre par domaine -->
+            <div class="form-group">
+                <label for="domaine"  >Domaine</label>
+                <select class="form-control" id="domaine" name="domaine">
+                    <option value="">Sélectionner un domaine</option>
+                    {% for domaine in domaines %}
+                        <option value="{{ domaine.id }}" {% if domaine.id == query_params.domaine %}selected{% endif %}>{{ domaine.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par année -->
+            <div class="form-group">
+                <label for="annee"  >Année de publication</label>
+                <select class="form-control" id="annee" name="annee">
+                    <option value="">Sélectionner une année</option>
+                    {% for annee in annees %}
+                        <option value="{{ annee }}" {% if annee == query_params.annee %}selected{% endif %}>{{ annee }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par encadrant -->
+            <div class="form-group">
+                <label for="encadreur" >Encadrant</label>
+                <select class="form-control" id="encadreur" name="encadreur">
+                    <option value="">Sélectionner un encadrant </option>
+                    {% for encadreur in encadreurs %}
+                        <option value="{{ encadreur.id }}" {% if encadreur.id == query_params.encadreur %}selected{% endif %}>{{ encadreur.nom }} {{ encadreur.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtre par auteur -->
+            <div class="form-group">
+                <label for="auteur" class="font-weight-bold">Auteur</label>
+                <select class="form-control" id="auteur" name="auteur">
+                    <option value="">Sélectionner un auteur</option>
+                    {% for auteur in auteurs %}
+                        <option value="{{ auteur.id }}" {% if auteur.id == query_params.auteur %}selected{% endif %}>{{ auteur.nom }} {{ auteur.prenom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">Filtrer</button>
+                <a href="{% url 'liste_memoires' %}" class="btn btn-outline-primary w-100" type="button" id="toggleFilterForm">Réinitialiser les filtres</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+       
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+
+        {% for memoire in memoires %}
+        <div class="mb-4">
+            {% if memoire.fichiers.image %}
+            <div class="relative h-40 overflow-hidden rounded-lg">
+                <img 
+                    src="{{ memoire.fichiers.image }}" 
+                    alt="{{ memoire.titre }}" 
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            {% endif %}
+            <h2 class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 9l-7-7-7 7m14 14H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"/>
+                </svg>
+                Titre: {{ memoire.titre }}
+            </h2>
+            
+            <p class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-500 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m-8-8h16M4 16h16M4 8h16" />
+                </svg>
+                Domaines: 
+                {% for domaine in memoire.domaines %}
+                    {{ domaine.nom }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            
+            <p class="text-lg font-semibold mt-2 mb-1 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-orange-500 dark:text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z" />
+                </svg>
+                Par 
+                <a href="{{ memoire.auteur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                    {{ memoire.auteur.prenom }} {{ memoire.auteur.nom }}
+                </a>
+            </p>
+                <p class="flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 2v4M8 2v4M4 6h16M4 10h16M4 14h16M4 18h16M4 22h16" />
+                    </svg>
+                    <strong>Année de publication :</strong> {{ memoire.annee_publication }}
+                </p>
+            
+           
+                <p class="flex items-center text-lg">
+                    <svg class="w-6 h-6 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zM12 14v7M4 18h16" />
+                    </svg>
+                    <strong class="mr-1">Encadreurs :</strong>
+                    <span class="flex flex-wrap">
+                        {% for encadreur in memoire.encadreurs %}
+                            <a href="{{ encadreur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                                {{ encadreur.prenom }} {{ encadreur.nom }}{% if not forloop.last %}, {% endif %}
+                            </a>
+                        {% endfor %}
+                    </span>
+                </p>
+            
+
+            <div class="memoire-stats mt-2">
+                
+                 
+                
+               
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <button data-toggle="modal" data-target="#commentModal{{ memoire.id }}" title="Cliquez pour voir les commentaires">
+                    <span class="note-badge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                        {% if memoire.statistiques.note_moyenne > 0 %}
+                                {{ memoire.statistiques.note_moyenne }}/5
+                            {% else %}
+                                Non noté
+                            {% endif %}
+                    </span>
+    
+                </button>
+                <a 
+                                        href="{{ memoire.fichier_memoire.url }}" 
+                                        class="btn btn-info d-flex align-items-center gap-2"
+                                        target="_blank"
+                                        download="fichier.pdf"
+                                        onclick="submitMemoireForm('{{ memoire.id }}')"
+                                        title="Télécharger le fichier pdf"
+                                    >
+                                        <!-- Logo de téléchargement -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                                        </svg>
+                                        <span class="text-lg font-semibold text-blue-800">+{{ memoire.statistiques.nbr_telechargements }}</span>
+                                    </a>
+                
+                <!-- Modal pour afficher les commentaires -->
+                <div class="modal fade" id="commentModal{{ memoire.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ memoire.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="commentModalLabel{{ memoire.id }}">Commentaires pour {{ memoire.titre }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                {% if memoire.notations %}
+                                    {% for notation in memoire.notations %}
+                                    <div class="comment border-b border-gray-300 dark:border-gray-700 pb-2 mb-2">
+                                        <p class="font-semibold text-gray-700 dark:text-gray-300">
+                                           
+                                            <a href="{{notation.utilisateur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                                                {{ notation.utilisateur.prenom }} {{ notation.utilisateur.nom }} :
+                                            </a>
+                                            
+                                          
+                                          
+                                        </p>
+                                        <p class="italic text-gray-600 dark:text-gray-400">{{ notation.commentaire }}</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-500">
+                                            Note : {{ notation.note }} | Date : {{ notation.date }}
+                                        </p>
+                                        
+                                        
+                                    </div>
+                                    
+                                    {% endfor %}
+                                   
+                                    
+                                {% else %}
+                                    <p class="text-gray-600 dark:text-gray-400">Aucun commentaire disponible.</p>
+                                {% endif %}
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                <button class="btn btn-info" data-toggle="modal" data-target="#addCommentModal{{ memoire.id }}">Ajouter un commentaire</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal fade" id="addCommentModal{{ memoire.id }}" tabindex="-1" aria-labelledby="addCommentModalLabel{{ memoire.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addCommentModalLabel{{ memoire.id }}">Ajouter un commentaire pour {{ memoire.titre }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'ajouter_commentaire' memoire.id %}">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="note" class="font-weight-bold">Note</label>
+                                        <div class="rating d-flex align-items-center">
+                                            <input type="hidden" id="note-{{ memoire.id }}" name="note" value="0">
+                                            <span class="star" data-value="1" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="2" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="3" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="4" data-id="{{ memoire.id }}">&#9733;</span>
+                                            <span class="star" data-value="5" data-id="{{ memoire.id }}">&#9733;</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="commentaire" class="font-weight-bold">Commentaire</label>
+                                        <textarea class="form-control" id="commentaire" name="commentaire" rows="4" required></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Ajouter le commentaire</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+
+             
+                
+                
+               <!-- 'mode' peut être 'day-mode' ou 'night-mode' -->
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resumeModal1">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                            <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
+                            <path d="M6 6h12M6 10h12M6 14h12M6 18h12"/>
+                        </svg>
+                        Résumé
+                    </button>
+               
+                    <div class="modal fade" id="resumeModal{{ memoire.id }}" tabindex="-1" aria-labelledby="resumeModalLabel{{ memoire.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="resumeModalLabel{{ memoire.id }}">Résumé du mémoire: {{ memoire.titre }}</h5>
+                                    <button type="button" class="close" aria-label="Close" onclick="closeModal('{{ memoire.id }}')">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    {{ memoire.resume|truncatewords:30 }} 
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" onclick="closeModal('{{ memoire.id }}')">Fermer</button>
+                                    <a 
+                                        href="{{ memoire.fichier_memoire.url }}" 
+                                        class="btn btn-info d-flex align-items-center gap-2"
+                                        target="_blank"
+                                        download="fichier.pdf"
+                                        onclick="submitMemoireForm('{{ memoire.id }}')"
+                                        title="Télécharger le fichier pdf"
+                                    >
+                                        <!-- Logo de téléchargement -->
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                                        </svg>
+                                        <span class="text-lg font-semibold text-blue-800">Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                   
+                
+            <!-- Téléchargement -->
+<div class="flex justify-between items-center mt-6">
+
+    <form id="memoireForm" method="POST" action="{% url 'telecharger_pdf' %}" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="memoire_id" id="memoire_id">
+    </form>
+</div>
+            </div>
+            
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</div>
+
+
+
+<script>
+    function submitMemoireForm(memoireId) {
+        document.getElementById('memoire_id').value = memoireId;
+        document.getElementById('memoireForm').submit();
+    }
+    document.getElementById('toggleFilterForm').addEventListener('click', function() {
+        var filterForm = document.getElementById('filterForm');
+        if (filterForm.classList.contains('collapse')) {
+            filterForm.classList.remove('collapse');
+        } else {
+            filterForm.classList.add('collapse');
+        }
+    });
+    document.querySelectorAll('.star').forEach(star => {
+        star.addEventListener('click', function () {
+            const rating = this.getAttribute('data-value'); // Récupère la note sélectionnée
+            const memoireId = this.getAttribute('data-id'); // ID du mémoire pour distinguer les modaux
+            const hiddenInput = document.getElementById(`note-${memoireId}`); // Trouve le champ caché correspondant
+    
+            // Met à jour la valeur du champ caché
+            hiddenInput.value = rating;
+    
+            // Change l'apparence des étoiles sélectionnées
+            document.querySelectorAll(`.star[data-id="${memoireId}"]`).forEach(s => {
+                s.style.color = s.getAttribute('data-value') <= rating ? 'gold' : 'gray';
+            });
+        });
+    });
+   
+    function closeModal(memoireId) {
+        $('#resumeModal' + memoireId).modal('hide');
+        $('.modal-backdrop').remove(); // Supprime le fond sombre manuellement
+    }
+    
+</script>
+
+{% endblock %}

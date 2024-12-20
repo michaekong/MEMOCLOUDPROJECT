@@ -3,7 +3,7 @@
 
 {% block content %}
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-    <div class="col-span-1 max-w-xs">
+    <div class="mb-4">
         <!-- Sidebar Menu -->
         <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
             <!-- Bouton pour afficher/masquer le menu -->
@@ -91,77 +91,85 @@
             </div>
         
             <!-- Statistiques Section -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Users -->
-                        <i class="fas fa-users text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Mémoires -->
-                        <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Encadrements -->
-                        <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Téléchargements -->
-                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">COMMENTAIRES</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Téléchargements -->
-                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">DOMAINES</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom}}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Téléchargements -->
-                        <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
-                <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-                    <div>
-                        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
-                        <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
-                    </div>
-                    <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-                        <!-- Icon for Total Visites (Visitors) -->
-                        <i class="fas fa-user text-xl text-gray-800 dark:text-white"></i>
-                    </div>
-                </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Total Utilisateurs -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-user-friends text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Total Mémoires -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Total Encadrements -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Téléchargements -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Total Commentaires -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Commentaires</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-comments text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Domaines -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Domaines</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-layer-group text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+    <!-- Total Visites -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
+        <div>
+            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
+            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
+            <i class="fas fa-eye text-xl text-gray-800 dark:text-white"></i>
+        </div>
+    </div>
+
+
                 
             </div>
            
@@ -482,36 +490,60 @@ $('#editUserForm').on('submit', function (event) {
         }
        
     }
-    function deletecomment(commentId) {
-       
+    function deletedomaine(domaineId) {
         
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire?')) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce domaine?')) {
             $.ajax({
-                url: '/delete_comment/',  // URL vers la vue delete_encadrement
+                url: '/delete_domaine/',  // URL vers la vue delete_encadrement
                 type: 'POST',
                 data: {
-                    'comment_id': commentId,
+                    'domaine_id': domaineId,
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 },
-                
                 success: function(response) {
                     if(response.status === 'success') {
                         // Exemple d'utilisation
 // Afficher une infobulle de succès
 
-                                    showTooltip("commentaire supprimer avec succès !", false,"ovc","tolc","mesc");
+                                    showTooltip("domaine supprimer avec succès !", false,"ovm","tolm","mesm");
                     } else {
-                        showTooltip("commentaire supprimer avec succès !", false,"ovc","tolc","mesc");
+                        showTooltip("domaine supprimer avec succès !", false,"ovm","tolm","mesm");
                     }
                 },
                 error: function(xhr, errmsg, err) {
-                   
-                    showTooltip(" erreurs  de supression du commentaire,Veuillez reessayer !", true,"ovc","tolc","mesc");
+                    showTooltip(" erreurs  de supression du domaine ,Veuillez reessayer !", true,"ovm","tolm","mesm");
                 }
             });
         }
        
     }
+    function deletecomment(commentId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer ce commentaire?')) {
+            const csrfToken = '{{ csrf_token }}'; // Utilisation du token CSRF
+            $.ajax({
+                url: '/delete_comment/',
+                type: 'POST',
+                data: {
+                    'comment_id': commentId,
+                    'csrfmiddlewaretoken': csrfToken
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        // Supprimer l'élément du DOM ou rafraîchir la liste
+                        showTooltip("Commentaire supprimé avec succès !", false, "ovc", "tolc", "mesc");
+                        $(`#comment-${commentId}`).remove(); // Exemple pour supprimer du DOM
+                    } else {
+                        showTooltip(response.message || "Erreur de suppression du commentaire.", true, "ovc", "tolc", "mesc");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.log("Erreur :", xhr.status, errmsg, err);
+                    showTooltip("Erreur de suppression du commentaire, veuillez réessayer !", true, "ovc", "tolc", "mesc");
+                }
+            });
+        }
+    }
+    
    
     function showEditUserForm() {
         document.getElementById("editUserForm").style.display = "block";

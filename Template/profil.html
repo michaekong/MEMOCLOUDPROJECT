@@ -1,26 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
-    <h2 class="text-lg font-semibold mt-4 mb-2 flex items-center">Mon Profil</h2>
-    <div class="flex flex-col md:flex-row items-center space-x-6">
-        <!-- Avatar -->
-        <div>
-            <img src="{{ user.photo_profil.url }}" alt="Avatar" class="w-24 h-24 rounded-full border border-gray-200 dark:border-gray-700">
+<div class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+    <!-- Titre -->
+    <h2 class="text-2xl font-bold mb-6 text-center">Mon Profil</h2>
+
+    <!-- Conteneur principal -->
+    <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+        <!-- Section Avatar -->
+        {% if user.photo_profil %}
+        <div class="flex-shrink-0">
+            <img src="{{ user.photo_profil.url }}" alt="Avatar" 
+                 class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
         </div>
-        <!-- Informations utilisateur -->
-        <div>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>Nom :</strong> {{ user.nom }} {{ user.prenom }}</p>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>Email :</strong> {{ user.email }}</p>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>Date de naissance :</strong> {{ user.birthday|date:"d/m/Y" }}</p>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>Sexe :</strong> {{ user.get_sexe_display }}</p>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>Type :</strong> {{ user.get_type_display }}</p>
-            <p class="text-lg font-semibold mt-4 mb-2 flex items-center"><strong>LinkedIn :</strong> <a href="{{ user.realisation_linkedin }}" target="_blank" class="text-blue-500">{{ user.realisation_linkedin }}</a></p>
-      </div>
+            {% endif %}
+        
+
+        <!-- Section Informations utilisateur -->
+        <div class="flex-grow">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-lg font-medium"><strong>Nom :</strong> {{ user.nom }} {{ user.prenom }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>Email :</strong> {{ user.email }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>Date de naissance :</strong> {{ user.birthday|date:"d/m/Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>Sexe :</strong> {{ user.get_sexe_display }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>Type :</strong> {{ user.get_type_display }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>LinkedIn :</strong> 
+                        <a href="{{ user.realisation_linkedin }}" target="_blank" class="text-blue-500 underline">
+                            {{ user.realisation_linkedin }}
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
+
     <!-- Bouton Modifier Profil -->
-    <div class="mt-6">
-        <a href="{% url 'edit_profile' %}" class="btn-primary px-4 py-2 rounded-md">Modifier Profil</a>
+    <div class="mt-8 text-center">
+        <a href="{% url 'edit_profile' %}" 
+           class="btn-primary px-6 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition">
+            Modifier Profil
+        </a>
     </div>
 </div>
 {% endblock content %}

@@ -40,6 +40,20 @@ class Domaine(models.Model):
 
     def __str__(self):
         return self.nom
+from django.db import models
+
+class UnverifiedUserProfile(models.Model):
+    nom = models.CharField(max_length=100)
+    prenom = models.CharField(max_length=100)
+    email = models.EmailField(unique=True)
+    birthday = models.DateField(null=True, blank=True)
+    sexe = models.CharField(max_length=1, choices=[('M', 'Masculin'), ('F', 'Féminin')])
+    type = models.CharField(max_length=50)
+    realisation_linkedin = models.URLField(null=True, blank=True)
+    photo_profil = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    password = models.CharField(max_length=255)  # Mot de passe haché
+    verification_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class Memoire(models.Model):
     titre = models.CharField(max_length=200)

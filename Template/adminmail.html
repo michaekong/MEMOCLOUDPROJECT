@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+    
+    <title>Notification d'action dans le système</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .email-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .email-body {
+            padding: 20px;
+        }
+        .email-footer {
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #777;
+            border-radius: 0 0 8px 8px;
+        }
+        .action-button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .action-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h2>Action importante réalisée sur le système</h2>
+        </div>
+        <div class="email-body">
+            <p><strong>Bonjour,</strong></p>
+            <p>Une action majeure a été réalisée dans le système :</p>
+            <ul>
+                <li><strong>Type d'action :</strong> {{ action_type }}</li>
+                <li><strong>Utilisateur responsable :</strong> {{ user.nom }} dont l'id est  {{ user.id }}</li>
+                <li><strong>Details de l'action :</strong> {{ action_details }}</li>
+            </ul>
+            <p>Pour plus de détails, veuillez consulter votre compte admins</a>.</p>
+
+           
+        </div>
+        <div class="email-footer">
+            <p>Merci de faire partie de notre équipe.</p>
+            <p>Ce message a été généré automatiquement. Ne répondez pas à cet e-mail.</p>
+        </div>
+    </div>
+</body>
+</html>

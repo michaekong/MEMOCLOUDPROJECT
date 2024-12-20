@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <style>
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            border: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .dark .card {
+            background: linear-gradient(145deg, #1f2937, #111827);
+            color: #e5e7eb;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .img-container {
+            position: relative;
+            height: 160px;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .img-container img {
+            transform: scale(1.05);
+        }
+
+        .btn-info {
+            background: linear-gradient(145deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(145deg, #2563eb, #1d4ed8);
+            transform: translateY(-2px);
+        }
+
+        .icon {
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover .icon {
+            transform: rotate(5deg);
+        }
+
+        .modal-content {
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .note-badge {
+            background: linear-gradient(145deg, #fbbf24, #f59e0b);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .author-link {
+            color: #3b82f6;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .author-link:hover {
+            color: #2563eb;
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal.show .modal-content {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-12 mb-4">
+                <h1 class="text-center fw-bold mb-5" style="background: linear-gradient(145deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Liste des Mémoires
+                </h1>
+            </div>
+
+            <!-- Exemple de carte mémoire -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card p-3">
+                    <div class="img-container mb-3">
+                        <img src="/api/placeholder/400/320" alt="Mémoire" />
+                    </div>
+                    
+                    <h2 class="h5 fw-bold d-flex align-items-center gap-2 mb-3">
+                        <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 9l-7-7-7 7m14 14H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v14a2 2 0 01-2 2z"/>
+                        </svg>
+                        Intelligence Artificielle et IoT
+                    </h2>
+
+                    <p class="d-flex align-items-center gap-2 mb-2">
+                        <svg class="icon text-success" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 4v16m-8-8h16M4 16h16M4 8h16"/>
+                        </svg>
+                        <span class="text-muted">Domaines:</span>
+                        IA, IoT, Big Data
+                    </p>
+
+                    <p class="d-flex align-items-center gap-2 mb-3">
+                        <svg class="icon text-primary" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 12c-4.418 0-8 3.582-8 8h16c0-4.418-3.582-8-8-8zM12 4a4 4 0 110 8 4 4 0 010-8z"/>
+                        </svg>
+                        Par <a href="#" class="author-link ms-1">John Doe</a>
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resumeModal1">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                                <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
+                                <path d="M6 6h12M6 10h12M6 14h12M6 18h12"/>
+                            </svg>
+                            Résumé
+                        </button>
+
+                        <span class="note-badge">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                            </svg>
+                            4.5/5
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Résumé -->
+    <div class="modal fade" id="resumeModal1" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Résumé du mémoire</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <a href="#" class="btn btn-info d-flex align-items-center gap-2">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                        </svg>
+                        Télécharger (125)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

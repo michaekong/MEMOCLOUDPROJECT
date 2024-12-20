@@ -32,6 +32,8 @@ urlpatterns = [
     path('eprofil',  profil,name="eprofil"),
     path('admins',  admins,name="admins"),
     path('admins/', admins, name='admins'),
+    path('memoire/<int:memoire_id>/ajouter_commentaire/', ajouter_commentaire, name='ajouter_commentaire'),
+
     path('delete_memoire/', delete_memoire, name='delete_memoire'),
     path('delete_user/', delete_user, name='delete_user'),
     path('delete_encadrement/', delete_encadrement, name='delete_encadrement'),
@@ -41,6 +43,7 @@ urlpatterns = [
     path('edit_user/', edit_user, name='edit_user'),
      path('edit_domaine/', edit_domaine, name='edit_domaine'),
      path('delete_domaine/', delete_domaine, name='delete_domaine'),
+     path('delete_comment/', delete_comment, name='delete_comment'),
      path('add_domaine/', add_domaine, name='add_domaine'),
     path('edit_memoire/', edit_memoire, name='edit_memoire'),
     path('edit_encadrement/', edit_encadrement, name='edit_encadrement'),
@@ -56,6 +59,8 @@ urlpatterns = [
     path('logout/',logout, name='logout'),
    
      path('send_welcome_email', send_welcome_email,name="send_welcome_email"),
+     path('send_admin_email', send_admin_email,name="send_admin_email"),
+     
     
 
 

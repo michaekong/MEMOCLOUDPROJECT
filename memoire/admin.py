@@ -53,3 +53,8 @@ class TelechargementAdmin(admin.ModelAdmin):
     list_display = ('memoire', 'emailt', 'datet')
     list_filter = ('datet',)
     search_fields = ('memoire__titre', 'emailt')
+@admin.register(UnverifiedUserProfile)
+class UnverifiedUserProfileAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'prenom', 'email', 'created_at', 'verification_code')
+    search_fields = ('nom', 'prenom', 'email')
+    list_filter = ('created_at',)

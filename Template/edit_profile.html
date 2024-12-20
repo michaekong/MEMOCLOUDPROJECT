@@ -1,95 +1,107 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
-    <h2 class="text-2xl font-semibold mb-4 text-center text-gray-800 dark:text-gray-100">Modifier Profil</h2>
+<div class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+    <!-- Titre principal -->
+    <h2 class="text-2xl font-bold mb-6 text-center">Modifier Profil</h2>
 
-    <!-- Formulaire de profil -->
-    <form method="POST" enctype="multipart/form-data" class="space-y-6" action="edit_profile">
+    <!-- Formulaire de modification de profil -->
+    <form method="POST" enctype="multipart/form-data" action="edit_profile" class="space-y-6">
         {% csrf_token %}
-        
-        <!-- Grille de profil -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-
-            <!-- Nom et Prénom -->
-            <div>
-                <label for="nom"class="text-lg font-semibold mt-4 mb-2 flex items-center">Nom</label>
+            <!-- Nom -->
+            <div class="mb4">
+                <label for="nom" class="block text-lg font-semibold mb-2">Nom</label>
                 <input 
                     type="text" 
                     name="nom" 
                     id="nom" 
                     value="{{ request.user.nom }}" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
-            <div>
-                <label for="prenom"class="text-lg font-semibold mt-4 mb-2 flex items-center">Prénom</label>
+            <!-- Prénom -->
+            <div class="mb4">
+                <label for="prenom" class="block text-lg font-semibold mb-2">Prénom</label>
                 <input 
                     type="text" 
                     name="prenom" 
                     id="prenom" 
                     value="{{ request.user.prenom }}" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
-            <!-- Date de naissance et Sexe -->
-            <div>
-                <label for="birthday"class="text-lg font-semibold mt-4 mb-2 flex items-center">Date de naissance</label>
+            <!-- Date de naissance -->
+            <div class="mb4">
+                <label for="birthday" class="block text-lg font-semibold mb-2">Date de naissance</label>
                 <input 
                     type="date" 
                     name="birthday" 
                     id="birthday" 
                     value="{{ user.birthday|date:'Y-m-d' }}" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
-            <div>
-                <label for="sexe"class="text-lg font-semibold mt-4 mb-2 flex items-center">Sexe</label>
+            <!-- Sexe -->
+            <div class="mb4">
+                <label for="sexe" class="block text-lg font-semibold mb-2">Sexe</label>
                 <select 
                     name="sexe" 
                     id="sexe" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
                     <option value="M" {% if request.user.sexe == 'M' %}selected{% endif %}>Masculin</option>
                     <option value="F" {% if request.user.sexe == 'F' %}selected{% endif %}>Féminin</option>
                 </select>
             </div>
 
-            <!-- Type et LinkedIn -->
-            <div>
-                <label for="type"class="text-lg font-semibold mt-4 mb-2 flex items-center">Type</label>
+            <!-- Type -->
+            <div class="mb4">
+                <label for="type" class="block text-lg font-semibold mb-2">Type</label>
                 <select 
                     name="type" 
                     id="type" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
-                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Admin</option>
-                    <option value="User" {% if request.user.type == 'User' %}selected{% endif %}>Utilisateur</option>
-                </select>
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    
+                    <option value="standard" {% if request.user.type == 'standard' %}selected{% endif %}>standard</option>
+                    {% if user.type %}{% endif %}
+                    {% if user.type == 'superadmin' %}
+                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Administrateur</option>
+                    <option value="superadmin" {% if request.user.type == 'superadmin' %}selected{% endif %}>SuperAdministrateur</option>
+                
+                    {% endif %}
+                    {% if user.type == 'admin' %}
+                    
+                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Administrateur</option>
+                   
+                    {% endif %}
+
+               </select>
             </div>
 
-            <div>
-                <label for="realisation_linkedin"class="text-lg font-semibold mt-4 mb-2 flex items-center">LinkedIn</label>
+            <!-- LinkedIn -->
+            <div class="mb4">
+                <label for="realisation_linkedin" class="block text-lg font-semibold mb-2">LinkedIn</label>
                 <input 
                     type="url" 
                     name="realisation_linkedin" 
                     id="realisation_linkedin" 
                     value="{{ request.user.realisation_linkedin }}" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
             <!-- Photo de profil -->
-            <div>
-                <label for="photo_profil"class="text-lg font-semibold mt-4 mb-2 flex items-center">Photo de profil</label>
+            <div class="mb4">
+                <label for="photo_profil" class="block text-lg font-semibold mb-2">Photo de profil</label>
                 <input 
                     type="file" 
                     name="photo_profil" 
                     id="photo_profil" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
-
         </div>
 
-        <div class="mt-6 text-center">
+        <!-- Bouton sauvegarder -->
+        <div class="text-center mt-6">
             <button 
                 type="submit" 
                 class="px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 transition">
@@ -98,28 +110,31 @@
         </div>
     </form>
 
-    <!-- Formulaire de changement de mot de passe -->
-    <div class="mt-8">
-        <h3 class="text-lg font-semibold mt-4 mb-2 flex items-center">Changer le mot de passe</h3>
-        <form method="POST" class="space-y-4" action="edit_profile">
+    <!-- Section changement de mot de passe -->
+    <div class="mt-10">
+        <h3 class="text-xl font-bold mb-4 text-center">Changer le mot de passe</h3>
+        <form method="POST" action="edit_profile" class="space-y-6">
             {% csrf_token %}
-            <div class="flex flex-col space-y-2">
-                <label for="new_password"class="text-lg font-semibold mt-4 mb-2 flex items-center">Nouveau mot de passe</label>
+            <div class="mb4">
+                <label for="new_password" class="block text-lg font-semibold mb-2">Nouveau mot de passe</label>
                 <input 
                     type="password" 
                     name="new_password" 
                     id="new_password" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
-            <div class="flex flex-col space-y-2">
-                <label for="confirm_password"class="text-lg font-semibold mt-4 mb-2 flex items-center">Confirmer le mot de passe</label>
+
+            <div class="mb4">
+                <label for="confirm_password" class="block text-lg font-semibold mb-2">Confirmer le mot de passe</label>
                 <input 
                     type="password" 
                     name="confirm_password" 
                     id="confirm_password" 
-                    class="w-full p-3 border rounded-md bg-gray-50 text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
+                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
-            <div class="mt-6 text-center">
+
+            <!-- Bouton changement de mot de passe -->
+            <div class="text-center mt-6">
                 <button 
                     type="submit" 
                     class="px-6 py-3 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 transition">
