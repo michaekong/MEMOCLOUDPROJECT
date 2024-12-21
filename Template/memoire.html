@@ -158,15 +158,18 @@
     
                 </button>
                 <a 
-                href="{% url 'telecharger_pdf' memoire.id %}" 
+                href="{{ memoire.fichier_memoire}}" 
                 class="btn btn-info d-flex align-items-center gap-2"
-                title="Télécharger le fichier PDF"
+                target="_blank"
+                download="fichier.pdf"
+                onclick="submitMemoireForm('{{ memoire.id }}')"
+                title="Télécharger le fichier pdf"
             >
-                <!-- Icône de téléchargement -->
+                <!-- Logo de téléchargement -->
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
                 </svg>
-                <span>Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
+                <span class="text-lg font-semibold text-blue-800">({{ memoire.statistiques.nbr_telechargements }})</span>
             </a>
                 
                 <!-- Modal pour afficher les commentaires -->
@@ -281,16 +284,19 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
                 <a 
-    href="{% url 'telecharger_pdf' memoire.id %}" 
-    class="btn btn-info d-flex align-items-center gap-2"
-    title="Télécharger le fichier PDF"
->
-    <!-- Icône de téléchargement -->
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
-    </svg>
-    <span>Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
-</a>
+                href="{{ memoire.fichier_memoire}}" 
+                class="btn btn-info d-flex align-items-center gap-2"
+                target="_blank"
+                download="fichier.pdf"
+                onclick="submitMemoireForm('{{ memoire.id }}')"
+                title="Télécharger le fichier pdf"
+            >
+                <!-- Logo de téléchargement -->
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                </svg>
+                <span class="text-lg font-semibold text-blue-800">({{ memoire.statistiques.nbr_telechargements }})</span>
+            </a>
             </div>
         </div>
     </div>
