@@ -475,8 +475,7 @@ def common(request,*args, **kwargs):
 
 def ajouter_commentaire(request, memoire_id):
     # Vérification de l'authentification
-    if not request.user.is_authenticated:
-        return redirect('login')  # Redirige l'utilisateur vers la page de connexion s'il n'est pas authentifié
+     # Redirige l'utilisateur vers la page de connexion s'il n'est pas authentifié
 
     try:
         # Vérification de l'authentification
