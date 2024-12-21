@@ -2,9 +2,12 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import messages
-
+from django.contrib.messages import get_messages
 from django.core.mail import send_mail
 import random
+import os
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.core.mail import EmailMessage
 from django.shortcuts import render, redirect
 from django.shortcuts import render, get_object_or_404, redirect
@@ -88,31 +91,42 @@ def edit_profile(request):
 def register_user(request):
     if request.method == 'POST':
         # Récupération des données
-        nom = request.POST.get('nom')
-        prenom = request.POST.get('prenom')
-        email = request.POST.get('email')
-        birthday = request.POST.get('birthday')
-        sexe = request.POST.get('sexe')
-        user_type = request.POST.get('type')
-        realisation_linkedin = request.POST.get('realisation_linkedin', None)
+        nom = request.POST.get('nom', '')
+        prenom = request.POST.get('prenom', '')
+        email = request.POST.get('email', '')
+        birthday = request.POST.get('birthday', '')
+        sexe = request.POST.get('sexe', '')
+        user_type = request.POST.get('type', '')
+        realisation_linkedin = request.POST.get('realisation_linkedin', '')
         photo_profil = request.FILES.get('photo_profil', None)
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm_password')
+        password = request.POST.get('password', '')
+        confirm_password = request.POST.get('confirm_password', '')
+
+        # Initialiser les données pour remplir le formulaire en cas d'erreur
+        form_data = {
+            "nom": nom,
+            "prenom": prenom,
+            "email": email,
+            "birthday": birthday,
+            "sexe": sexe,
+            "type": user_type,
+            "realisation_linkedin": realisation_linkedin,
+        }
 
         # Validation des mots de passe
         if password != confirm_password:
             messages.error(request, "Les mots de passe ne correspondent pas.")
-            return redirect('/register')
+            return render(request, "register.html", {"form_data": form_data, "error": "Les mots de passe ne correspondent pas."})
 
         # Vérification si l'utilisateur existe déjà
         if UserProfile.objects.filter(email=email).exists():
             messages.error(request, "Un utilisateur avec cet email existe déjà.")
-            return redirect('/register')
+            return render(request, "register.html", {"form_data": form_data, "error": "Un utilisateur avec cet email existe déjà."})
 
         # Vérification si l'utilisateur non vérifié existe déjà
         if UnverifiedUserProfile.objects.filter(email=email).exists():
             messages.error(request, "Vous avez déjà initié une inscription. Vérifiez votre e-mail.")
-            return redirect('/register')
+            return render(request, "register.html", {"form_data": form_data, "error": "Vous avez déjà initié une inscription. Vérifiez votre e-mail."})
 
         try:
             # Génération du code de vérification
@@ -136,7 +150,7 @@ def register_user(request):
             # Enregistrer les informations dans la session
             request.session['user_email'] = email
             request.session['verification_code'] = verification_code
-            request.session['user_id'] = unverified_user.id  # Ajout de l'ID utilisateur dans la session
+            request.session['user_id'] = unverified_user.id
 
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
@@ -152,24 +166,28 @@ def register_user(request):
 
         except Exception as e:
             messages.error(request, f"Erreur : {e}")
-            return redirect('/register')
+            return render(request, "register.html", {"form_data": form_data, "error": f"Erreur : {e}"})
 
+    # Si GET, renvoyer la page d'inscription vide
     return render(request, "register.html")
 
 
+
 def verification_page(request):
-    # Vérifier la présence de l'ID de l'utilisateur dans la session
+    # Vérifier la présence de l'email et du code de vérification dans la session
     email = request.session.get('user_email')
     stored_code = request.session.get('verification_code')
 
     if not email or not stored_code:
-        return redirect('register')  # Si les informations sont manquantes, rediriger vers l'inscription
+        messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
+        return redirect('register')  # Redirige vers l'inscription si les informations sont manquantes
 
     try:
-        # Tenter de récupérer l'utilisateur non vérifié
+        # Récupération de l'utilisateur non vérifié
         unverified_user = UnverifiedUserProfile.objects.get(email=email)
     except UnverifiedUserProfile.DoesNotExist:
-        return HttpResponse("Utilisateur non trouvé.", status=404)
+        messages.error(request, "Utilisateur non trouvé. Veuillez vous réinscrire.")
+        return redirect('register')
 
     if request.method == "POST":
         verification_code = request.POST.get('verification_code')
@@ -194,15 +212,15 @@ def verification_page(request):
             # Suppression de l'utilisateur non vérifié
             unverified_user.delete()
 
-            messages.success(request, "Votre compte a été vérifié et vous êtes maintenant connecté.")
-            return redirect('login')  # Redirigez vers la page d'accueil ou une page personnalisée
-
+            messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
+            return redirect('login')  # Redirige vers une page appropriée après connexion
         else:
-            # Code de vérification incorrect
-            return render(request, "verified.html", {"error": "Code de vérification incorrect."})
+            # Gestion des codes incorrects
+            messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
+            return render(request, "verified.html", {"email": email})
 
     # Si GET, afficher la page de vérification
-    return render(request, "verified.html")
+    return render(request, "verified.html", {"email": email})
 def resend_email(request, *args, **kwargs):
     # Récupérer l'email de la session
     email = request.session.get('user_email')
@@ -242,6 +260,7 @@ def resend_email(request, *args, **kwargs):
     except Exception as e:
         # Gestion de toutes autres erreurs
         messages.error(request, f"Une erreur est survenue : {str(e)}")
+        
         return redirect('register')
 
 # Create your views here.
@@ -269,10 +288,23 @@ def profil(request):
     return render(request, 'profil.html', {'user': user})
 
 
+from django.shortcuts import redirect, render
+from django.contrib import messages
+from django.contrib.auth.hashers import check_password
+
 def login(request, *args, **kwargs):
+    storage = get_messages(request)
+    for _ in storage:
+        pass  # Permet de vider les messages
+
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
+
+        # Validation des champs obligatoires
+        if not email or not password:
+            messages.error(request, "Veuillez remplir tous les champs.")
+            return redirect('/login')
 
         try:
             # Recherche de l'utilisateur par email
@@ -280,27 +312,32 @@ def login(request, *args, **kwargs):
 
             # Vérification du mot de passe
             if check_password(password, user.password):
-                # Simule une connexion (vous pouvez utiliser des sessions)
+                # Simule une connexion (via session)
                 request.session['user_id'] = user.id
                 request.session['user_email'] = user.email
                 request.session['emailv'] = user.email
+
                 messages.success(request, "Connexion réussie. Bienvenue !")
 
-                if(user.type == "admin" or  user.type=="superadmin"):
-                    return redirect('/admins') 
+                # Redirection en fonction du type d'utilisateur
+                if user.type in ["admin", "superadmin"]:
+                    return redirect('/admins')  # Page pour les administrateurs
                 else:
+                    # Création d'une visite pour un utilisateur standard
                     visiteur.objects.create(emailv=email)
-                    return redirect('liste_memoires')
-                    
-                    # Redirige vers la page d'accueil
+                    return redirect('liste_memoires')  # Page principale pour les utilisateurs standards
             else:
                 messages.error(request, "Mot de passe incorrect.")
+                return render(request,"login.html",{"error":"Mot de passe incorrect."})
         except UserProfile.DoesNotExist:
-            messages.error(request, "Utilisateur introuvable avec cet email.")
+            messages.error(request, "Aucun compte trouvé avec cet email.")
+            return render(request,"login.html",{"error":"Aucun compte trouvé avec cet email."})
 
-        return redirect('/login')  # Recharge la page de connexion
+        
 
+    # Affichage du formulaire de connexion pour une requête GET
     return render(request, "login.html")
+
 
 def logout(request):
     # Supprimer les informations de session
@@ -465,6 +502,22 @@ def liste_memoires(request):
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
         return redirect('liste_memoires')
+def telecharger_pdf(request, memoire_id):
+    # Récupérer le mémoire correspondant à l'ID
+    memoire = get_object_or_404(Memoire, id=memoire_id)
+
+    # Vérifier que le fichier existe sur le serveur
+    fichier_path = memoire.fichier_memoire.path
+    if not os.path.exists(fichier_path):
+        raise Http404("Le fichier demandé n'existe pas.")
+
+    # Incrémenter le compteur de téléchargements
+    memoire.nbr_telechargements += 1
+    memoire.save()
+
+    # Servir le fichier en tant que réponse
+    return FileResponse(open(fichier_path, 'rb'), as_attachment=True, filename=f"{memoire.titre}.pdf")
+
 
 def common(request,*args, **kwargs):
    

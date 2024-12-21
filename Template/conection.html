@@ -61,6 +61,7 @@
     </style>
 </head>
 <body>
+    
     <div class="verification-container">
         <h1 class="verification-title">connexion</h1>
         {% if messages %}
@@ -78,5 +79,21 @@
             <button type="submit" class="verify-button">se connecter</button>
         </form>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const spinner = document.getElementById('spinner');
+    
+            // Masquer le spinner immédiatement après que la page est prête
+            spinner.style.display = 'none';
+    
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    spinner.style.display = 'flex'; // Affiche le spinner lors de l'envoi du formulaire
+                });
+            }
+        });
+    </script>
+    
 </body>
 </html>

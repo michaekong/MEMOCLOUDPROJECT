@@ -542,7 +542,115 @@ $('#editUserForm').on('submit', function (event) {
                 }
             });
         }
+    }window.showSpinner = function() {
+        if (window.Alpine) {
+            const root = document.querySelector('[x-data]').__x.$data;
+            root.loading = true;
+            document.body.classList.add('loading');
+        }
     }
+    
+    window.hideSpinner = function() {
+        if (window.Alpine) {
+            const root = document.querySelector('[x-data]').__x.$data;
+            root.loading = false;
+            document.body.classList.remove('loading');
+        }
+    }
+    
+    // Montrer le spinner pendant les navigations
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pour les liens
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (!link.hasAttribute('data-no-spinner')) {
+                    showSpinner();
+                }
+            });
+        });window.showSpinner = function() {
+            if (window.Alpine) {
+                const root = document.querySelector('[x-data]').__x.$data;
+                root.loading = true;
+                document.body.classList.add('loading');
+            }
+        }
+        
+        window.hideSpinner = function() {
+            if (window.Alpine) {
+                const root = document.querySelector('[x-data]').__x.$data;
+                root.loading = false;
+                document.body.classList.remove('loading');
+            }
+        }
+        
+        // Montrer le spinner pendant les navigations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pour les liens
+            document.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!link.hasAttribute('data-no-spinner')) {
+                        showSpinner();
+                    }
+                });
+            });
+        
+            // Pour les formulaires
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', () => {
+                    if (!form.hasAttribute('data-no-spinner')) {
+                        showSpinner();
+                    }
+                });
+            });
+        });
+        
+        // Montrer le spinner pendant le chargement initial de la page
+        window.addEventListener('load', () => {
+            hideSpinner();
+        });
+        
+        // Gérer les requêtes AJAX si vous en utilisez
+        document.addEventListener('ajax:before', showSpinner);
+        document.addEventListener('ajax:complete', hideSpinner);
+        
+        // Support pour les requêtes fetch
+        const originalFetch = window.fetch;
+        window.fetch = function() {
+            showSpinner();
+            return originalFetch.apply(this, arguments)
+                .finally(() => {
+                    hideSpinner();
+                });
+        };
+    
+        // Pour les formulaires
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', () => {
+                if (!form.hasAttribute('data-no-spinner')) {
+                    showSpinner();
+                }
+            });
+        });
+    });
+    
+    // Montrer le spinner pendant le chargement initial de la page
+    window.addEventListener('load', () => {
+        hideSpinner();
+    });
+    
+    // Gérer les requêtes AJAX si vous en utilisez
+    document.addEventListener('ajax:before', showSpinner);
+    document.addEventListener('ajax:complete', hideSpinner);
+    
+    // Support pour les requêtes fetch
+    const originalFetch = window.fetch;
+    window.fetch = function() {
+        showSpinner();
+        return originalFetch.apply(this, arguments)
+            .finally(() => {
+                hideSpinner();
+            });
+    };
     
    
     function showEditUserForm() {

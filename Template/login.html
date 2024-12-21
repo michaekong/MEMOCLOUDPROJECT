@@ -149,13 +149,24 @@
     </style>
 </head>
 <body>
+    <div id="spinner" class="spinner-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
     <div class="login-container">
         <div class="login-title">Connexion</div>
-        {% if messages %}
+        {% if error %}
         <ul class="messages">
-            {% for message in messages %}
-                <li class="error">{{ message }}</li>
-            {% endfor %}
+           
+                <li class="error">{{ error }}</li>
+      
+        </ul>
+        {% endif %}
+        {% if error %}
+        <ul class="messages">
+           
+                <li class="succes">{{ succes }}</li>
+      
         </ul>
         {% endif %}
 
@@ -171,5 +182,22 @@
             <a href="{% url 'register' %}" class="register-link">Pas encore de compte ? S'inscrire</a>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const spinner = document.getElementById('spinner');
+    
+            // Masquer le spinner immédiatement après que la page est prête
+            spinner.style.display = 'none';
+    
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function () {
+                    spinner.style.display = 'flex'; // Affiche le spinner lors de l'envoi du formulaire
+                });
+            }
+        });
+    </script>
+    
+    
 </body>
 </html>

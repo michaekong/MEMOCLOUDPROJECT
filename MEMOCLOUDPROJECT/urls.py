@@ -33,6 +33,7 @@ urlpatterns = [
     path('admins',  admins,name="admins"),
     path('admins/', admins, name='admins'),
     path('memoire/<int:memoire_id>/ajouter_commentaire/', ajouter_commentaire, name='ajouter_commentaire'),
+    path('telecharger/<int:memoire_id>/', telecharger_pdf, name='telecharger_pdf'),
 
     path('delete_memoire/', delete_memoire, name='delete_memoire'),
     path('delete_user/', delete_user, name='delete_user'),
