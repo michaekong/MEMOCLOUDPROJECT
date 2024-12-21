@@ -132,8 +132,11 @@ def register_user(request):
                 password=hashed_password,
                 verification_code=str(verification_code),
             )
-            request.session['user_email']=email
-            request.session['verification_code']=verification_code
+
+            # Enregistrer les informations dans la session
+            request.session['user_email'] = email
+            request.session['verification_code'] = verification_code
+            request.session['user_id'] = unverified_user.id  # Ajout de l'ID utilisateur dans la session
 
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
@@ -145,13 +148,101 @@ def register_user(request):
             send_advanced_email([email], subject, template, context)
 
             messages.success(request, "Un code de vérification vous a été envoyé par email.")
-            return redirect('/verification_page')
+            return render(request, "verified.html", context)
 
         except Exception as e:
             messages.error(request, f"Erreur : {e}")
             return redirect('/register')
 
     return render(request, "register.html")
+
+
+def verification_page(request):
+    # Vérifier la présence de l'ID de l'utilisateur dans la session
+    email = request.session.get('user_email')
+    stored_code = request.session.get('verification_code')
+
+    if not email or not stored_code:
+        return redirect('register')  # Si les informations sont manquantes, rediriger vers l'inscription
+
+    try:
+        # Tenter de récupérer l'utilisateur non vérifié
+        unverified_user = UnverifiedUserProfile.objects.get(email=email)
+    except UnverifiedUserProfile.DoesNotExist:
+        return HttpResponse("Utilisateur non trouvé.", status=404)
+
+    if request.method == "POST":
+        verification_code = request.POST.get('verification_code')
+
+        if verification_code == str(stored_code):
+            # Création de l'utilisateur vérifié
+            user = UserProfile.objects.create(
+                nom=unverified_user.nom,
+                prenom=unverified_user.prenom,
+                email=unverified_user.email,
+                birthday=unverified_user.birthday,
+                sexe=unverified_user.sexe,
+                type=unverified_user.type,
+                realisation_linkedin=unverified_user.realisation_linkedin,
+                photo_profil=unverified_user.photo_profil,
+                password=unverified_user.password,
+            )
+
+            # Connexion automatique de l'utilisateur
+            login(request, user)
+
+            # Suppression de l'utilisateur non vérifié
+            unverified_user.delete()
+
+            messages.success(request, "Votre compte a été vérifié et vous êtes maintenant connecté.")
+            return redirect('login')  # Redirigez vers la page d'accueil ou une page personnalisée
+
+        else:
+            # Code de vérification incorrect
+            return render(request, "verified.html", {"error": "Code de vérification incorrect."})
+
+    # Si GET, afficher la page de vérification
+    return render(request, "verified.html")
+def resend_email(request, *args, **kwargs):
+    # Récupérer l'email de la session
+    email = request.session.get('user_email')
+    
+    if not email:
+        # Si l'email n'est pas trouvé dans la session, rediriger l'utilisateur
+        messages.error(request, "Aucune session utilisateur active.")
+        return redirect('login')  # Remplacez 'login' par l'URL appropriée
+
+    try:
+        # Génération d'un nouveau code de vérification
+        verification_code = random.randint(100000, 999999)
+        request.session['verification_code'] = verification_code
+
+        # Récupérer l'utilisateur non vérifié à partir de l'email
+        unverified_user = UnverifiedUserProfile.objects.get(email=email)
+
+        # Envoi de l'email avec le code de vérification
+        subject = "Code de vérification"
+        template = "template.html"  # Assurez-vous que ce template existe
+        context = {
+            'verification_code': verification_code,
+            'user': unverified_user,
+        }
+
+        send_advanced_email([email], subject, template, context)
+
+        # Message de succès et redirection vers la page de vérification
+        messages.success(request, "Un code de vérification vous a été envoyé par email.")
+        return render(request, "verified.html", context)
+
+    except UnverifiedUserProfile.DoesNotExist:
+        # Gestion de l'erreur si l'utilisateur n'est pas trouvé dans la base de données
+        messages.error(request, "Aucun utilisateur trouvé avec cet email.")
+        return redirect('/register')  # Rediriger vers la page d'inscription ou une page d'erreur
+
+    except Exception as e:
+        # Gestion de toutes autres erreurs
+        messages.error(request, f"Une erreur est survenue : {str(e)}")
+        return redirect('register')
 
 # Create your views here.
 def home(request,*args, **kwargs):
@@ -194,10 +285,11 @@ def login(request, *args, **kwargs):
                 request.session['user_email'] = user.email
                 request.session['emailv'] = user.email
                 messages.success(request, "Connexion réussie. Bienvenue !")
-                
+
                 if(user.type == "admin" or  user.type=="superadmin"):
                     return redirect('/admins') 
                 else:
+                    visiteur.objects.create(emailv=email)
                     return redirect('liste_memoires')
                     
                     # Redirige vers la page d'accueil
@@ -237,10 +329,11 @@ def liste_memoires(request):
     try:
         # Vérification de l'authentification
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except KeyError:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)
+   
     
     try:
         # Récupération des mémoires avec toutes leurs relations
@@ -376,7 +469,7 @@ def liste_memoires(request):
 def common(request,*args, **kwargs):
    
 
-    return render(request, 'test.html')
+    return render(request, 'index.html')
 
   
 
@@ -496,53 +589,106 @@ def delete_memoire(request):
         return redirect('logout')
     
     user = UserProfile.objects.get(id=idp)
+    
     if request.method == 'POST':
         memoire_id = request.POST.get('memoire_id')
         try:
             memoire = get_object_or_404(Memoire, id=memoire_id)
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "id": memoire.id,
+                "titre": memoire.titre,
+                "auteur": f"{memoire.auteur.nom} {memoire.auteur.prenom}",
+                "annee_publication": memoire.annee_publication
+            }
+
+            # Supprimer le mémoire
             memoire.delete()
-            
+
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
                 subject="Suppression d'un mémoire",
                 action_type="Suppression",
-                action_details="Le mémoire avec l'ID  "+ memoire_id+"a été supprimé."
+                action_details=f"Le mémoire avec l'ID: {memoire_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
             )
 
             return JsonResponse({'status': 'success', 'message': 'Mémoire supprimé avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 def delete_comment(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    
+    user = UserProfile.objects.get(id=idp)
+    
     if request.method == 'POST':
         comment_id = request.POST.get('comment_id')
         
         try:
             comment = get_object_or_404(NotationCommentaire, id=comment_id)
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "id": comment.id,
+                "commentaire": comment.commentaire,
+                "utilisateur": f"{comment.utilisateur.nom} {comment.utilisateur.prenom}"
+            }
+
+            # Supprimer le commentaire
             comment.delete()
-            return JsonResponse({'status': 'success', 'message': 'commentaire supprimé avec succès.'})
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Suppression d'un commentaire",
+                action_type="Suppression",
+                action_details=f"Le commentaire avec l'ID: {comment_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Commentaire supprimé avec succès.'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})        
+            return JsonResponse({'status': 'error', 'message': str(e)})
 def delete_domaine(request):
     try:
         idp = request.session['user_id']
     except:
         return redirect('logout')
+    
     user = UserProfile.objects.get(id=idp)
+    
     if request.method == 'POST':
         domaine_id = request.POST.get('domaine_id')
-        print(domaine_id)
         try:
             domaine = get_object_or_404(Domaine, id=domaine_id)
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "id": domaine.id,
+                "nom": domaine.nom
+            }
+
+            # Supprimer le domaine
             domaine.delete()
+
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
-                subject="Suppression d'un mémoire",
+                subject="Suppression d'un domaine",
                 action_type="Suppression",
-                action_details="Le domaine avec l'ID:"+ domaine_id +"a été supprimé."
+                action_details=f"Le domaine avec l'ID: {domaine_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
             )
+
             return JsonResponse({'status': 'success', 'message': 'Domaine supprimé avec succès.'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})        
+            return JsonResponse({'status': 'error', 'message': str(e)})
+  
 
 # Supprimer un utilisateur
 def delete_user(request):
@@ -550,42 +696,85 @@ def delete_user(request):
         user_id = request.POST.get('user_id')
         try:
             user = get_object_or_404(UserProfile, id=user_id)
+            user_name = f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
+
+            # Supprimer l'utilisateur
             user.delete()
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "id": user.id,
+                "nom": user.nom,
+                "prenom": user.prenom,
+                "email": user.email,
+                "type": user.type,
+                "linkdin":user.realisation_linkedin,
+                "password":user.password,
+                "sex":user.sexe,
+                    "birthday":user.birthday
+                
+            }
+
+            send_admin_email(
+                user=request.user,  # L'utilisateur qui a effectué l'action
+                subject="Suppression d'un utilisateur",
+                action_type="Suppression",
+                action_details=f"L'utilisateur '{user_name}' avec l'ID: {user_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
+            )
+
             messages.success(request, 'Utilisateur supprimé avec succès.')
         except Exception as e:
-            messages.error(request, f"Erreur: {str(e)}")
+            messages.error(request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}")
         return redirect('admins')
-
-
-
-# Supprimer un encadrement
 def delete_encadrement(request):
     try:
         idp = request.session['user_id']
     except:
         return redirect('logout')
-    user = UserProfile.objects.get(id=idp)
+
+    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
     if request.method == 'POST':
         encadrement_id = request.POST.get('encadrement_id')
         try:
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "memoire_id": encadrement.memoire.id,
+                "encadrant": f"{encadrement.encadrant.nom} {encadrement.encadrant.prenom}",
+                "encadrant_email": encadrement.encadrant.email
+            }
+
+            # Supprimer l'encadrement
             encadrement.delete()
+
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
                 subject="Suppression d'un encadrement",
                 action_type="Suppression",
-                action_details="Lencadrement avec l'ID:"+ encadrement_id +"a été supprimé."
+                action_details=f"L'encadrement avec l'ID: {encadrement_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
             )
+
             return JsonResponse({'status': 'success', 'message': 'Encadrement supprimé avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
-
-
-# Ajouter un utilisateur
 def add_user(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+
+    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
     if request.method == 'POST':
         try:
-            UserProfile.objects.create(
+            # Créer un nouvel utilisateur
+            new_user = UserProfile.objects.create(
                 nom=request.POST.get('nom'),
                 prenom=request.POST.get('prenom'),
                 birthday=request.POST.get('birthday'),
@@ -596,10 +785,34 @@ def add_user(request):
                 photo_profil=request.FILES.get('photo_profil'),
                 password=make_password(request.POST.get('password'))
             )
-            messages.success(request, 'Utilisateur ajouté avec succès.')  # Message de succès
+
+            # Préparer les détails pour l'email
+            object_after = {
+                "id": new_user.id,
+                "nom": new_user.nom,
+                "prenom": new_user.prenom,
+                "email": new_user.email,
+                "type": new_user.type,
+                "linkdin":new_user.realisation_linkedin,
+                "password":new_user.password,
+                "sex":new_user.sexe,
+                    "birthday":new_user.birthday
+            }
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Ajout d'un utilisateur",
+                action_type="Ajout",
+                action_details=f"L'utilisateur '{new_user.nom} {new_user.prenom}' a été créé avec le rôle '{new_user.type}'.",
+                object_before=None,  # Pas d'état avant création
+                object_after=object_after  # Détails du nouvel utilisateur
+            )
+
+            messages.success(request, 'Utilisateur ajouté avec succès.')
         except Exception as e:
-            messages.error(request, f"Erreur: {str(e)}")  # Message d'erreur
-        return redirect('admins')  # Redirection après l'opération
+            messages.error(request, f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
+        return redirect('admins')
+
 
 # Ajouter un mémoire
 from django.shortcuts import render, redirect, get_object_or_404
@@ -611,72 +824,169 @@ from django.contrib import messages
 from .models import Memoire, Domaine, UserProfile
 
 def add_memoire(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+
+    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
     if request.method == 'POST':
         try:
             auteur_id = request.POST.get('auteur')
             auteur = get_object_or_404(UserProfile, id=auteur_id)
-            
-            # Récupérer les domaines sélectionnés depuis les cases à cocher
-            domaines_ids = request.POST.getlist('domaines')  # Liste des IDs des domaines sélectionnés
-            domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les objets Domaine correspondants
 
-            if 'lien_telecharger' in request.FILES:
-                fich = request.FILES.get('lien_telecharger')
-                print(fich)  # Pour déboguer, vous pouvez afficher le fichier téléchargé
+            # Récupérer les domaines sélectionnés
+            domaines_ids = request.POST.getlist('domaines')
+            domaines = Domaine.objects.filter(id__in=domaines_ids)
+
+            # Récupérer les fichiers envoyés
+            fichier_memoire = request.FILES.get('lien_telecharger')
+            image = request.FILES.get('images')
 
             # Création de l'objet Memoire
             memoire = Memoire.objects.create(
                 titre=request.POST.get('titre'),
                 annee_publication=request.POST.get('annee_publication'),
-                images=request.FILES.get('images'),
+                images=image,
                 auteur=auteur,
                 resume=request.POST.get('resume'),
-                fichier_memoire=fich
+                fichier_memoire=fichier_memoire
             )
             
-            # Associer les domaines sélectionnés à ce mémoire
-            memoire.domaines.set(domaines)  # Utilisation de la méthode set() pour associer les domaines
+            # Associer les domaines au mémoire
+            memoire.domaines.set(domaines)
             memoire.save()
 
+            # Préparer les détails pour l'email
+            object_after = {
+                "id": memoire.id,
+                "titre": memoire.titre,
+                "annee_publication": memoire.annee_publication,
+                "auteur": f"{auteur.nom} {auteur.prenom}",
+                "domaines": [d.nom for d in domaines],
+                "resume": memoire.resume
+            }
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Ajout d'un mémoire",
+                action_type="ajout",
+                action_details=f"Le mémoire '{memoire.titre}' a été ajouté avec succès.",
+                object_before=None,  # Pas d'état initial
+                object_after=object_after
+            )
+
+            messages.success(request, "Mémoire ajouté avec succès.")
             return redirect("admins")
+
         except Exception as e:
-            messages.error(request, f"Erreur lors de l'ajout du mémoire: {str(e)}")
+            messages.error(request, f"Erreur lors de l'ajout du mémoire : {str(e)}")
             return redirect("admins")
 def add_domaine(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+
+    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
     if request.method == 'POST':
-        
         try:
-            Domaine.objects.create(
-                nom=request.POST.get('nom'),
-               
-                
+            nom = request.POST.get('nom')
+
+            # Création de l'objet Domaine
+            domaine = Domaine.objects.create(
+                nom=nom
             )
+
+            # Préparer les détails pour l'email
+            object_after = {
+                "id": domaine.id,
+                "nom": domaine.nom
+            }
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Ajout d'un domaine",
+                action_type="ajout",
+                action_details=f"Le domaine '{domaine.nom}' a été ajouté avec succès.",
+                object_before=None,  # Pas d'état initial
+                object_after=object_after
+            )
+
+            messages.success(request, "Domaine ajouté avec succès.")
             return redirect("admins")
-        except :
-            messages.error(request, "erreur d'ajout du domaine.")
+
+        except Exception as e:
+            messages.error(request, f"Erreur d'ajout du domaine : {str(e)}")
             return redirect("admins")
+
 
 # Ajouter un encadrement
 def add_encadrement(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    
+    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+    
     if request.method == 'POST':
         try:
             memoire_id = request.POST.get('memoire')
             encadrant_id = request.POST.get('encadrant')
+
+            # Récupérer les objets Mémoire et Encadrant
             memoire = get_object_or_404(Memoire, id=memoire_id)
             encadrant = get_object_or_404(UserProfile, id=encadrant_id)
-            Encadrement.objects.create(memoire=memoire, encadrant=encadrant)
+
+            # Créer l'encadrement
+            encadrement = Encadrement.objects.create(memoire=memoire, encadrant=encadrant)
+
+            # Préparer les données pour l'email
+            object_after = {
+                "id": encadrement.id,
+                "memoire_id": memoire.id,
+                "memoire_titre": memoire.titre,
+                "encadrant_id": encadrant.id,
+                "encadrant_nom": f"{encadrant.nom} {encadrant.prenom}",
+            }
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Ajout d'un encadrement",
+                action_type="ajout",
+                action_details=f"L'encadrement pour la mémoire '{memoire.titre}' a été ajouté avec succès.",
+                object_before=None,  # Pas d'état avant l'ajout, car c'est une création
+                object_after=object_after,
+            )
+
             messages.success(request, "Encadrement ajouté avec succès.")
             return redirect("admins")
-        except :
-            messages.error(request, "erreur d'ajout du lien d'encadrement.")
+        
+        except Exception as e:
+            messages.error(request, f"Erreur d'ajout de l'encadrement : {str(e)}")
             return redirect("admins")
+
 # Modifier un utilisateur
 def edit_user(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    admin_user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
     if request.method == 'POST':
         print("Données reçues : ", request.POST)
         try:
             user_id = request.POST.get('user_id')
             user = get_object_or_404(UserProfile, id=user_id)
+
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(user).copy()
+
+            # Mettre à jour les champs
             user.nom = request.POST.get('nom')
             user.prenom = request.POST.get('prenom')
             user.birthday = request.POST.get('birthday')
@@ -684,14 +994,36 @@ def edit_user(request):
             user.email = request.POST.get('email')
             user.type = request.POST.get('type')
             user.realisation_linkedin = request.POST.get('realisation_linkedin')
+
+            # Mettre à jour la photo de profil (si présente)
             if 'photo_profil' in request.FILES:
                 user.photo_profil = request.FILES.get('photo_profil')
+
+            # Mettre à jour le mot de passe (si présent)
             if request.POST.get('password'):
                 user.password = make_password(request.POST.get('password'))
+
+            # Sauvegarder l'utilisateur modifié
             user.save()
+
+            # Capturer l'état de l'objet après modification
+            object_after = vars(user)
+
+            # Envoyer un email avec les détails
+            send_admin_email(
+                user=admin_user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un utilisateur",
+                action_type="modification",
+                action_details=f"L'utilisateur {user.nom} {user.prenom} a été modifié avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
+
             return JsonResponse({'status': 'success', 'message': 'Utilisateur modifié avec succès.'})
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+
 
 # Modifier un mémoire
 from django.shortcuts import get_object_or_404
@@ -700,14 +1032,25 @@ from .models import Memoire, UserProfile, Domaine
 from django.core.exceptions import ValidationError
 
 def edit_memoire(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    user = UserProfile.objects.get(id=idp)
+
     if request.method == 'POST':
         try:
             memoire_id = request.POST.get('memoire_id')
             memoire = get_object_or_404(Memoire, id=memoire_id)
+
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(memoire).copy()
+
+            # Mettre à jour les champs
             memoire.titre = request.POST.get('titre')
             memoire.annee_publication = request.POST.get('annee_publication')
             memoire.resume = request.POST.get('resume')
-            
+
             # Mettre à jour l'image (si présente)
             if 'images' in request.FILES:
                 memoire.images = request.FILES.get('images')
@@ -719,7 +1062,7 @@ def edit_memoire(request):
             # Mettre à jour l'auteur
             auteur_id = request.POST.get('auteur')
             memoire.auteur = get_object_or_404(UserProfile, id=auteur_id)
-            
+
             # Mettre à jour les domaines associés au mémoire
             domaines_ids = request.POST.getlist('domaines')  # Liste des domaines sélectionnés
             domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les domaines sélectionnés
@@ -728,80 +1071,110 @@ def edit_memoire(request):
             # Sauvegarder le mémoire modifié
             memoire.save()
 
+            # Capturer l'état de l'objet après modification
+            object_after = vars(memoire)
+
+            # Envoyer un email avec les détails
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un mémoire",
+                action_type="modification",
+                action_details=f"Le mémoire avec l'ID {memoire_id} a été modifié avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
+
             return JsonResponse({'status': 'success', 'message': 'Mémoire modifié avec succès.'})
-        
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
+
 def edit_domaine(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    user = UserProfile.objects.get(id=idp)
+    
     if request.method == 'POST':
         try:
             domaine_id = request.POST.get('domaine_id')
             domaine = get_object_or_404(Domaine, id=domaine_id)
+            
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(domaine).copy()
+            
+            # Appliquer les modifications
             domaine.nom = request.POST.get('nom')
-
+            
+            # Sauvegarder les modifications
             domaine.save()
-            return JsonResponse({'status': 'success', 'message': 'domaine modifié avec succès.'})
+            
+            # Capturer l'état de l'objet après modification
+            object_after = vars(domaine)
+            
+            # Envoyer un email avec les détails
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un domaine",
+                action_type="modification",
+                action_details=f"Le domaine avec l'ID {domaine_id} a été modifié avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
+            return JsonResponse({'status': 'success', 'message': 'Domaine modifié avec succès.'})
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})        
+            return JsonResponse({'status': 'error', 'message': str(e)})
 
 # Modifier un encadrement
 def edit_encadrement(request):
+    try:
+        idp = request.session['user_id']
+    except:
+        return redirect('logout')
+    user = UserProfile.objects.get(id=idp)
+    
     if request.method == 'POST':
         try:
             encadrement_id = request.POST.get('encadrement_id')
             print(encadrement_id)
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
+            
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(encadrement).copy()
+            
+            # Récupérer les nouvelles données du formulaire
             memoire_id = request.POST.get('memoire')
             encadrant_id = request.POST.get('encadrant')
-            print(memoire_id,encadrant_id)
+            
+            # Appliquer les modifications
             encadrement.memoire = get_object_or_404(Memoire, id=memoire_id)
             encadrement.encadrant = get_object_or_404(UserProfile, id=encadrant_id)
+            
+            # Sauvegarder les modifications
             encadrement.save()
+            
+            # Capturer l'état après modification
+            object_after = vars(encadrement)
+            
+            # Envoyer l'email
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un encadrement",
+                action_type="modification",
+                action_details=f"L'encadrement avec l'ID {encadrement_id} a été modifié avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
             return JsonResponse({'status': 'success', 'message': 'Encadrement modifié avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
+
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 
-def verification_page(request):
-    if request.method == "POST":
-        
-        verification_code = request.POST.get('verification_code')
-        email = request.session.get('user_email')
-        stored_code = request.session.get('verification_code')
-        print(email,verification_code,stored_code)
-
-        if verification_code == str(stored_code):
-            # Supposons que vous utilisez `UnverifiedUserProfile` pour stocker les utilisateurs non vérifiés
-            from .models import UnverifiedUserProfile, UserProfile
-            try:
-                unverified_user = UnverifiedUserProfile.objects.get(email=email)
-                
-                # Créez un utilisateur vérifié
-                user = UserProfile.objects.create(
-                    nom=unverified_user.nom,
-                    prenom=unverified_user.prenom,
-                    email=unverified_user.email,
-                    birthday=unverified_user.birthday,
-                    sexe=unverified_user.sexe,
-                    type=unverified_user.type,
-                    realisation_linkedin=unverified_user.realisation_linkedin,
-                    photo_profil=unverified_user.photo_profil,
-                    password=unverified_user.password,
-                )
-                user.save()
-                unverified_user.delete()  # Supprimez l'utilisateur non vérifié
-                return redirect('login')  # Redirigez vers une page de connexion
-            except UnverifiedUserProfile.DoesNotExist:
-                return HttpResponse("Utilisateur non trouvé.", status=404)
-
-        else:
-            return render(request, "verified.html", {"error": "Code de vérification incorrect."})
-
-    # Si GET, afficher la page de vérification
-    return render(request, "verified.html")
 
 def verification_Email(request):
     if request.method == 'POST':
@@ -872,7 +1245,7 @@ def send_welcome_email(request, *args, **kwargs):
         user = UserProfile.objects.get(email=email)
         template='template.html'
         context={
-            'date':datetime.today().date,
+            'date':datetime.today().date(),
             'email':email,
             'user':user,
             'verification_code':verification_code,
@@ -886,8 +1259,8 @@ def send_welcome_email(request, *args, **kwargs):
             return redirect('/verification_page')
         ctx={ 'messages':'ERREUR d envoie du mails .'}
     return render(request,"verified.html",ctx) 
-
-def send_admin_email(user, subject, action_type, action_details):
+from datetime import datetime
+def send_admin_email(user, subject, action_type, action_details,object_before,object_after):
     print(user) 
     # Récupère tous les utilisateurs ayant le rôle d'admin ou superadmin
     admins = UserProfile.objects.filter(type="superadmin") | UserProfile.objects.filter(type="admin")
@@ -895,11 +1268,13 @@ def send_admin_email(user, subject, action_type, action_details):
 
     # Préparer le contexte pour le template de l'email
     context = {
-        'date': datetime.today().date(),  # Utilisation de la date actuelle
-          # L'utilisateur qui a effectué l'action
         'action_type': action_type,  # Type d'action
         'action_details': action_details, 
-        'user':user# Détails de l'action
+        'user':user,# Détails de l'action
+
+        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'object_before': object_before,
+        'object_after': object_after,
     }
     
     if recipients:
@@ -909,3 +1284,4 @@ def send_admin_email(user, subject, action_type, action_details):
             template='adminmail.html',
             context=context
         )
+       

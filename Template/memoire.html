@@ -256,48 +256,50 @@
              
                 
                 
-               <!-- 'mode' peut être 'day-mode' ou 'night-mode' -->
-                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resumeModal1">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-                            <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
-                            <path d="M6 6h12M6 10h12M6 14h12M6 18h12"/>
-                        </svg>
-                        Résumé
-                    </button>
-               
-                
-                    <div class="modal fade" id="resumeModal{{ memoire.id }}" tabindex="-1" aria-labelledby="resumeModalLabel{{ memoire.id }}" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="resumeModalLabel{{ memoire.id }}">Résumé du mémoire: {{ memoire.titre }}</h5>
-                                    <button type="button" class="close" aria-label="Close" onclick="closeModal('{{ memoire.id }}')">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="font-weight-bold">
-                                    {{ memoire.resume}} 
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" onclick="closeModal('{{ memoire.id }}')">Fermer</button>
-                                    <a 
-                                        href="{{ memoire.fichier_memoire.url }}" 
-                                        class="btn btn-info d-flex align-items-center gap-2"
-                                        target="_blank"
-                                        download="fichier.pdf"
-                                        onclick="submitMemoireForm('{{ memoire.id }}')"
-                                        title="Télécharger le fichier pdf"
-                                    >
-                                        <!-- Logo de téléchargement -->
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
-                                        </svg>
-                                        <span class="text-lg font-semibold text-blue-800">Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              <!-- Bouton pour ouvrir le modal -->
+<button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#resumeModal{{ memoire.id }}">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+        <path d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z"/>
+        <path d="M6 6h12M6 10h12M6 14h12M6 18h12"/>
+    </svg>
+    Résumé
+</button>
+
+<!-- Modal pour afficher les détails -->
+<div class="modal fade" id="resumeModal{{ memoire.id }}" tabindex="-1" aria-labelledby="resumeModalLabel{{ memoire.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- En-tête du modal -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="resumeModalLabel{{ memoire.id }}">
+                    Résumé du mémoire : {{ memoire.titre }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <!-- Corps du modal -->
+            <div class="modal-body">
+                <p class="font-weight-bold">{{ memoire.resume }}</p>
+            </div>
+            <!-- Pied du modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <a 
+                    href="{{ memoire.fichier_memoire.url }}" 
+                    class="btn btn-info d-flex align-items-center gap-2"
+                    target="_blank"
+                    download="fichier.pdf"
+                    title="Télécharger le fichier pdf"
+                >
+                    <!-- Icône de téléchargement -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                    </svg>
+                    <span>Télécharger ({{ memoire.statistiques.nbr_telechargements }})</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
                     
                 
             <!-- Téléchargement -->

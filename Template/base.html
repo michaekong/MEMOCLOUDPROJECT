@@ -363,8 +363,12 @@ body {
         
     </style>
 </head>
-<body x-data="{ darkMode: localStorage.getItem('darkMode') === 'true', accountMenu: false }" :class="{ 'dark': darkMode }" x-init="(darkMode) document.documentElement.classList.add('dark')" @click="localStorage.setItem('darkMode', darkMode)">
-    <!-- Navigation -->
+<body x-data="{ loading: true, darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }" x-init="window.onload = () => loading = false">
+    <!-- Overlay spinner -->
+    <div x-show="loading" class="overlay flex items-center justify-center z-50">
+        <div :class="darkMode ? 'spinner spinner-dark' : 'spinner'"></div>
+    </div>
+
     
     <header class="bg-gray-800 dark:bg-gray-900 text-white shadow-md">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -435,6 +439,7 @@ body {
 {% block content %}
     
     {% endblock content %}
+ 
     <!-- Footer -->
     <footer class="bg-gray-900 py-12 mt-16">
         <div class="container mx-auto px-4 max-w-7xl">
@@ -493,6 +498,9 @@ body {
                 }
             }))
         });
+        setTimeout(() => {
+            document.querySelector('[x-data]').__x.$data.loading = false; // Hide spinner after content is "loaded"
+        }, 3000); // 
     </script>
 </body>
 </html>

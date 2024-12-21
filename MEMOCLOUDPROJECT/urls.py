@@ -60,6 +60,8 @@ urlpatterns = [
    
      path('send_welcome_email', send_welcome_email,name="send_welcome_email"),
      path('send_admin_email', send_admin_email,name="send_admin_email"),
+      path('resend_email', resend_email,name="resend_email"),
+    
      
     
 
