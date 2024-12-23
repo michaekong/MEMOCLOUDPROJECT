@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import *
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'prenom', 'email', 'type', 'sexe', 'birthday')
+    list_display = ('nom', 'prenom', 'email', 'type', 'sexe')
     list_filter = ('type', 'sexe')
     search_fields = ('nom', 'prenom', 'email')
 

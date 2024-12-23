@@ -51,7 +51,7 @@ def edit_profile(request):
         # Récupération des champs du formulaire
         nom = request.POST.get('nom', user_profile.nom)
         prenom = request.POST.get('prenom', user_profile.prenom)
-        birthday = request.POST.get('birthday', user_profile.birthday)
+       
         sexe = request.POST.get('sexe', user_profile.sexe)
         user_type = request.POST.get('type', user_profile.type)
         realisation_linkedin = request.POST.get('realisation_linkedin', user_profile.realisation_linkedin)
@@ -60,7 +60,7 @@ def edit_profile(request):
         # Mise à jour des informations utilisateur
         user_profile.nom = nom
         user_profile.prenom = prenom
-        user_profile.birthday = birthday
+       
         user_profile.sexe = sexe
         user_profile.type = user_type
         user_profile.realisation_linkedin = realisation_linkedin
@@ -94,7 +94,7 @@ def register_user(request):
         nom = request.POST.get('nom', '')
         prenom = request.POST.get('prenom', '')
         email = request.POST.get('email', '')
-        birthday = request.POST.get('birthday', '')
+     
         sexe = request.POST.get('sexe', '')
         realisation_linkedin = request.POST.get('realisation_linkedin', '')
         photo_profil = request.FILES.get('photo_profil', None)
@@ -106,7 +106,7 @@ def register_user(request):
             "nom": nom,
             "prenom": prenom,
             "email": email,
-            "birthday": birthday,
+         
             "sexe": sexe,
             "realisation_linkedin": realisation_linkedin,
         }
@@ -136,7 +136,7 @@ def register_user(request):
                 nom=nom,
                 prenom=prenom,
                 email=email,
-                birthday=birthday,
+            
                 sexe=sexe,
                 realisation_linkedin=realisation_linkedin,
                 photo_profil=photo_profil,
@@ -195,7 +195,7 @@ def verification_page(request):
                 nom=unverified_user.nom,
                 prenom=unverified_user.prenom,
                 email=unverified_user.email,
-                birthday=unverified_user.birthday,
+         
                 sexe=unverified_user.sexe,
                 type=unverified_user.type,
                 realisation_linkedin=unverified_user.realisation_linkedin,
@@ -891,7 +891,7 @@ def delete_user(request):
                 "linkdin":user.realisation_linkedin,
                 "password":user.password,
                 "sex":user.sexe,
-                    "birthday":user.birthday
+            
                 
             }
 
@@ -957,7 +957,7 @@ def add_user(request):
             new_user = UserProfile.objects.create(
                 nom=request.POST.get('nom'),
                 prenom=request.POST.get('prenom'),
-                birthday=request.POST.get('birthday'),
+           
                 sexe=request.POST.get('sexe'),
                 email=request.POST.get('email'),
                 type=request.POST.get('type'),
@@ -976,7 +976,7 @@ def add_user(request):
                 "linkdin":new_user.realisation_linkedin,
                 "password":new_user.password,
                 "sex":new_user.sexe,
-                    "birthday":new_user.birthday
+        
             }
 
             send_admin_email(
@@ -1169,7 +1169,7 @@ def edit_user(request):
             # Mettre à jour les champs
             user.nom = request.POST.get('nom')
             user.prenom = request.POST.get('prenom')
-            user.birthday = request.POST.get('birthday')
+   
             user.sexe = request.POST.get('sexe')
             user.email = request.POST.get('email')
             user.type = request.POST.get('type')

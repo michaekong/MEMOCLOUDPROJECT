@@ -254,8 +254,6 @@
                 <input type="text" class="input-field" name="prenom" placeholder="Prénom" value="{{ form_data.prenom|default:'' }}" required>
             </div>
             <div class="form-row">
-                <label for="birthday" class="form-label">Date de naissance:</label>
-                <input type="date" class="input-field" name="birthday" value="{{ form_data.birthday|default:'' }}" required>
                 <select name="sexe" class="input-field" required>
                     <option value="" disabled {% if not form_data.sexe %}selected{% endif %}>Sexe</option>
                     <option value="M" {% if form_data.sexe == "M" %}selected{% endif %}>Masculin</option>
