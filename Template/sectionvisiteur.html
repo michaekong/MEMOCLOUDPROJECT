@@ -1,4 +1,4 @@
-<section x-show="activeSection === 'visiteurs'" class="p-6 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-lg transition">
+<section x-show="activeSection === 'visiteurs'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
     <h2 class="text-xl font-semibold mb-4">LISTE DES VISITEURS </h2>
    
 
@@ -24,7 +24,7 @@
         </thead>
         <tbody>
             {% for users in visiteurs %}
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <tr >
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.emailv }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.datev }}</td>

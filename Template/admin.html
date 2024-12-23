@@ -2,6 +2,7 @@
 
 
 {% block content %}
+
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
     <div class="mb-4">
         <!-- Sidebar Menu -->
@@ -71,112 +72,143 @@
 
     <div class="col-span-2">
         <!-- Content Sections -->
-        <section x-show="activeSection === 'dashboard'" class="p-8 bg-white dark:bg-gray-900 rounded-lg shadow-lg transition-all ease-in-out">
-            <!-- Title Section with theme toggle -->
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h2 class="text-3xl font-semibold text-gray-900 dark:text-gray-100 mb-4">Tableau de Bord Administrateur</h2>
-                    <h3 class="text-xl font-medium text-gray-700 dark:text-gray-300">Statistiques Globales</h3>
-                </div>
-        
-                <!-- Theme Toggle Icon (Sun/Moon) -->
-                <button @click="toggleTheme" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 transition duration-300 hover:bg-gray-300 dark:hover:bg-gray-600">
-                    <svg x-show="!isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h2M3 12H1m16.24-7.76l1.42 1.42M4.22 19.78l1.42-1.42M18.36 19.78l1.42-1.42M4.22 4.22l1.42 1.42" />
-                    </svg>
-                    <svg x-show="isDarkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 dark:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2m0 14v2m9-9h2M3 12H1m16.24-7.76l1.42 1.42M4.22 19.78l1.42-1.42M18.36 19.78l1.42-1.42M4.22 4.22l1.42 1.42" />
-                    </svg>
-                </button>
-            </div>
-        
-            <!-- Statistiques Section -->
+￼
+￼
+
+<section x-show="activeSection === 'dashboard'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8"p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+    <!-- Title Section with theme toggle -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-3xl font-semibold ">Tableau de Bord Administrateur</h2>
+            <h3 class="text-xl font-medium ">Statistiques Globales</h3>
+        </div>
+       
+     
+    </div>
+
+    <!-- Statistiques Section -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Total Utilisateurs -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Utilisateurs</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_users }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-user-friends text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
+<!-- Total Utilisateurs -->
 
-    <!-- Total Mémoires -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Mémoires</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_memoires }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-book text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <!-- Total Encadrements -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Encadrements</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_encadrements }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-chalkboard-teacher text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <!-- Téléchargements -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Téléchargements</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_telechargements }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-download text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <!-- Total Commentaires -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Commentaires</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_comments }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-comments text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <!-- Domaines -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Domaines</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_dom }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-layer-group text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
-
-    <!-- Total Visites -->
-    <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-200">Total Visites</h4>
-            <p class="text-2xl text-gray-700 dark:text-gray-300">{{ total_visites }}</p>
-        </div>
-        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-full">
-            <i class="fas fa-eye text-xl text-gray-800 dark:text-white"></i>
-        </div>
-    </div>
+<button @click="activeSection = 'users';"
+>
 
 
-                
-            </div>
-           
+<div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+<div>
     
+    <h4 class="text-lg font-semibold ">Total Utilisateurs</h4>
+    <p class="text-2xl  ">{{ total_users }}</p>
+</div>
+<div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+    <i  class="fas fa-user-friends text-xl "></i>
+</div>
+</div>
+</button>
+
+<!-- Total Mémoires -->
+
+<button @click="activeSection = 'memoirs'; adminMenu = false"
+        >
+   
+
+
+<div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+<div>
+    <h4 class="text-lg font-semibold ">Total Mémoires</h4>
+    <p class="text-2xl ">{{ total_memoires }}</p>
+</div>
+<div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+    <i class="fas fa-book text-xl  "></i>
+</div>
+</div>
+</button>
+<!-- Total Encadrements -->
+<button @click="activeSection = 'encadrements'; adminMenu = false"
+                    >
+                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                        <div>
+                            <h4 class="text-lg font-semibold ">Total Encadrements</h4>
+                            <p class="text-2xl ">{{ total_encadrements }}</p>
+                        </div>
+                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+                            <i class="fas fa-chalkboard-teacher text-xl "></i>
+                        </div>
+                    </div>
+            </button>
+
+
+<!-- Téléchargements -->
+
+<button @click="activeSection = 'TELECHARGEMENTS'; adminMenu = false"
+                   >
+                   <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold ">Téléchargements</h4>
+                        <p class="text-2xl ">{{ total_telechargements }}</p>
+                    </div>
+                    <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+                        <i class="fas fa-download text-xl "></i>
+                    </div>
+                </div>
+                
+            </button>
+
+<!-- Total Commentaires -->
+
+<button @click="activeSection = 'comment'; adminMenu = false"
+                    >
+                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                        <div>
+                            <h4 class="text-lg font-semibold ">Commentaires</h4>
+                            <p class="text-2xl ">{{ total_comments }}</p>
+                        </div>
+                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+                            <i class="fas fa-comments text-xl "></i>
+                        </div>
+                    </div>
+            </button>
+
+<!-- Domaines -->
+
+<button @click="activeSection = 'domaine'; adminMenu = false"
+                    >
+                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                        <div>
+                            <h4 class="text-lg font-semibold ">Domaines</h4>
+                            <p class="text-2xl ">{{ total_dom }}</p>
+                        </div>
+                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+                            <i class="fas fa-layer-group text-xl "></i>
+                        </div>
+                    </div>
+               
+            </button>
+
+<!-- Total Visites -->
+
+<button @click="activeSection = 'visiteurs'; adminMenu = false"
+                    >
+                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                        <div>
+                            <h4 class="text-lg font-semibold ">Total Visites</h4>
+                            <p class="text-2xl ">{{ total_visites }}</p>
+                        </div>
+                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
+                            <i class="fas fa-eye text-xl "></i>
+                        </div>
+                    </div>
+               
+            </button>
+
+
         
-          
-        </section>
+    </div>
+   
+
+
+  
+</section>
 
         {% include "sectiondomaine.html" %}
         {% include "sectioncomment.html" %}
@@ -542,116 +574,12 @@ $('#editUserForm').on('submit', function (event) {
                 }
             });
         }
-    }window.showSpinner = function() {
-        if (window.Alpine) {
-            const root = document.querySelector('[x-data]').__x.$data;
-            root.loading = true;
-            document.body.classList.add('loading');
-        }
     }
-    
-    window.hideSpinner = function() {
-        if (window.Alpine) {
-            const root = document.querySelector('[x-data]').__x.$data;
-            root.loading = false;
-            document.body.classList.remove('loading');
-        }
-    }
-    
-    // Montrer le spinner pendant les navigations
-    document.addEventListener('DOMContentLoaded', () => {
-        // Pour les liens
-        document.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (!link.hasAttribute('data-no-spinner')) {
-                    showSpinner();
-                }
-            });
-        });window.showSpinner = function() {
-            if (window.Alpine) {
-                const root = document.querySelector('[x-data]').__x.$data;
-                root.loading = true;
-                document.body.classList.add('loading');
-            }
-        }
+   
+     
         
-        window.hideSpinner = function() {
-            if (window.Alpine) {
-                const root = document.querySelector('[x-data]').__x.$data;
-                root.loading = false;
-                document.body.classList.remove('loading');
-            }
-        }
-        
-        // Montrer le spinner pendant les navigations
-        document.addEventListener('DOMContentLoaded', () => {
-            // Pour les liens
-            document.querySelectorAll('a').forEach(link => {
-                link.addEventListener('click', () => {
-                    if (!link.hasAttribute('data-no-spinner')) {
-                        showSpinner();
-                    }
-                });
-            });
-        
-            // Pour les formulaires
-            document.querySelectorAll('form').forEach(form => {
-                form.addEventListener('submit', () => {
-                    if (!form.hasAttribute('data-no-spinner')) {
-                        showSpinner();
-                    }
-                });
-            });
-        });
-        
-        // Montrer le spinner pendant le chargement initial de la page
-        window.addEventListener('load', () => {
-            hideSpinner();
-        });
-        
-        // Gérer les requêtes AJAX si vous en utilisez
-        document.addEventListener('ajax:before', showSpinner);
-        document.addEventListener('ajax:complete', hideSpinner);
-        
-        // Support pour les requêtes fetch
-        const originalFetch = window.fetch;
-        window.fetch = function() {
-            showSpinner();
-            return originalFetch.apply(this, arguments)
-                .finally(() => {
-                    hideSpinner();
-                });
-        };
-    
-        // Pour les formulaires
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', () => {
-                if (!form.hasAttribute('data-no-spinner')) {
-                    showSpinner();
-                }
-            });
-        });
-    });
-    
-    // Montrer le spinner pendant le chargement initial de la page
-    window.addEventListener('load', () => {
-        hideSpinner();
-    });
-    
-    // Gérer les requêtes AJAX si vous en utilisez
-    document.addEventListener('ajax:before', showSpinner);
-    document.addEventListener('ajax:complete', hideSpinner);
-    
-    // Support pour les requêtes fetch
-    const originalFetch = window.fetch;
-    window.fetch = function() {
-        showSpinner();
-        return originalFetch.apply(this, arguments)
-            .finally(() => {
-                hideSpinner();
-            });
-    };
-    
+       
+  
    
     function showEditUserForm() {
         document.getElementById("editUserForm").style.display = "block";
@@ -744,7 +672,7 @@ $('#editUserForm').on('submit', function (event) {
         }
     
        
-
+    
 
 </script>
 

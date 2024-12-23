@@ -34,6 +34,7 @@ urlpatterns = [
     path('admins/', admins, name='admins'),
     path('memoire/<int:memoire_id>/ajouter_commentaire/', ajouter_commentaire, name='ajouter_commentaire'),
     path('telecharger/<int:memoire_id>/', telecharger_pdf, name='telecharger_pdf'),
+    
 
     path('delete_memoire/', delete_memoire, name='delete_memoire'),
     path('delete_user/', delete_user, name='delete_user'),
@@ -52,7 +53,7 @@ urlpatterns = [
     
     path('send_welcome_email/', send_welcome_email,name="send_welcome_email"),
     
- 
+ path('enraport', enraport, name='enraport'),
     path('edit_profile',  edit_profile,name="edit_profile"),
     path('verification_page', verification_page, name='verification'),
      path('connection', verification_Email, name='verification'),

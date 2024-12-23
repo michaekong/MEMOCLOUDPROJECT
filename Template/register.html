@@ -198,6 +198,37 @@
                 transform: rotate(360deg);
             }
         }
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none; /* Caché par défaut */
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
         
     </style>
 </head>
@@ -223,6 +254,7 @@
                 <input type="text" class="input-field" name="prenom" placeholder="Prénom" value="{{ form_data.prenom|default:'' }}" required>
             </div>
             <div class="form-row">
+                <label for="birthday" class="form-label">Date de naissance:</label>
                 <input type="date" class="input-field" name="birthday" value="{{ form_data.birthday|default:'' }}" required>
                 <select name="sexe" class="input-field" required>
                     <option value="" disabled {% if not form_data.sexe %}selected{% endif %}>Sexe</option>
@@ -232,21 +264,20 @@
                 </select>
             </div>
             <div class="form-row">
-                <input type="email" class="input-field" name="email" placeholder="Email" value="{{ form_data.email|default:'' }}" required>
-                <select name="type" class="input-field" required>
-                    <option value="" disabled {% if not form_data.type %}selected{% endif %}>Type d'utilisateur</option>
-                    <option value="standard" {% if form_data.type == "standard" %}selected{% endif %}>Standard</option>
-                </select>
+
+                <input type="email" class="input-field" name="email" placeholder="Email" value="{{ form_data.email|default:'' }}" placeholder="votre date de naissance"required>
+                
             </div>
             <div class="form-row full-width">
-                <input type="url" class="input-field" name="realisation_linkedin" placeholder="Lien LinkedIn (optionnel)" value="{{ form_data.realisation_linkedin|default:'' }}">
+                <input type="url" class="input-field" name="realisation_linkedin" placeholder="Lien LinkedIn(avec l'entete https/) (optionnel) ex:" value="{{ form_data.realisation_linkedin|default:'' }}">
             </div>
             <div class="form-row">
                 <input type="password" class="input-field" name="password" placeholder="Mot de passe" required>
                 <input type="password" class="input-field" name="confirm_password" placeholder="Confirmer le mot de passe" required>
             </div>
-            <div class="form-row full-width">
-                <input type="file" class="input-field" name="photo_profil" accept="image/*">
+            <div class="form-row ">
+                <label for="photo_profil" class="block text-lg font-semibold mb-2">Photo de profil:</label>
+                <input type="file" class="input-field" name="photo_profil" placeholder="photo de profil" accept="image/*">
             </div>
             <button type="submit" class="register-button">S'inscrire</button>
         </form>

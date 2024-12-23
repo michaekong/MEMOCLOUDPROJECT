@@ -96,7 +96,6 @@ def register_user(request):
         email = request.POST.get('email', '')
         birthday = request.POST.get('birthday', '')
         sexe = request.POST.get('sexe', '')
-        user_type = request.POST.get('type', '')
         realisation_linkedin = request.POST.get('realisation_linkedin', '')
         photo_profil = request.FILES.get('photo_profil', None)
         password = request.POST.get('password', '')
@@ -109,7 +108,6 @@ def register_user(request):
             "email": email,
             "birthday": birthday,
             "sexe": sexe,
-            "type": user_type,
             "realisation_linkedin": realisation_linkedin,
         }
 
@@ -140,7 +138,6 @@ def register_user(request):
                 email=email,
                 birthday=birthday,
                 sexe=sexe,
-                type=user_type,
                 realisation_linkedin=realisation_linkedin,
                 photo_profil=photo_profil,
                 password=hashed_password,
@@ -222,6 +219,9 @@ def verification_page(request):
     # Si GET, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
 def resend_email(request, *args, **kwargs):
+    verification_code = random.randint(100000, 999999)
+    request.session['verification_code'] = verification_code
+    print(verification_code)
     # Récupérer l'email de la session
     email = request.session.get('user_email')
     
@@ -232,8 +232,7 @@ def resend_email(request, *args, **kwargs):
 
     try:
         # Génération d'un nouveau code de vérification
-        verification_code = random.randint(100000, 999999)
-        request.session['verification_code'] = verification_code
+        
 
         # Récupérer l'utilisateur non vérifié à partir de l'email
         unverified_user = UnverifiedUserProfile.objects.get(email=email)
@@ -502,6 +501,148 @@ def liste_memoires(request):
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
         return redirect('liste_memoires')
+def enraport(request):
+    try:
+        # Vérification de l'authentification
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except KeyError:
+        return redirect('logout')
+    
+   
+    
+    try:
+        # Récupération des mémoires avec toutes leurs relations
+        memoires = Memoire.objects.prefetch_related(
+            Prefetch(
+                'encadrements',
+                queryset=Encadrement.objects.select_related('encadrant'),
+                to_attr='encadreur_list'
+            ),
+            'domaines',
+            Prefetch(
+                'notations',
+                queryset=NotationCommentaire.objects.select_related('utilisateur'),
+                to_attr='notations_list'
+            ),
+            'telechargements'
+        ).select_related(
+            'auteur'
+        ).annotate(
+            nbr_telechargements=Count('telechargements'),
+            note_moyenne=Avg('notations__note'),
+            nbr_notations=Count('notations'),
+            nbr_commentaires=Count('notations')  # Vérifiez que cela compte correctement
+        )
+
+        # Recherche textuelle
+        query = request.GET.get('q')
+        if query:
+            memoires = memoires.filter(
+                Q(titre__icontains=query) |
+                Q(domaines__nom__icontains=query) |
+                Q(auteur__prenom__icontains=query) |
+                Q(auteur__nom__icontains=query) |
+                Q(resume__icontains=query)
+            ).distinct()
+
+        # Filtres additionnels
+        domaine_id = request.GET.get('domaine')
+        annee = request.GET.get('annee')
+        encadreur_id = request.GET.get('encadreur')
+        auteur_id = request.GET.get('auteur')
+
+        if domaine_id:
+            memoires = memoires.filter(domaines__id=domaine_id)
+
+        if annee:
+            memoires = memoires.filter(annee_publication=annee)
+
+        if encadreur_id:
+            memoires = memoires.filter(encadrements__encadrant__id=encadreur_id)
+
+        if auteur_id:
+            memoires = memoires.filter(auteur__id=auteur_id)
+
+        # Construction du dictionnaire détaillé pour la liste de mémoires
+        memoires_list = []
+        for memoire in memoires:
+            memoires_list.append({
+                'id': memoire.id,
+                'titre': memoire.titre,
+                'annee_publication': memoire.annee_publication,
+                'resume': memoire.resume,
+                'auteur': {
+                    'id': memoire.auteur.id,
+                    'nom': memoire.auteur.nom,
+                    'prenom': memoire.auteur.prenom,
+                    'email': memoire.auteur.email,
+                    'photo_profil': memoire.auteur.photo_profil.url if memoire.auteur.photo_profil else None,
+                    'linkedin': memoire.auteur.realisation_linkedin
+                },
+                'domaines': [{
+                    'id': domaine.id,
+                    'nom': domaine.nom
+                } for domaine in memoire.domaines.all()],
+                'encadreurs': [{
+                    'id': encadrement.encadrant.id,
+                    'nom': encadrement.encadrant.nom,
+                    'prenom': encadrement.encadrant.prenom,
+                    'email': encadrement.encadrant.email,
+                    'photo_profil': encadrement.encadrant.photo_profil.url if encadrement.encadrant.photo_profil else None,
+                    'linkedin': encadrement.encadrant.realisation_linkedin
+                } for encadrement in memoire.encadreur_list],
+                'statistiques': {
+                    'nbr_telechargements': memoire.nbr_telechargements,
+                    'note_moyenne': round(memoire.note_moyenne, 2) if memoire.note_moyenne else 0,
+                    'nbr_notations': memoire.nbr_notations,
+                    'nbr_commentaires': memoire.nbr_commentaires  # Nombre de commentaires
+                },
+                'notations': [{
+                    'utilisateur': {
+                        'id': notation.utilisateur.id,
+                        'nom': notation.utilisateur.nom,
+                        'prenom': notation.utilisateur.prenom,
+                        'linkedin': notation.utilisateur.realisation_linkedin,
+                        'photo_profil': notation.utilisateur.photo_profil.url if notation.utilisateur.photo_profil else None
+                    },
+                    'note': notation.note,
+                    'commentaire': notation.commentaire,
+                    'date': notation.date_creation
+                } for notation in memoire.notations_list],
+                'telechargements': [{
+                    'email': telechargement.emailt,
+                    'date': telechargement.datet
+                } for telechargement in memoire.telechargements.all()],
+                'fichiers': {
+                    'image': memoire.images.url if memoire.images else None,
+                    'document': memoire.fichier_memoire.url if memoire.fichier_memoire else None
+                }
+            })
+        memoires =list(filter(lambda x: x['encadreurs']['id']==idp or x['auteur']['id']==idp ,memoires_list ))
+        print(memoires_list)    
+
+        # Données pour les filtres
+        domaines_uniques = Domaine.objects.all()
+        annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
+        encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
+        auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
+
+        context = {
+            'memoires': memoires,
+            'domaines': domaines_uniques,
+            'annees': sorted(annees_uniques),
+            'encadreurs': encadreurs_uniques,
+            'auteurs': auteurs_uniques,
+            'query_params': request.GET,
+            'user': user
+        }
+
+        return render(request, 'memoire.html', context)
+
+    except Exception as e:
+        messages.error(request, f"Une erreur s'est produite: {str(e)}")
+        return redirect('enraport')
 def telecharger_pdf(request, memoire_id):
     # Récupérer le mémoire correspondant à l'ID
     memoire = get_object_or_404(Memoire, id=memoire_id)
@@ -1285,13 +1426,14 @@ from .utils import *
 
 def send_welcome_email(request, *args, **kwargs):
     ctx={}
+    verification_code = random.randint(100000, 999999)
+    request.session['verification_code'] = verification_code
+    print(verification_code)
     
     if request.method == "POST":
         subjet='verification code '
         email=request.POST.get("email")
-        # Génération du code de vérification à 6 chiffres
-        verification_code = random.randint(100000, 999999)
-        request.session['verification_code'] = verification_code
+      
         request.session['user_email'] = email  
         
         user = UserProfile.objects.get(email=email)

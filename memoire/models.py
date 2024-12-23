@@ -22,7 +22,7 @@ class UserProfile(models.Model):
     birthday = models.DateField()
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES)
     email = models.EmailField(unique=True)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES ,default='standard')
     realisation_linkedin = models.URLField(max_length=200, blank=True, null=True)
     photo_profil = models.ImageField(upload_to='photos_profil/', blank=True, null=True)
     password = models.CharField(max_length=128)

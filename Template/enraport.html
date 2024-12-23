@@ -10,7 +10,7 @@
 
     <!-- Formulaire de filtrage qui se cache au départ -->
     <div id="filterForm" class="collapse shadow-lg p-4 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-300">
-        <form method="GET" action="{% url 'liste_memoires' %}" class="mb-4">
+        <form method="GET" action="{% url 'enraport' %}" class="mb-4">
             <!-- Recherche par mot-clé -->
             <div class="form-group">
                 <label for="q" class="font-weight-bold dark:text-gray-300">Rechercher</label>
@@ -65,7 +65,7 @@
             <!-- Boutons de filtrage -->
             <div class="d-flex justify-content-between mt-3">
                 <button type="submit" class="btn btn-outline-primary w-48">Filtrer</button>
-                <a href="{% url 'liste_memoires' %}" class="btn btn-outline-secondary w-48">Réinitialiser les filtres</a>
+                <a href="{% url 'enraport' %}" class="btn btn-outline-secondary w-48">Réinitialiser les filtres</a>
             </div>
         </form>
     </div>
@@ -189,9 +189,7 @@
                                         <p class="font-semibold text-gray-700 dark:text-gray-300">
                                            
                                             <a href="{{notation.utilisateur.linkedin }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
-                                                {% if notation.utilisateur.id == user.id %}vous
-                                                {% else %}{{ notation.utilisateur.prenom }} {{ notation.utilisateur.nom }} {% endif %}
-                                                :
+                                                {{ notation.utilisateur.prenom }} {{ notation.utilisateur.nom }} :
                                             </a>
                                             
                                           
