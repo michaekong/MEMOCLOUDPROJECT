@@ -143,7 +143,7 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS=['static']
 MEDIA_URL="media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"Template/media/")
-STATIC_ROOT = 'static/' # Répertoire où collectstatic va copier les fichiers
+ # Répertoire où collectstatic va copier les fichiers
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
