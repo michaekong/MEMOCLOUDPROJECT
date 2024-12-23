@@ -157,20 +157,23 @@
                     </span>
     
                 </button>
-                <a 
-                href="{{ memoire.fichier_memoire}}" 
-                class="btn btn-info d-flex align-items-center gap-2"
+                <form 
+                id="downloadForm" 
+                action="{% url 'telecharger_memoire' memoire.id %}" 
+                method="GET" 
                 target="_blank"
-                download="fichier.pdf"
-                onclick="submitMemoireForm('{{ memoire.id }}')"
-                title="Télécharger le fichier pdf"
+                onsubmit="handleDownload()"
             >
-                <!-- Logo de téléchargement -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
-                </svg>
-                <span class="text-lg font-semibold text-blue-800">({{ memoire.statistiques.nbr_telechargements }})</span>
-            </a>
+                <button type="submit" class="btn btn-info">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+                    </svg>
+                    <span class="text-lg font-semibold text-blue-800">
+                        ({{ memoire.statistiques.nbr_telechargements }})
+                    </span>
+                </button>
+            </form>
+                   
                 
                 <!-- Modal pour afficher les commentaires -->
                 <div class="modal fade" id="commentModal{{ memoire.id }}" tabindex="-1" aria-labelledby="commentModalLabel{{ memoire.id }}" aria-hidden="true">
@@ -285,20 +288,23 @@
             <!-- Pied du modal -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <a 
-                href="{{ memoire.fichier_memoire}}" 
-                class="btn btn-info d-flex align-items-center gap-2"
-                target="_blank"
-                download="fichier.pdf"
-                onclick="submitMemoireForm('{{ memoire.id }}')"
-                title="Télécharger le fichier pdf"
-            >
-                <!-- Logo de téléchargement -->
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
-                </svg>
-                <span class="text-lg font-semibold text-blue-800">({{ memoire.statistiques.nbr_telechargements }})</span>
-            </a>
+   
+<form 
+    id="downloadForm" 
+    action="{% url 'telecharger_memoire' memoire.id %}" 
+    method="GET" 
+    target="_blank"
+    onsubmit="handleDownload()"
+>
+    <button type="submit" class="btn btn-info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/>
+        </svg>
+        <span class="text-lg font-semibold text-blue-800">
+            ({{ memoire.statistiques.nbr_telechargements }})
+        </span>
+    </button>
+</form>
             </div>
         </div>
     </div>
@@ -306,13 +312,7 @@
                     
                 
             <!-- Téléchargement -->
-<div class="flex justify-between items-center mt-6">
 
-    <form id="memoireForm" method="POST" action="{% url 'telecharger_pdf' %}" style="display: none;">
-        {% csrf_token %}
-        <input type="hidden" name="memoire_id" id="memoire_id">
-    </form>
-</div>
             </div>
             
         </div>
@@ -355,6 +355,12 @@
     function closeModal(memoireId) {
         $('#resumeModal' + memoireId).modal('hide');
         $('.modal-backdrop').remove(); // Supprime le fond sombre manuellement
+    }
+    function handleDownload() {
+        // Temporisation pour permettre au téléchargement de commencer
+        setTimeout(() => {
+            location.reload(); // Recharger la page
+        }, 1000);
     }
     
 </script>

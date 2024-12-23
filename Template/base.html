@@ -390,37 +390,8 @@ body {
         transform: rotate(360deg);
     }
 }
-.spinner-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    display: none; /* Caché par défaut */
-}
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-top: 5px solid var(--accent-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
 
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
         
     </style>
@@ -436,28 +407,44 @@ body {
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <h1 class="text-xl font-bold text-blue-500 dark:text-teal-400">Bibliothèque des Mémoires</h1>
             <div class="flex items-center space-x-4">
-                <button @click="darkMode = !darkMode" class="btn-primary px-4 py-2 rounded-md flex items-center">
-                    <!-- Icône Soleil -->
-                    <svg x-show="!darkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m0 14v2m7-9h2M3 12H1m15.364-6.364l1.414 1.414M6.343 17.657l1.414 1.414m10.607 0l-1.414-1.414M7.757 6.343L6.343 7.757M12 8a4 4 0 100 8 4 4 0 000-8z" />
-                    </svg>
-                    <!-- Icône Lune -->
-                    <svg x-show="darkMode" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
-                    </svg>
-                </button>
+                <button 
+                @click="darkMode = !darkMode;
+                        localStorage.setItem('darkMode', darkMode);
+                        if (darkMode) { 
+                            document.documentElement.classList.add('dark'); 
+                        } else { 
+                            document.documentElement.classList.remove('dark'); 
+                        }"
+                :class="darkMode ? 'bg-gray-700' : 'bg-gray-300'"
+                class="px-4 py-2 rounded-full transition-colors flex items-center">
+                <!-- Icône Soleil ou Lune -->
+                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'" 
+                   :class="darkMode ? 'text-yellow-500' : 'text-gray-800'" 
+                   class="text-xl mr-2"></i>
+                <!-- Texte du bouton -->
+                <span :class="darkMode ? 'text-white' : 'text-black'">
+                    <span x-text="darkMode ? 'Mode Nuit' : 'Mode Jour'"></span>
+                </span>
+            </button>
+            
+
                 <!-- Bouton Compte avec menu déroulant -->
                 {% block account %}
 <div class="relative" x-data="{ accountMenu: false }">
     <!-- Bouton pour ouvrir/fermer le menu -->
     <button @click="accountMenu = !accountMenu" 
-            class="btn-primary px-4 py-2 rounded-md flex items-center space-x-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" 
-             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" 
-                  d="M5.121 17.804A10.966 10.966 0 0112 15c2.076 0 4.007.632 5.623 1.71M12 13c3.866 0 7-3.134 7-7S15.866 0 12 0 5 3.134 5 7s3.134 7 7 7zM12 7a3 3 0 100-6 3 3 0 000 6z" />
-        </svg>
-    </button>
+        :class="darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-300 text-gray-800 hover:bg-gray-200'"
+        class="px-4 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200">
+    <!-- Icône du menu -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-colors duration-200"
+         :class="darkMode ? 'text-white' : 'text-gray-800'" fill="none" 
+         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" 
+              d="M5.121 17.804A10.966 10.966 0 0112 15c2.076 0 4.007.632 5.623 1.71M12 13c3.866 0 7-3.134 7-7S15.866 0 12 0 5 3.134 5 7s3.134 7 7 7zM12 7a3 3 0 100-6 3 3 0 000 6z" />
+    </svg>
+    <!-- Texte du bouton (ajouté si nécessaire) -->
+    <span x-text="accountMenu ? 'Fermer le menu' : 'Ouvrir le menu'"></span>
+</button>
 
     <!-- Menu déroulant affiché comme une infobulle -->
     <div x-show="accountMenu" 
@@ -550,6 +537,19 @@ body {
 
     <script>
         document.addEventListener('alpine:init', () => {
+            Alpine.data('darkModeToggle', () => ({
+                darkMode: localStorage.getItem('darkMode') === 'true', // Vérifie l'état stocké
+                init() {
+                    // Applique le mode sombre si l'état est 'true'
+                    if (this.darkMode) {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+                }
+            }));
+        });
+        document.addEventListener('alpine:init', () => {
             Alpine.data('searchFilter', () => ({
                 search: '',
                 domaine: '',
@@ -561,18 +561,37 @@ body {
         });
         document.addEventListener('DOMContentLoaded', function () {
             const spinner = document.getElementById('spinner');
-    
+            
             // Masquer le spinner immédiatement après que la page est prête
             spinner.style.display = 'none';
-    
+        
             const form = document.querySelector('form');
             if (form) {
+                // Afficher le spinner lors de la soumission du formulaire
                 form.addEventListener('submit', function () {
-                    spinner.style.display = 'flex'; // Affiche le spinner lors de l'envoi du formulaire
+                    showSpinner(); // Affiche le spinner
                 });
             }
         });
-
+        
+        // Fonction pour afficher le spinner
+        function showSpinner() {
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'flex'; // Affiche le spinner (mode flex pour le centrer)
+        }
+        
+        // Fonction pour masquer le spinner
+        function hideSpinner() {
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'none'; // Cache le spinner
+        }
+        
+        // Masquer le spinner après le chargement complet de la page
+        window.addEventListener('load', () => {
+            hideSpinner(); // Cache le spinner une fois la page chargée
+        });
+        
     </script>
+    
 </body>
 </html>

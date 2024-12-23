@@ -6,14 +6,16 @@
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
     <div class="mb-4">
         <!-- Sidebar Menu -->
+      
         <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
             <!-- Bouton pour afficher/masquer le menu -->
-            <button @click="adminMenu = !adminMenu" class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                <span>Menu Admin</span>
-                <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
+            <button @click="adminMenu = !adminMenu; $nextTick(() => { if (adminMenu) { setTimeout(() => { adminMenu = false }, 3000) } })" 
+                class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+            <span>Menu Admin</span>
+            <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
     
             <!-- Menu déroulant -->
             <ul x-show="adminMenu" x-transition @click.outside="adminMenu = false" class="mt-4 space-y-2">
@@ -346,8 +348,9 @@ $('#editMemoireModal').on('show.bs.modal', function(event) {
     
     // Script pour récupérer l'ID de l'encadrement et le remplir dans le formulaire de la modal
 // Soumission Ajax pour le formulaire de modification de l'encadrement
-$('#editEncadrementForm').on('submit', function(event) {
+$('#editEncadrementForm').on('submit', function(event) {showSpinner();
     event.preventDefault();  // Empêcher la soumission par défaut du formulaire
+    
 
     var form = $(this);
     var formData = new FormData(form[0]);  // Récupérer les données du formulaire
@@ -364,7 +367,7 @@ $('#editEncadrementForm').on('submit', function(event) {
                 // Fermer la modal de modification
                 $('#editEncadrementModal').modal('hide');
                 
-               
+                hideSpinner(); // Masque le spinner après l'opération
                 showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
                    
                 
@@ -373,10 +376,12 @@ $('#editEncadrementForm').on('submit', function(event) {
                 // Rafraîchir la page pour afficher les modifications
                 
             } else {
+                hideSpinner(); // Masque le spinner après l'opération
                 showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
             }
         },
         error: function() {
+            hideSpinner(); // Masque le spinner après l'opération
             showTooltip(" erreurs  de modification du lien d'encadrement ,Veuillez reessayer !", true,"ov2","tol2","mes2");
         }
     });
@@ -498,6 +503,7 @@ $('#editUserForm').on('submit', function (event) {
     
     function deleteEncadrement(encadrementId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer cet encadrement ?')) {
+            showSpinner();
             $.ajax({
                 url: '/delete_encadrement/',  // URL vers la vue delete_encadrement
                 type: 'POST',
@@ -670,7 +676,45 @@ $('#editUserForm').on('submit', function (event) {
             searchTable(tableId, searchInputId);
             filterInputIds.forEach(id => filterTable(tableId, id, filterInputIds.indexOf(id) + 1));
         }
-    
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            const spinner = document.getElementById('spinner-visiteurs');
+            
+            // Masquer le spinner immédiatement après que la page soit prête
+            spinner.style.display = 'none';
+        
+            // Fonction pour afficher le spinner
+            function showSpinner() {
+                spinner.style.display = 'flex';  // Affiche le spinner (mode flex pour centrer)
+            }
+        
+            // Fonction pour masquer le spinner
+            function hideSpinner() {
+                spinner.style.display = 'none'; // Cache le spinner
+            }
+        
+            // Afficher le spinner lors de l'envoi d'une recherche
+            document.getElementById('visiteurSearchInput').addEventListener('keyup', function() {
+                showSpinner(); // Affiche le spinner lors de la recherche
+                setTimeout(() => {
+                    hideSpinner(); // Masque le spinner après un délai (simulateur de chargement)
+                }, 500);  // Simuler un temps de recherche
+            });
+        
+            // Afficher le spinner lors du filtrage des visiteurs
+            document.getElementById('visiteurEmailFilter').addEventListener('keyup', function() {
+                showSpinner(); // Affiche le spinner lors du filtrage
+                setTimeout(() => {
+                    hideSpinner(); // Masque le spinner après un délai (simulateur de filtrage)
+                }, 500);  // Simuler un temps de filtrage
+            });
+        
+            // Masquer le spinner après le chargement complet de la page
+            window.addEventListener('load', () => {
+                hideSpinner(); // Cache le spinner une fois la page chargée
+            });
+        });
+        
        
     
 

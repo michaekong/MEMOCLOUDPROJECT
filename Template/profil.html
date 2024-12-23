@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div id="spinner" class="spinner-overlay" style="display: none;">
+    <div class="spinner loader"></div>
+</div>
 <div class="p-6 mb-4 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
     <!-- Titre -->
     <h2 class="text-2xl font-bold mb-6 text-center">Mon Profil</h2>
@@ -48,9 +51,79 @@
     <!-- Bouton Modifier Profil -->
     <div class="mt-8 text-center">
         <a href="{% url 'edit_profile' %}" 
-        class="btn btn-info">
+           class="btn btn-info"
+           id="editProfileBtn">
             Modifier Profil
         </a>
     </div>
 </div>
+
+<style>
+    /* Spinner */
+    .loader {
+        border: 4px solid rgba(0, 0, 0, 0.1); /* Base border */
+        border-top-color: #3498db; /* Spinner color */
+        border-radius: 50%; /* Circle shape */
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Animation du spinner */
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Overlay qui couvre toute la page pour afficher le spinner */
+    .spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    /* Masquer l'overlay initialement */
+    #spinner {
+        display: none;
+    }
+</style>
+
+<script>
+    // Fonction pour afficher le spinner
+    function showSpinner() {
+        const spinner = document.getElementById('spinner');
+        spinner.style.display = 'flex';  // Affiche le spinner (mode flex pour le centrer)
+    }
+
+    // Fonction pour masquer le spinner
+    function hideSpinner() {
+        const spinner = document.getElementById('spinner');
+        spinner.style.display = 'none';  // Cache le spinner
+    }
+
+    // Intercepter le clic sur le lien "Modifier Profil"
+    document.getElementById('editProfileBtn').addEventListener('click', function(event) {
+        event.preventDefault();  // Empêche la redirection immédiate
+        showSpinner();           // Affiche le spinner
+
+        // Redirige après un court délai pour permettre l'affichage du spinner
+        setTimeout(() => {
+            window.location.replace(this.href);  // Utilisez window.location.replace pour rediriger sans retour
+        }, 500);  // Attendre 500ms avant de rediriger
+    });
+
+    // Masquer le spinner après le chargement complet de la page
+    window.addEventListener('load', () => {
+        hideSpinner();  // Cache le spinner une fois la page chargée
+    });
+</script>
+
 {% endblock content %}

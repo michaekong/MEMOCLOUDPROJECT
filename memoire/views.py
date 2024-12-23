@@ -501,6 +501,7 @@ def liste_memoires(request):
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
         return redirect('liste_memoires')
+       
 def enraport(request):
     try:
         # Vérification de l'authentification
@@ -643,21 +644,7 @@ def enraport(request):
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
         return redirect('enraport')
-def telecharger_pdf(request, memoire_id):
-    # Récupérer le mémoire correspondant à l'ID
-    memoire = get_object_or_404(Memoire, id=memoire_id)
-
-    # Vérifier que le fichier existe sur le serveur
-    fichier_path = memoire.fichier_memoire.path
-    if not os.path.exists(fichier_path):
-        raise Http404("Le fichier demandé n'existe pas.")
-
-    # Incrémenter le compteur de téléchargements
-    memoire.nbr_telechargements += 1
-    memoire.save()
-
-    # Servir le fichier en tant que réponse
-    return FileResponse(open(fichier_path, 'rb'), as_attachment=True, filename=f"{memoire.titre}.pdf")
+    return redirect('liste', memoire_id=memoire.id)
 
 
 def common(request,*args, **kwargs):
@@ -1331,7 +1318,7 @@ def edit_encadrement(request):
     if request.method == 'POST':
         try:
             encadrement_id = request.POST.get('encadrement_id')
-            print(encadrement_id)
+           
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
             
             # Capturer l'état de l'objet avant modification
@@ -1455,7 +1442,7 @@ def send_welcome_email(request, *args, **kwargs):
     return render(request,"verified.html",ctx) 
 from datetime import datetime
 def send_admin_email(user, subject, action_type, action_details,object_before,object_after):
-    print(user) 
+    
     # Récupère tous les utilisateurs ayant le rôle d'admin ou superadmin
     admins = UserProfile.objects.filter(type="superadmin") | UserProfile.objects.filter(type="admin")
     recipients = [admin.email for admin in admins if admin.email]  # S'assurer que l'email est valide
@@ -1478,4 +1465,29 @@ def send_admin_email(user, subject, action_type, action_details,object_before,ob
             template='adminmail.html',
             context=context
         )
-       
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
+
+def telecharger_pdf(request, memoire_id):
+    # Récupérer le mémoire
+    memoire = get_object_or_404(Memoire, id=memoire_id)
+
+    if not memoire.fichier_memoire:
+        raise Http404("Fichier non trouvé")
+
+    # Récupérer l'utilisateur connecté
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except KeyError:
+        return redirect('logout')
+
+    # Enregistrer le téléchargement
+    Telechargement.objects.create(memoire=memoire, emailt=user.email)
+
+    # Incrémenter le nombre de téléchargements
+    
+    # Retourner le fichier
+    response = FileResponse(open(memoire.fichier_memoire.path, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{memoire.fichier_memoire.name}"'
+    return response
