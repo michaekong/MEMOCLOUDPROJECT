@@ -88,25 +88,31 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', {'user': user_profile})
 
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
+from .models import UserProfile, UnverifiedUserProfile
+from .utils import send_advanced_email  # Suppose que vous avez une fonction pour envoyer des emails
+import random
+from django.conf import settings
+
 def register_user(request):
     if request.method == 'POST':
         # Récupération des données
-        nom = request.POST.get('nom', '')
-        prenom = request.POST.get('prenom', '')
-        email = request.POST.get('email', '')
-     
-        sexe = request.POST.get('sexe', '')
-        realisation_linkedin = request.POST.get('realisation_linkedin', '')
+        nom = request.POST.get('nom', '').strip()
+        prenom = request.POST.get('prenom', '').strip()
+        email = request.POST.get('email', '').strip()
+        sexe = request.POST.get('sexe', '').strip()
+        realisation_linkedin = request.POST.get('realisation_linkedin', '').strip()
         photo_profil = request.FILES.get('photo_profil', None)
-        password = request.POST.get('password', '')
-        confirm_password = request.POST.get('confirm_password', '')
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
 
         # Initialiser les données pour remplir le formulaire en cas d'erreur
         form_data = {
             "nom": nom,
             "prenom": prenom,
             "email": email,
-         
             "sexe": sexe,
             "realisation_linkedin": realisation_linkedin,
         }
@@ -114,17 +120,17 @@ def register_user(request):
         # Validation des mots de passe
         if password != confirm_password:
             messages.error(request, "Les mots de passe ne correspondent pas.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Les mots de passe ne correspondent pas."})
+            return render(request, "register.html", {"form_data": form_data})
 
         # Vérification si l'utilisateur existe déjà
         if UserProfile.objects.filter(email=email).exists():
             messages.error(request, "Un utilisateur avec cet email existe déjà.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Un utilisateur avec cet email existe déjà."})
+            return render(request, "register.html", {"form_data": form_data})
 
         # Vérification si l'utilisateur non vérifié existe déjà
         if UnverifiedUserProfile.objects.filter(email=email).exists():
             messages.error(request, "Vous avez déjà initié une inscription. Vérifiez votre e-mail.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Vous avez déjà initié une inscription. Vérifiez votre e-mail."})
+            return render(request, "register.html")
 
         try:
             # Génération du code de vérification
@@ -136,7 +142,6 @@ def register_user(request):
                 nom=nom,
                 prenom=prenom,
                 email=email,
-            
                 sexe=sexe,
                 realisation_linkedin=realisation_linkedin,
                 photo_profil=photo_profil,
@@ -156,16 +161,16 @@ def register_user(request):
             context = {
                 'verification_code': verification_code,
                 'user': unverified_user,
-                'verification_url':verification_url,
+                'verification_url': verification_url,
             }
             send_advanced_email([email], subject, template, context)
 
-            messages.success(request, "Un code de vérification vous a été envoyé par email.")
-            return render(request, "verified.html", context)
+            messages.success(request, "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.")
+            return redirect('verified')  # Redirige vers la page de vérification
 
         except Exception as e:
-            messages.error(request, f"Erreur : {e}")
-            return render(request, "register.html", {"form_data": form_data, "error": f"Erreur : {e}"})
+            messages.error(request, f"Une erreur est survenue lors de l'inscription : {e}")
+            return render(request, "register.html", {"form_data": form_data})
 
     # Si GET, renvoyer la page d'inscription vide
     return render(request, "register.html")
@@ -288,9 +293,11 @@ def resend_email(request, *args, **kwargs):
         # Envoi de l'email avec le code de vérification
         subject = "Code de vérification"
         template = "template.html"  # Assurez-vous que ce template existe
+        verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
         context = {
             'verification_code': verification_code,
             'user': unverified_user,
+            'verification_url':verification_url,
         }
 
         send_advanced_email([email], subject, template, context)
@@ -348,9 +355,10 @@ def login(request, *args, **kwargs):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
+
         # Validation des champs obligatoires
         if not email or not password:
-            messages.error(request, "Veuillez remplir tous les champs.")
+            messages.error(request, "Veuillez remplir tous les champs.",extra_tags="login")
             return redirect('/login')
 
         try:
@@ -364,7 +372,7 @@ def login(request, *args, **kwargs):
                 request.session['user_email'] = user.email
                 request.session['emailv'] = user.email
 
-                messages.success(request, "Connexion réussie. Bienvenue !")
+                messages.success(request, "Connexion réussie. Bienvenue !",extra_tags="login")
 
                 # Redirection en fonction du type d'utilisateur
                 if user.type in ["admin", "superadmin"]:
@@ -374,10 +382,10 @@ def login(request, *args, **kwargs):
                     visiteur.objects.create(emailv=email)
                     return redirect('liste_memoires')  # Page principale pour les utilisateurs standards
             else:
-                messages.error(request, "Mot de passe incorrect.")
+                messages.error(request, "Mot de passe incorrect.",extra_tags="login")
                 return render(request,"login.html",{"error":"Mot de passe incorrect."})
         except UserProfile.DoesNotExist:
-            messages.error(request, "Aucun compte trouvé avec cet email.")
+            messages.error(request, "Aucun compte trouvé avec cet email.",extra_tags="login")
             return render(request,"login.html",{"error":"Aucun compte trouvé avec cet email."})
 
         
@@ -394,7 +402,7 @@ def logout(request):
         del request.session['user_email']
     
     # Message de succès
-    messages.success(request, "Déconnexion réussie. À bientôt !")
+    messages.success(request, "Déconnexion réussie. À bientôt !",extra_tags="login")
     
     # Rediriger vers la page de connexion
     return redirect('/login')
