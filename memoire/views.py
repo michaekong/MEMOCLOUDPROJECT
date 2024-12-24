@@ -152,7 +152,7 @@ def register_user(request):
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
             template = "template.html"
-            verification_url = f"{settings.SITE_URL}/verify/?code={verification_code}"
+            verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
             context = {
                 'verification_code': verification_code,
                 'user': unverified_user,
