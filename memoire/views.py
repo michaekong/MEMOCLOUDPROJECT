@@ -1482,7 +1482,7 @@ def send_welcome_email(request, *args, **kwargs):
             'email':email,
             'user':user,
             'verification_code':verification_code,
-            'verification_url':verification_url
+            'verification_url':verification_url,
             
             
             
@@ -1502,6 +1502,7 @@ def send_admin_email(user, subject, action_type, action_details,object_before,ob
     recipients = [admin.email for admin in admins if admin.email]  # S'assurer que l'email est valide
 
     # Préparer le contexte pour le template de l'email
+    verification_url = f"{settings.SITE_URL}/login"
     context = {
         'action_type': action_type,  # Type d'action
         'action_details': action_details, 
@@ -1510,8 +1511,9 @@ def send_admin_email(user, subject, action_type, action_details,object_before,ob
         'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'object_before': object_before,
         'object_after': object_after,
+         'verification_url': verification_url,  
     }
-    
+     
     if recipients:
         send_advanced_email(
             recipient=recipients,
