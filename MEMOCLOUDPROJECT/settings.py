@@ -104,7 +104,6 @@ DATABASES = {
         
 }
 }
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -143,6 +142,8 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS=['static']
 MEDIA_URL="media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"Template/media/")
+STATIC_ROOT = os.path.join(BASE_DIR, 'Template/')
+
  # Répertoire où collectstatic va copier les fichiers
 
 # Default primary key field type
