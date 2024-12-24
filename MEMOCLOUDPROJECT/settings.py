@@ -95,15 +95,12 @@ WSGI_APPLICATION = 'MEMOCLOUDPROJECT.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':'MEMOCLOUD',
-        'HOST':'127.0.0.1',
-        'USER':'root',
-        'PASSWORD':'',
-        'PORT':3305,
-        
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),  # Assurez-vous que 'NAME' est une chaîne de caractères
+    }
 }
-}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
