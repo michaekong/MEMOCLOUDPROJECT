@@ -100,10 +100,11 @@
         
         <p class="verification-title">Merci de vous être inscrit sur notre plateforme. Nous sommes ravis de vous compter parmi nous.</p>
         
-        <p class="verification-title">Pour activer votre compte, utilisez le code d'activation suivant :</p>
+        <p class="verification-title">Pour activer votre compte, utilisez le code d'activation suivant :{{ verification_code }}</p>
         
-        <a class="verify-button" href="#">Code d'activation : <strong>{{ verification_code }}</strong></a>
-        
+
+        <a class="verify-button" href="{{ verification_url }}">Activer mon compte</a>
+
         <footer>
             <small>Si vous avez des questions, contactez-nous à : 
                 <a href="mailto:memecloudenstp@gmail.com">memecloudenstp@gmail.com</a>

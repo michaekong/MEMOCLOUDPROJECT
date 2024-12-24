@@ -49,7 +49,7 @@ urlpatterns = [
      path('add_domaine/', add_domaine, name='add_domaine'),
     path('edit_memoire/', edit_memoire, name='edit_memoire'),
     path('edit_encadrement/', edit_encadrement, name='edit_encadrement'),
-   
+   path('verify_account', verify_account, name='verify_account'),
             path('telecharger/<int:memoire_id>/', telecharger_pdf, name='telecharger_memoire'),
 
     path('send_welcome_email/', send_welcome_email,name="send_welcome_email"),

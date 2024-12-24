@@ -152,9 +152,11 @@ def register_user(request):
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
             template = "template.html"
+            verification_url = f"{settings.SITE_URL}/verify/?code={verification_code}"
             context = {
                 'verification_code': verification_code,
                 'user': unverified_user,
+                'verification_url':verification_url,
             }
             send_advanced_email([email], subject, template, context)
 
@@ -215,6 +217,51 @@ def verification_page(request):
             # Gestion des codes incorrects
             messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
             return render(request, "verified.html", {"email": email})
+
+    # Si GET, afficher la page de vérification
+    return render(request, "verified.html", {"email": email})
+def verify_account(request):
+    code = request.GET.get('code', '')
+    email = request.session.get('user_email')
+    stored_code = request.session.get('verification_code')
+
+    if not email or not stored_code:
+        messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
+        return redirect('register')  # Redirige vers l'inscription si les informations sont manquantes
+
+    try:
+        # Récupération de l'utilisateur non vérifié
+        unverified_user = UnverifiedUserProfile.objects.get(email=email)
+    except UnverifiedUserProfile.DoesNotExist:
+        messages.error(request, "Utilisateur non trouvé. Veuillez vous réinscrire.")
+        return redirect('register')
+
+    if code == str(stored_code):
+            # Création de l'utilisateur vérifié
+            user = UserProfile.objects.create(
+                nom=unverified_user.nom,
+                prenom=unverified_user.prenom,
+                email=unverified_user.email,
+         
+                sexe=unverified_user.sexe,
+                type=unverified_user.type,
+                realisation_linkedin=unverified_user.realisation_linkedin,
+                photo_profil=unverified_user.photo_profil,
+                password=unverified_user.password,
+            )
+
+            # Connexion automatique de l'utilisateur
+            login(request, user)
+
+            # Suppression de l'utilisateur non vérifié
+            unverified_user.delete()
+
+            messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
+            return redirect('login')  # Redirige vers une page appropriée après connexion
+    else:
+        # Gestion des codes incorrects
+        messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
+        return render(request, "verified.html", {"email": email})
 
     # Si GET, afficher la page de vérification
     return render(request, "verified.html", {"email": email})

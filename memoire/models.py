@@ -47,7 +47,7 @@ class UnverifiedUserProfile(models.Model):
     email = models.EmailField(unique=True)
    
     sexe = models.CharField(max_length=1, choices=[('M', 'Masculin'), ('F', 'Féminin')])
-    type = models.CharField(max_length=50)
+    type = models.CharField(max_length=50,default='standard')
     realisation_linkedin = models.URLField(null=True, blank=True)
     photo_profil = models.ImageField(upload_to='profiles/', null=True, blank=True)
     password = models.CharField(max_length=255)  # Mot de passe haché

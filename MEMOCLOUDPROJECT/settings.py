@@ -101,6 +101,8 @@ DATABASES = {
 }
 
 
+SITE_URL = "https://memocloudproject-qi77.onrender.com"
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
