@@ -222,6 +222,7 @@ def verification_page(request):
     return render(request, "verified.html", {"email": email})
 def verify_account(request):
     code = request.GET.get('code', '')
+    print(code)
     email = request.session.get('user_email')
     stored_code = request.session.get('verification_code')
 
@@ -1469,6 +1470,10 @@ def send_welcome_email(request, *args, **kwargs):
         email=request.POST.get("email")
       
         request.session['user_email'] = email  
+       
+
+        verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
+
         
         user = UserProfile.objects.get(email=email)
         template='template.html'
@@ -1477,6 +1482,8 @@ def send_welcome_email(request, *args, **kwargs):
             'email':email,
             'user':user,
             'verification_code':verification_code,
+            'verification_url':verification_url
+            
             
             
                  }
