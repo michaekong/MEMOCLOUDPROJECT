@@ -143,7 +143,14 @@ MEDIA_URL="media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"Template/media/")
 STATIC_ROOT = os.path.join(BASE_DIR, 'memoire/')
 
- # Répertoire où collectstatic va copier les fichiers
+if not DEBUG:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'memoire/')
+    STORAGES = {
+
+    'memoires': {
+    'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+    }# Répertoire où collectstatic va copier les fichiers
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
