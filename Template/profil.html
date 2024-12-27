@@ -28,9 +28,7 @@
                 <div>
                     <p class="text-lg font-medium"><strong>Email :</strong> {{ user.email }}</p>
                 </div>
-                <div>
-                    <p class="text-lg font-medium"><strong>Date de naissance :</strong> {{ user.birthday|date:"d/m/Y" }}</p>
-                </div>
+               
                 <div>
                     <p class="text-lg font-medium"><strong>Sexe :</strong> {{ user.get_sexe_display }}</p>
                 </div>
@@ -38,11 +36,15 @@
                     <p class="text-lg font-medium"><strong>Type :</strong> {{ user.get_type_display }}</p>
                 </div>
                 <div>
+                    {% if  user.realisation_linkedin %}
                     <p class="text-lg font-medium"><strong>LinkedIn :</strong> 
                         <a href="{{ user.realisation_linkedin }}" target="_blank" class="text-blue-500 underline">
                             {{ user.realisation_linkedin }}
                         </a>
                     </p>
+                    {% else %}
+                    
+                    {% endif %}
                 </div>
             </div>
         </div>

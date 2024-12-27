@@ -96,10 +96,12 @@ WSGI_APPLICATION = 'MEMOCLOUDPROJECT.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(BASE_DIR / 'db.sqlite3'),  # Assurez-vous que 'NAME' est une chaîne de caractères
     }
 }
 
+
+SITE_URL = "https://memocloudproject-qi77.onrender.com"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -139,6 +141,10 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS=['static']
 MEDIA_URL="media/"
 MEDIA_ROOT=os.path.join(BASE_DIR,"Template/media/")
+STATIC_ROOT = os.path.join(BASE_DIR, 'memoire/')
+
+ # Répertoire où collectstatic va copier les fichiers
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

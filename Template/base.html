@@ -390,101 +390,134 @@ body {
         transform: rotate(360deg);
     }
 }
+.error-message {
+    color: red;
+    font-size: 14px;
+    display: none;
+}
+input:invalid {
+    border: 2px solid red; /* Met en évidence un champ invalide */
+}
+
+input:valid {
+    border: 2px solid green; /* Met en évidence un champ valide */
+}
+
+.error-message {
+    display: none; /* Empêche tout affichage des erreurs par défaut */
+}
 
 
+[x-cloak] {
+    display: none !important;
+}
 
         
     </style>
-</head>
-<body x-data="{ loading: true, darkMode: localStorage.getItem('darkMode') === 'true' }" :class="{ 'dark': darkMode }" x-init="window.onload = () => loading = false">
-    <!-- Overlay spinner -->
-    <div id="spinner" class="spinner-overlay" style="display: none;">
-        <div class="spinner"></div>
-    </div>
-    
-    
-    <header class="bg-gray-800 dark:bg-gray-900 text-white shadow-md">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-blue-500 dark:text-teal-400">Bibliothèque des Mémoires</h1>
-            <div class="flex items-center space-x-4">
-                <button 
-                @click="darkMode = !darkMode;
-                        localStorage.setItem('darkMode', darkMode);
-                        if (darkMode) { 
-                            document.documentElement.classList.add('dark'); 
-                        } else { 
-                            document.documentElement.classList.remove('dark'); 
-                        }"
-                :class="darkMode ? 'bg-gray-700' : 'bg-gray-300'"
-                class="px-4 py-2 rounded-full transition-colors flex items-center">
-                <!-- Icône Soleil ou Lune -->
-                <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'" 
-                   :class="darkMode ? 'text-yellow-500' : 'text-gray-800'" 
-                   class="text-xl mr-2"></i>
-                <!-- Texte du bouton -->
-                <span :class="darkMode ? 'text-white' : 'text-black'">
-                    <span x-text="darkMode ? 'Mode Nuit' : 'Mode Jour'"></span>
-                </span>
-            </button>
+    <body 
+    x-data="{ 
+        darkMode: localStorage.getItem('darkMode') === 'true', 
+        toggleDarkMode() { 
+            this.darkMode = !this.darkMode; 
+            localStorage.setItem('darkMode', this.darkMode); 
+            document.documentElement.classList.toggle('dark', this.darkMode); 
+        } 
+    }" 
+    x-init=" 
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    "
+    :class="{ 'dark': darkMode }">
+
+    <header class="bg-gray-800 text-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+            <!-- Logo et Titre -->
+            <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+                <img 
+                    x-show="!darkMode" 
+                    x-cloak
+                    src="{% static 'logo GIT blanc.svg' %}" 
+                    
+                    alt="Logo clair" 
+                    class="h-10 w-auto">
             
+                <img 
+                    x-show="darkMode" 
+                    x-cloak
+                    
+                     src="{% static 'LOGO GIT coleur.svg' %}"
+                    alt="Logo sombre" 
+                    class="h-10 w-auto">
+            
+                <h1 class="text-xl sm:text-2xl font-bold text-blue-300 dark:text-teal-400">
+                    Mémoire ENSTP
+                </h1>
+            </div>
 
-                <!-- Bouton Compte avec menu déroulant -->
-                {% block account %}
-<div class="relative" x-data="{ accountMenu: false }">
-    <!-- Bouton pour ouvrir/fermer le menu -->
-    <button @click="accountMenu = !accountMenu" 
-        :class="darkMode ? 'bg-gray-800 text-white hover:bg-gray-700' : 'bg-gray-300 text-gray-800 hover:bg-gray-200'"
-        class="px-4 py-2 rounded-md flex items-center space-x-2 transition-colors duration-200">
-    <!-- Icône du menu -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-colors duration-200"
-         :class="darkMode ? 'text-white' : 'text-gray-800'" fill="none" 
-         viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" 
-              d="M5.121 17.804A10.966 10.966 0 0112 15c2.076 0 4.007.632 5.623 1.71M12 13c3.866 0 7-3.134 7-7S15.866 0 12 0 5 3.134 5 7s3.134 7 7 7zM12 7a3 3 0 100-6 3 3 0 000 6z" />
-    </svg>
-    <!-- Texte du bouton (ajouté si nécessaire) -->
-    <span x-text="accountMenu ? 'Fermer le menu' : 'Ouvrir le menu'"></span>
-</button>
-
-    <!-- Menu déroulant affiché comme une infobulle -->
-    <div x-show="accountMenu" 
-         @click.outside="accountMenu = false" 
-         x-transition:enter="transition ease-out duration-200" 
-         x-transition:enter-start="opacity-0 transform scale-95" 
-         x-transition:enter-end="opacity-100 transform scale-100" 
-         x-transition:leave="transition ease-in duration-75" 
-         x-transition:leave-start="opacity-100 transform scale-100" 
-         x-transition:leave-end="opacity-0 transform scale-95" 
-         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-md py-2 z-50">
-        <a href="/liste_memoires" 
-           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-            Liste des mémoires
-        </a>
-        {% if user.type == 'admin' or user.type == 'superadmin' %}
-        <a href="/admins" 
-           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-            Page admin
-        </a>
-        {% endif %}
-        <a href="/profil" 
-           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-            Voir Profil
-        </a>
-        <a href="/edit_profile" 
-           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-            Modifier Profil
-        </a>
-        <a href="/logout" 
-           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-            Se Déconnecter
-        </a>
-    </div>
-</div>
-{% endblock account %}
-
-    </header>
+            <!-- Boutons d'action -->
+            <div class="flex items-center space-x-6">
+                <!-- Bouton Mode Sombre/Clair -->
+                <button 
+                    @click="toggleDarkMode" 
+                    :class="darkMode ? 'bg-gray-700 text-yellow-500' : 'bg-gray-300 text-gray-800'"
+                    class="px-4 py-2 rounded-full flex items-center space-x-2 shadow-md transition-colors">
+                    <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'" class="text-xl"></i>
+                </button>
     
-
+                <!-- Menu Compte -->
+                <div class="relative" x-data="{ accountMenu: false }">
+                    <!-- Bouton Menu -->
+                    <button 
+                        @click="accountMenu = !accountMenu" 
+                        class="text-white flex items-center justify-center p-2 rounded-md bg-gray-900 hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Menu déroulant -->
+                    <div x-show="accountMenu" 
+                         @click.outside="accountMenu = false" 
+                         x-transition:enter="transition ease-out duration-200" 
+                         x-transition:enter-start="opacity-0 transform scale-95" 
+                         x-transition:enter-end="opacity-100 transform scale-100" 
+                         x-transition:leave="transition ease-in duration-75" 
+                         x-transition:leave-start="opacity-100 transform scale-100" 
+                         x-transition:leave-end="opacity-0 transform scale-95" 
+                         class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 shadow-lg rounded-md py-2 z-50">
+                        <a href="/liste_memoires" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Liste des mémoires
+                        </a>
+                        {% if user.type == 'admin' or user.type == 'superadmin' %}
+                        <a href="/admins" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Page admin
+                        </a>
+                        {% endif %}
+                        <a href="/profil" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Voir Profil
+                        </a>
+                        <a href="/edit_profile" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Modifier Profil
+                        </a>
+                        <a href="/logout" 
+                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Se Déconnecter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Menu Mobile (affiché lorsque le bouton hamburger est cliqué) -->
+    
+    
 {% block content %}
     
     {% endblock content %}

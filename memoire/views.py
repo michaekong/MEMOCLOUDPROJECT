@@ -51,7 +51,7 @@ def edit_profile(request):
         # Récupération des champs du formulaire
         nom = request.POST.get('nom', user_profile.nom)
         prenom = request.POST.get('prenom', user_profile.prenom)
-        birthday = request.POST.get('birthday', user_profile.birthday)
+       
         sexe = request.POST.get('sexe', user_profile.sexe)
         user_type = request.POST.get('type', user_profile.type)
         realisation_linkedin = request.POST.get('realisation_linkedin', user_profile.realisation_linkedin)
@@ -60,7 +60,7 @@ def edit_profile(request):
         # Mise à jour des informations utilisateur
         user_profile.nom = nom
         user_profile.prenom = prenom
-        user_profile.birthday = birthday
+       
         user_profile.sexe = sexe
         user_profile.type = user_type
         user_profile.realisation_linkedin = realisation_linkedin
@@ -88,25 +88,31 @@ def edit_profile(request):
     return render(request, 'edit_profile.html', {'user': user_profile})
 
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
+from .models import UserProfile, UnverifiedUserProfile
+from .utils import send_advanced_email  # Suppose que vous avez une fonction pour envoyer des emails
+import random
+from django.conf import settings
+
 def register_user(request):
     if request.method == 'POST':
         # Récupération des données
-        nom = request.POST.get('nom', '')
-        prenom = request.POST.get('prenom', '')
-        email = request.POST.get('email', '')
-        birthday = request.POST.get('birthday', '')
-        sexe = request.POST.get('sexe', '')
-        realisation_linkedin = request.POST.get('realisation_linkedin', '')
+        nom = request.POST.get('nom', '').strip()
+        prenom = request.POST.get('prenom', '').strip()
+        email = request.POST.get('email', '').strip()
+        sexe = request.POST.get('sexe', '').strip()
+        realisation_linkedin = request.POST.get('realisation_linkedin', '').strip()
         photo_profil = request.FILES.get('photo_profil', None)
-        password = request.POST.get('password', '')
-        confirm_password = request.POST.get('confirm_password', '')
+        password = request.POST.get('password', '').strip()
+        confirm_password = request.POST.get('confirm_password', '').strip()
 
         # Initialiser les données pour remplir le formulaire en cas d'erreur
         form_data = {
             "nom": nom,
             "prenom": prenom,
             "email": email,
-            "birthday": birthday,
             "sexe": sexe,
             "realisation_linkedin": realisation_linkedin,
         }
@@ -114,17 +120,17 @@ def register_user(request):
         # Validation des mots de passe
         if password != confirm_password:
             messages.error(request, "Les mots de passe ne correspondent pas.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Les mots de passe ne correspondent pas."})
+            return render(request, "register.html", {"form_data": form_data})
 
         # Vérification si l'utilisateur existe déjà
         if UserProfile.objects.filter(email=email).exists():
             messages.error(request, "Un utilisateur avec cet email existe déjà.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Un utilisateur avec cet email existe déjà."})
+            return render(request, "register.html", {"form_data": form_data})
 
         # Vérification si l'utilisateur non vérifié existe déjà
         if UnverifiedUserProfile.objects.filter(email=email).exists():
             messages.error(request, "Vous avez déjà initié une inscription. Vérifiez votre e-mail.")
-            return render(request, "register.html", {"form_data": form_data, "error": "Vous avez déjà initié une inscription. Vérifiez votre e-mail."})
+            return render(request, "verified.html")
 
         try:
             # Génération du code de vérification
@@ -136,7 +142,6 @@ def register_user(request):
                 nom=nom,
                 prenom=prenom,
                 email=email,
-                birthday=birthday,
                 sexe=sexe,
                 realisation_linkedin=realisation_linkedin,
                 photo_profil=photo_profil,
@@ -152,18 +157,20 @@ def register_user(request):
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
             template = "template.html"
+            verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
             context = {
                 'verification_code': verification_code,
                 'user': unverified_user,
+                'verification_url': verification_url,
             }
             send_advanced_email([email], subject, template, context)
 
-            messages.success(request, "Un code de vérification vous a été envoyé par email.")
-            return render(request, "verified.html", context)
+            messages.success(request, "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.")
+            return render(request, "verified.html")  # Redirige vers la page de vérification
 
         except Exception as e:
-            messages.error(request, f"Erreur : {e}")
-            return render(request, "register.html", {"form_data": form_data, "error": f"Erreur : {e}"})
+            messages.error(request, f"Une erreur est survenue lors de l'inscription : {e}")
+            return render(request, "register.html", {"form_data": form_data})
 
     # Si GET, renvoyer la page d'inscription vide
     return render(request, "register.html")
@@ -195,7 +202,7 @@ def verification_page(request):
                 nom=unverified_user.nom,
                 prenom=unverified_user.prenom,
                 email=unverified_user.email,
-                birthday=unverified_user.birthday,
+         
                 sexe=unverified_user.sexe,
                 type=unverified_user.type,
                 realisation_linkedin=unverified_user.realisation_linkedin,
@@ -215,6 +222,52 @@ def verification_page(request):
             # Gestion des codes incorrects
             messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
             return render(request, "verified.html", {"email": email})
+
+    # Si GET, afficher la page de vérification
+    return render(request, "verified.html", {"email": email})
+def verify_account(request):
+    code = request.GET.get('code', '')
+    print(code)
+    email = request.session.get('user_email')
+    stored_code = request.session.get('verification_code')
+
+    if not email or not stored_code:
+        messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
+        return redirect('register')  # Redirige vers l'inscription si les informations sont manquantes
+
+    try:
+        # Récupération de l'utilisateur non vérifié
+        unverified_user = UnverifiedUserProfile.objects.get(email=email)
+    except UnverifiedUserProfile.DoesNotExist:
+        messages.error(request, "Utilisateur non trouvé. Veuillez vous réinscrire.")
+        return redirect('register')
+
+    if code == str(stored_code):
+            # Création de l'utilisateur vérifié
+            user = UserProfile.objects.create(
+                nom=unverified_user.nom,
+                prenom=unverified_user.prenom,
+                email=unverified_user.email,
+         
+                sexe=unverified_user.sexe,
+                type=unverified_user.type,
+                realisation_linkedin=unverified_user.realisation_linkedin,
+                photo_profil=unverified_user.photo_profil,
+                password=unverified_user.password,
+            )
+
+            # Connexion automatique de l'utilisateur
+            login(request, user)
+
+            # Suppression de l'utilisateur non vérifié
+            unverified_user.delete()
+
+            messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
+            return redirect('login')  # Redirige vers une page appropriée après connexion
+    else:
+        # Gestion des codes incorrects
+        messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
+        return render(request, "verified.html", {"email": email})
 
     # Si GET, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
@@ -240,9 +293,11 @@ def resend_email(request, *args, **kwargs):
         # Envoi de l'email avec le code de vérification
         subject = "Code de vérification"
         template = "template.html"  # Assurez-vous que ce template existe
+        verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
         context = {
             'verification_code': verification_code,
             'user': unverified_user,
+            'verification_url':verification_url,
         }
 
         send_advanced_email([email], subject, template, context)
@@ -300,9 +355,10 @@ def login(request, *args, **kwargs):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
+
         # Validation des champs obligatoires
         if not email or not password:
-            messages.error(request, "Veuillez remplir tous les champs.")
+            messages.error(request, "Veuillez remplir tous les champs.",extra_tags="login")
             return redirect('/login')
 
         try:
@@ -316,7 +372,7 @@ def login(request, *args, **kwargs):
                 request.session['user_email'] = user.email
                 request.session['emailv'] = user.email
 
-                messages.success(request, "Connexion réussie. Bienvenue !")
+                messages.success(request, "Connexion réussie. Bienvenue !",extra_tags="login")
 
                 # Redirection en fonction du type d'utilisateur
                 if user.type in ["admin", "superadmin"]:
@@ -326,10 +382,10 @@ def login(request, *args, **kwargs):
                     visiteur.objects.create(emailv=email)
                     return redirect('liste_memoires')  # Page principale pour les utilisateurs standards
             else:
-                messages.error(request, "Mot de passe incorrect.")
+                messages.error(request, "Mot de passe incorrect.",extra_tags="login")
                 return render(request,"login.html",{"error":"Mot de passe incorrect."})
         except UserProfile.DoesNotExist:
-            messages.error(request, "Aucun compte trouvé avec cet email.")
+            messages.error(request, "Aucun compte trouvé avec cet email.",extra_tags="login")
             return render(request,"login.html",{"error":"Aucun compte trouvé avec cet email."})
 
         
@@ -346,7 +402,7 @@ def logout(request):
         del request.session['user_email']
     
     # Message de succès
-    messages.success(request, "Déconnexion réussie. À bientôt !")
+    messages.success(request, "Déconnexion réussie. À bientôt !",extra_tags="login")
     
     # Rediriger vers la page de connexion
     return redirect('/login')
@@ -891,7 +947,7 @@ def delete_user(request):
                 "linkdin":user.realisation_linkedin,
                 "password":user.password,
                 "sex":user.sexe,
-                    "birthday":user.birthday
+            
                 
             }
 
@@ -957,7 +1013,7 @@ def add_user(request):
             new_user = UserProfile.objects.create(
                 nom=request.POST.get('nom'),
                 prenom=request.POST.get('prenom'),
-                birthday=request.POST.get('birthday'),
+           
                 sexe=request.POST.get('sexe'),
                 email=request.POST.get('email'),
                 type=request.POST.get('type'),
@@ -976,7 +1032,7 @@ def add_user(request):
                 "linkdin":new_user.realisation_linkedin,
                 "password":new_user.password,
                 "sex":new_user.sexe,
-                    "birthday":new_user.birthday
+        
             }
 
             send_admin_email(
@@ -1169,7 +1225,7 @@ def edit_user(request):
             # Mettre à jour les champs
             user.nom = request.POST.get('nom')
             user.prenom = request.POST.get('prenom')
-            user.birthday = request.POST.get('birthday')
+   
             user.sexe = request.POST.get('sexe')
             user.email = request.POST.get('email')
             user.type = request.POST.get('type')
@@ -1422,6 +1478,10 @@ def send_welcome_email(request, *args, **kwargs):
         email=request.POST.get("email")
       
         request.session['user_email'] = email  
+       
+
+        verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
+
         
         user = UserProfile.objects.get(email=email)
         template='template.html'
@@ -1430,6 +1490,8 @@ def send_welcome_email(request, *args, **kwargs):
             'email':email,
             'user':user,
             'verification_code':verification_code,
+            'verification_url':verification_url,
+            
             
             
                  }
@@ -1448,6 +1510,7 @@ def send_admin_email(user, subject, action_type, action_details,object_before,ob
     recipients = [admin.email for admin in admins if admin.email]  # S'assurer que l'email est valide
 
     # Préparer le contexte pour le template de l'email
+    verification_url = f"{settings.SITE_URL}/login"
     context = {
         'action_type': action_type,  # Type d'action
         'action_details': action_details, 
@@ -1456,8 +1519,9 @@ def send_admin_email(user, subject, action_type, action_details,object_before,ob
         'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'object_before': object_before,
         'object_after': object_after,
+         'verification_url': verification_url,  
     }
-    
+     
     if recipients:
         send_advanced_email(
             recipient=recipients,

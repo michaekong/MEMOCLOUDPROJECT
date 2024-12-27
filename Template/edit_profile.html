@@ -17,7 +17,7 @@
                     type="text" 
                     name="nom" 
                     id="nom" 
-                    value="{{ request.user.nom }}" 
+                    value="{{ user.nom|default:'' }}" 
                     class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
@@ -28,20 +28,11 @@
                     type="text" 
                     name="prenom" 
                     id="prenom" 
-                    value="{{ request.user.prenom }}" 
+                    value="{{ user.prenom|default:'' }}" 
                     class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
             </div>
 
-            <!-- Date de naissance -->
-            <div class="mb4">
-                <label for="birthday" class="block text-lg font-semibold mb-2">Date de naissance</label>
-                <input 
-                    type="date" 
-                    name="birthday" 
-                    id="birthday" 
-                    value="{{ user.birthday|date:'Y-m-d' }}" 
-                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600 dark:placeholder-gray-400">
-            </div>
+          
 
             <!-- Sexe -->
             <div class="mb4">

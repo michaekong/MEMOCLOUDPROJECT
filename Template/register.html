@@ -229,6 +229,22 @@
                 transform: rotate(360deg);
             }
         }
+        .error-message {
+            color: red;
+            font-size: 14px;
+            display: none;
+        }
+        input:invalid {
+            border: 2px solid red; /* Met en évidence un champ invalide */
+        }
+
+        input:valid {
+            border: 2px solid green; /* Met en évidence un champ valide */
+        }
+
+        .error-message {
+            display: none; /* Empêche tout affichage des erreurs par défaut */
+        }
         
     </style>
 </head>
@@ -245,17 +261,17 @@
                 <li class="{{ message.tags }}">{{ message }}</li>
             {% endfor %}
         </ul>
-        {% endif %}
+    {% endif %}
+    
+        
 
-        <form action="/register" method="POST" enctype="multipart/form-data">
+        <form action="/register" method="POST"  id="linkedinForm" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-row">
                 <input type="text" class="input-field" name="nom" placeholder="Nom" value="{{ form_data.nom|default:'' }}" required>
                 <input type="text" class="input-field" name="prenom" placeholder="Prénom" value="{{ form_data.prenom|default:'' }}" required>
             </div>
             <div class="form-row">
-                <label for="birthday" class="form-label">Date de naissance:</label>
-                <input type="date" class="input-field" name="birthday" value="{{ form_data.birthday|default:'' }}" required>
                 <select name="sexe" class="input-field" required>
                     <option value="" disabled {% if not form_data.sexe %}selected{% endif %}>Sexe</option>
                     <option value="M" {% if form_data.sexe == "M" %}selected{% endif %}>Masculin</option>
@@ -269,7 +285,17 @@
                 
             </div>
             <div class="form-row full-width">
-                <input type="url" class="input-field" name="realisation_linkedin" placeholder="Lien LinkedIn(optionnel) ex:https://www.linkedin.com/in/..../" value="{{ form_data.realisation_linkedin|default:'' }}">
+                <label for="realisation_linkedin">Lien LinkedIn :</label>
+                <input 
+                type="url" 
+                class="input-field"
+                id="realisation_linkedin" 
+                name="realisation_linkedin"
+                placeholder="ex: https://www.linkedin.com/in/username"
+                pattern="https://(www\.)?linkedin\.com/in/.+" 
+                title="Veuillez entrer un lien LinkedIn valide (ex: https://www.linkedin.com/in/username)">
+            <span class="error-message">Veuillez entrer un lien LinkedIn valide (ex: https://www.linkedin.com/in/username(optionel)).</span>
+            <br><br>
             </div>
             <div class="form-row">
                 <input type="password" class="input-field" name="password" placeholder="Mot de passe" required>
@@ -300,6 +326,8 @@
                 });
             }
         });
+    
+        
     </script>
     
 </body>

@@ -19,7 +19,6 @@ class UserProfile(models.Model):
 
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
-    birthday = models.DateField()
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES)
     email = models.EmailField(unique=True)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES ,default='standard')
@@ -46,9 +45,9 @@ class UnverifiedUserProfile(models.Model):
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-    birthday = models.DateField(null=True, blank=True)
+   
     sexe = models.CharField(max_length=1, choices=[('M', 'Masculin'), ('F', 'Féminin')])
-    type = models.CharField(max_length=50)
+    type = models.CharField(max_length=50,default='standard')
     realisation_linkedin = models.URLField(null=True, blank=True)
     photo_profil = models.ImageField(upload_to='profiles/', null=True, blank=True)
     password = models.CharField(max_length=255)  # Mot de passe haché

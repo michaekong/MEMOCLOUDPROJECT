@@ -102,8 +102,9 @@
         
         <p class="verification-title">Pour activer votre compte, utilisez le code d'activation suivant :</p>
         
-        <a class="verify-button" href="#">Code d'activation : <strong>{{ verification_code }}</strong></a>
-        
+
+        <a class="verify-button" href="{{ verification_url }}">{{ verification_code }}</a>
+
         <footer>
             <small>Si vous avez des questions, contactez-nous à : 
                 <a href="mailto:memecloudenstp@gmail.com">memecloudenstp@gmail.com</a>

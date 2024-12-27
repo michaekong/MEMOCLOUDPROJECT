@@ -207,6 +207,30 @@
                 transform: rotate(360deg);
             }
         }
+        .messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+    
+        .messages li {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 1em;
+            text-align: center;
+        }
+    
+        .message-login {
+            background-color: #007bff; /* Bleu */
+            color: white;
+            border: 1px solid #0056b3;
+        }
+    
+        /* Pour un effet de survol */
+        .messages li:hover {
+            opacity: 0.8;
+        }
         
     </style>
 </head>
@@ -217,20 +241,15 @@
     
     <div class="login-container">
         <div class="login-title">Connexion</div>
-        {% if error %}
+        {% if messages %}
         <ul class="messages">
-           
-                <li class="error">{{ error }}</li>
-      
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
         </ul>
-        {% endif %}
-        {% if error %}
-        <ul class="messages">
-           
-                <li class="succes">{{ succes }}</li>
-      
-        </ul>
-        {% endif %}
+    {% endif %}
+    
+
 
         <form action="/login" method="POST">
             {% csrf_token %}
