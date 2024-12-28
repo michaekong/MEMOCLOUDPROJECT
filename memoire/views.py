@@ -1236,8 +1236,7 @@ def edit_user(request):
                 user.photo_profil = request.FILES.get('photo_profil')
 
             # Mettre à jour le mot de passe (si présent)
-            if request.POST.get('password'):
-                user.password = make_password(request.POST.get('password'))
+         
 
             # Sauvegarder l'utilisateur modifié
             user.save()
