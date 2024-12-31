@@ -10,53 +10,50 @@
             font-family: 'Space Grotesk', sans-serif;
             background-color: #0a192f;
             color: #e6f1ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             box-sizing: border-box;
         }
 
         .verification-container {
             background: linear-gradient(145deg, #112240, #0e203a);
-            padding: 40px;
+            padding: 20px;
             border-radius: 15px;
             text-align: center;
-            width: 100%;
+            width: 90%; /* Responsive width */
             max-width: 500px;
+            margin: auto; /* Centering */
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
             animation: fadeIn 1s ease-out;
         }
 
         .verification-title {
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: 2em; /* Adjusted for smaller screens */
+            margin-bottom: 15px;
             color: #64ffda;
             text-shadow: 0 2px 10px rgba(100, 255, 218, 0.5);
         }
 
         .verification-message {
-            margin-bottom: 25px;
-            font-size: 1.2em;
-            
-            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 1em; /* Adjusted for smaller screens */
+            line-height: 1.5;
         }
 
         .verify-button {
             background: #64ffda;
             color: #0a192f;
-            padding: 15px 30px;
+            padding: 12px 25px; /* Adjusted padding */
             border: none;
             border-radius: 30px;
             cursor: pointer;
             font-weight: bold;
             text-decoration: none;
             display: inline-block;
-            font-size: 1.2em;
+            font-size: 1em; /* Adjusted for smaller screens */
             transition: all 0.3s ease-in-out;
             box-shadow: 0 4px 10px rgba(100, 255, 218, 0.4);
+            margin-top: 10px; /* Spacing above button */
         }
 
         .verify-button:hover {
@@ -66,9 +63,9 @@
         }
 
         footer {
-            margin-top: 30px;
+            margin-top: 20px;
             color: #e6f1ff;
-            font-size: 0.9em;
+            font-size: 0.8em; /* Adjusted for smaller screens */
         }
 
         footer a {
@@ -98,11 +95,10 @@
     <div class="verification-container">
         <h1 class="verification-title">Bienvenue, {{ user.nom }} !</h1>
         
-        <p class="verification-title">Merci de vous être inscrit sur notre plateforme. Nous sommes ravis de vous compter parmi nous.</p>
+        <p class="verification-title"">Merci de vous être inscrit sur notre plateforme. Nous sommes ravis de vous compter parmi nous.</p>
         
         <p class="verification-title">Pour activer votre compte, utilisez le code d'activation suivant :</p>
         
-
         <a class="verify-button" href="{{ verification_url }}">{{ verification_code }}</a>
 
         <footer>
