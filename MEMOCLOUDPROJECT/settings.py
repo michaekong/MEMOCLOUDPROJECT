@@ -95,12 +95,8 @@ WSGI_APPLICATION = 'MEMOCLOUDPROJECT.wsgi.application'
 
 
 import dj_database_url
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': str(BASE_DIR / 'db.sqlite3'),  # Assurez-vous que 'NAME' est une chaîne de caractères
-    }
+    'default': dj_database_url.parse(config('DATABASE_URL',))
 }
 
 SITE_URL = "https://memocloudproject-qi77.onrender.com"
