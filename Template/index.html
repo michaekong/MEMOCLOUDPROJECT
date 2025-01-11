@@ -40,6 +40,8 @@
             background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             animation: fadeIn 1s ease-in-out;
+            max-height: 80vh; /* Limite la hauteur */
+            overflow-y: auto; /* Ajoute une barre de défilement */
         }
 
         .hero-title {
@@ -104,11 +106,13 @@
 <body>
     <div class="hero-container">
         <h1 class="hero-title">Bienvenue sur Mémoires ENSTP</h1>
-        <p class="hero-subtitle">votre portail d'accès aux mémoires académiques de nos anciens étudiants, un trésor de connaissances et d'expériences à partager.</p>
+        <p class="hero-subtitle">Votre portail d'accès aux mémoires académiques de nos anciens étudiants, un trésor de connaissances et d'expériences à partager.</p>
         <a href="login" class="get-started-btn">Commencer</a>
     
         <footer>
-            <p>Besoin d'aide ? <a href="mailto:memecloudenstp@gmail.com">Contactez-nous</a></p>
+            <small>Si vous avez des questions, contactez-nous via Gmail : 
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=memecloudenstp@gmail.com" target="_blank">memecloudenstp@gmail.com</a>
+            </small>
         </footer>
     </div>
 </body>

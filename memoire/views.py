@@ -163,7 +163,7 @@ def register_user(request):
                 'user': unverified_user,
                 'verification_url': verification_url,
             }
-            send_advanced_email([email], subject, template, context)
+            send_advanced_email(email, subject, template, context)
 
             messages.success(request, "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.")
             return render(request, "verified.html")  # Redirige vers la page de vérification
@@ -300,7 +300,7 @@ def resend_email(request, *args, **kwargs):
             'verification_url':verification_url,
         }
 
-        send_advanced_email([email], subject, template, context)
+        send_advanced_email(email, subject, template, context)
 
         # Message de succès et redirection vers la page de vérification
         messages.success(request, "Un code de vérification vous a été envoyé par email.")
