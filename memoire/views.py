@@ -289,7 +289,7 @@ def resend_email(request, *args, **kwargs):
 
         # Récupérer l'utilisateur non vérifié à partir de l'email
         unverified_user = UnverifiedUserProfile.objects.get(email=email)
-
+        unverified_user.verification_code=str(verification_code),
         # Envoi de l'email avec le code de vérification
         subject = "Code de vérification"
         template = "template.html"  # Assurez-vous que ce template existe
