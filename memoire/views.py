@@ -164,7 +164,7 @@ def register_user(request):
                 'verification_url': verification_url,
             }
             send_advanced_email(email, subject, template, context)
-
+            
             messages.success(request, "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.")
             return render(request, "verified.html")  # Redirige vers la page de vérification
 
@@ -225,15 +225,20 @@ def verification_page(request):
 
     # Si GET, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from .models import UnverifiedUserProfile, UserProfile
+
 def verify_account(request):
     code = request.GET.get('code', '')
-    print(code)
+    print("Code reçu : " + code)  # Pour le débogage
     email = request.session.get('user_email')
     stored_code = request.session.get('verification_code')
 
     if not email or not stored_code:
         messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
-        return redirect('register')  # Redirige vers l'inscription si les informations sont manquantes
+        return redirect('register')
 
     try:
         # Récupération de l'utilisateur non vérifié
@@ -243,33 +248,31 @@ def verify_account(request):
         return redirect('register')
 
     if code == str(stored_code):
-            # Création de l'utilisateur vérifié
-            user = UserProfile.objects.create(
-                nom=unverified_user.nom,
-                prenom=unverified_user.prenom,
-                email=unverified_user.email,
-         
-                sexe=unverified_user.sexe,
-                type=unverified_user.type,
-                realisation_linkedin=unverified_user.realisation_linkedin,
-                photo_profil=unverified_user.photo_profil,
-                password=unverified_user.password,
-            )
+        # Création de l'utilisateur vérifié
+        user = UserProfile.objects.create(
+            nom=unverified_user.nom,
+            prenom=unverified_user.prenom,
+            email=unverified_user.email,
+            sexe=unverified_user.sexe,
+            type=unverified_user.type,
+            realisation_linkedin=unverified_user.realisation_linkedin,
+            photo_profil=unverified_user.photo_profil,
+            password=unverified_user.password,  # Assurez-vous que le mot de passe est sécurisé
+        )
 
-            # Connexion automatique de l'utilisateur
-            login(request, user)
+        # Connexion automatique de l'utilisateur
+        login(request, user)
 
-            # Suppression de l'utilisateur non vérifié
-            unverified_user.delete()
+        # Suppression de l'utilisateur non vérifié
+        unverified_user.delete()
 
-            messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
-            return redirect('login')  # Redirige vers une page appropriée après connexion
+        messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
+        return redirect('login')  # Redirige vers une page appropriée après connexion
     else:
-        # Gestion des codes incorrects
         messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
         return render(request, "verified.html", {"email": email})
 
-    # Si GET, afficher la page de vérification
+    # Si aucune condition n'est remplie, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
 def resend_email(request, *args, **kwargs):
     verification_code = random.randint(100000, 999999)
@@ -277,7 +280,10 @@ def resend_email(request, *args, **kwargs):
     print(verification_code)
     # Récupérer l'email de la session
     email = request.session.get('user_email')
+    unverified_user = UnverifiedUserProfile.objects.get(email=email)
     
+    unverified_user.verification_code=str(verification_code)
+    unverified_user.save()
     if not email:
         # Si l'email n'est pas trouvé dans la session, rediriger l'utilisateur
         messages.error(request, "Aucune session utilisateur active.")
@@ -288,8 +294,7 @@ def resend_email(request, *args, **kwargs):
         
 
         # Récupérer l'utilisateur non vérifié à partir de l'email
-        unverified_user = UnverifiedUserProfile.objects.get(email=email)
-        unverified_user.verification_code=str(verification_code),
+        
         # Envoi de l'email avec le code de vérification
         subject = "Code de vérification"
         template = "template.html"  # Assurez-vous que ce template existe
@@ -1502,32 +1507,38 @@ def send_welcome_email(request, *args, **kwargs):
         ctx={ 'messages':'ERREUR d envoie du mails .'}
     return render(request,"verified.html",ctx) 
 from datetime import datetime
-def send_admin_email(user, subject, action_type, action_details,object_before,object_after):
-    
-    # Récupère tous les utilisateurs ayant le rôle d'admin ou superadmin
-    admins = UserProfile.objects.filter(type="superadmin") | UserProfile.objects.filter(type="admin")
-    recipients = [admin.email for admin in admins if admin.email]  # S'assurer que l'email est valide
+
+from django.utils import timezone
+def send_admin_email(user, subject, action_type, action_details, object_before, object_after):
+    # Récupérer tous les utilisateurs ayant le rôle d'admin ou superadmin
+    admins = UserProfile.objects.filter(type__in=["superadmin", "admin"])
+    recipients = [admin.email for admin in admins if admin.email]
+    print("Recipients:", recipients)  # Pour le débogage
 
     # Préparer le contexte pour le template de l'email
     verification_url = f"{settings.SITE_URL}/login"
     context = {
-        'action_type': action_type,  # Type d'action
-        'action_details': action_details, 
-        'user':user,# Détails de l'action
-
-        'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'action_type': action_type,
+        'action_details': action_details,
+        'user': user,
+        'date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
         'object_before': object_before,
         'object_after': object_after,
-         'verification_url': verification_url,  
+        'login_url': verification_url,
     }
-     
-    if recipients:
-        send_advanced_email(
-            recipient=recipients,
-            subject=subject,
-            template='adminmail.html',
-            context=context
-        )
+
+    try:
+        if recipients:
+            for el in recipients:
+                send_advanced_email(
+                    recipient=el,
+                    subject=subject,
+                    template='adminmail.html',
+                    context=context
+                )
+                
+    except Exception as e:
+        print("Erreur lors de l'envoi de l'e-mail :", str(e))
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 

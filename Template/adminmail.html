@@ -129,7 +129,7 @@
                 <strong>Date et Heure :</strong> {{ date }}
             </div>
             <div class="detail-item">
-                <strong>Utilisateur :</strong> {{ user }}
+                <strong>Action realiser par  :</strong> {{ user.nom }} d'id:{{ user.id }}
             </div>
           
 
@@ -141,12 +141,12 @@
             <pre>{{ object_after | safe }}</pre>
         </div>
 
-        <a href="{{ verification_url }}"class="action-button">Accéder au Système</a>
+        <a href="{{ login_url }}"class="action-button">Accéder au Système</a>
     
         
         <footer>
             <small>Besoin d'aide ? Contactez-nous à : 
-                <a href="mailto:memecloudenstp@gmail.com">memecloudenstp@gmail.com</a>
+                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=memecloudenstp@gmail.com" target="_blank">memecloudenstp@gmail.com</a>
             </small>
         </footer>
     </div>

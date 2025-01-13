@@ -146,9 +146,7 @@
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <button data-toggle="modal" data-target="#commentModal{{ memoire.id }}" title="Cliquez pour voir les commentaires">
                     <span class="note-badge">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                        </svg>
+                      comments:
                         {% if memoire.statistiques.note_moyenne > 0 %}
                                 {{ memoire.statistiques.note_moyenne }}/5
                             {% else %}
