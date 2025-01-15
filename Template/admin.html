@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-
+{% load static %}
 {% block content %}
 
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
@@ -22,7 +22,13 @@
                 <li>
                     <button @click="activeSection = 'dashboard'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                        Tableau de bord
+                        Admin bord
+                    </button>
+                </li>
+                <li>
+                    <button @click="activeSection = 'graphique'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        Dashboard
                     </button>
                 </li>
                 <li>
@@ -211,6 +217,7 @@
 </section>
 
         {% include "sectiondomaine.html" %}
+        {% include "sectiongraphique.html" %}
         {% include "sectioncomment.html" %}
         
         {% include "sectiontelechargement.html" %}
@@ -225,6 +232,113 @@
         {% include "sectionencadrement.html" %}
     </div>
 </div>
+<script src="{% static 'js/class.js' %}"></script>
+
+<!-- Script pour créer le tableau de bord -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Pour les graphiques -->
+
+<!-- Inclusion du fichier JS contenant la classe AdvancedDashboard -->
+
+
+
+<script>
+    const dashboard = new AdvancedDashboard('dashboard-container');
+
+    async function loadData() {
+        try {
+               // Graphique: Nombre de mémoires par encadrant
+               const encadrantResponse = await fetch('/api/memoire-per-encadrant-data/');
+               const encadrantData = await encadrantResponse.json();
+               dashboard.addChart('bar', encadrantData, { title: 'Mémoires par Encadrant' });
+   
+               // Graphique: Nombre de mémoires par auteur
+               const auteurResponse = await fetch('/api/memoire-per-auteur-data/');
+               const auteurData = await auteurResponse.json();
+               dashboard.addChart('bar', auteurData, { title: 'Mémoires par Auteur' });
+   
+            // Graphique 1: Notes Moyennes par Mémoire
+            const memoireResponse = await fetch('/api/memoire-data/');
+            const memoireData = await memoireResponse.json();
+            dashboard.addChart('bar', memoireData, { title: 'Notes Moyennes des Mémoires' });
+
+            // Graphique 2: Nombre de Mémoires par Utilisateur
+            const userResponse = await fetch('/api/user-data/');
+            const userData = await userResponse.json();
+            dashboard.addChart('line', userData, { title: 'Nombre de Mémoires par Utilisateur' });
+
+            // Graphique 3: Nombre de Visiteurs par Date
+            const visiteurResponse = await fetch('/api/visiteur-data/');
+            const visiteurData = await visiteurResponse.json();
+            dashboard.addChart('line', visiteurData, { title: 'Visiteurs par Date' });
+
+            // Graphique 4: Nombre de Notations par Mémoire
+            const notationResponse = await fetch('/api/notation-data/');
+            const notationData = await notationResponse.json();
+            dashboard.addChart('bar', notationData, { title: 'Nombre de Notations par Mémoire' });
+
+            // Graphique 5: Nombre de Mémoires par Domaine
+            const domaineResponse = await fetch('/api/domaine-data/');
+            const domaineData = await domaineResponse.json();
+            dashboard.addChart('pie', domaineData, { title: 'Mémoires par Domaine' });
+
+            // Graphique 6: Répartition des Utilisateurs par Sexe
+            const sexeResponse = await fetch('/api/sexe-data/');
+            const sexeData = await sexeResponse.json();
+            dashboard.addChart('doughnut', sexeData, { title: 'Utilisateurs par Sexe' });
+
+            // Graphique 7: Nombre d'Encadrements par Utilisateur
+            const encadrementResponse = await fetch('/api/encadrement-data/');
+            const encadrementData = await encadrementResponse.json();
+            dashboard.addChart('bar', encadrementData, { title: 'Encadrements par Utilisateur' });
+
+            // Graphique 8: Téléchargements par Mémoire
+            const telechargementResponse = await fetch('/api/telechargement-data/');
+            const telechargementData = await telechargementResponse.json();
+            dashboard.addChart('line', telechargementData, { title: 'Téléchargements par Mémoire' });
+
+            // Graphique 9: Nombre d'Utilisateurs par Type
+            const typeUserResponse = await fetch('/api/type-user-data/');
+            const typeUserData = await typeUserResponse.json();
+            dashboard.addChart('bar', typeUserData, { title: 'Utilisateurs par Type' });
+
+         // Ajoutez les nouveaux graphiques
+          
+             const participationRateResponse = await fetch('/api/participation-rate-data/');
+             const participationRateData = await participationRateResponse.json();
+             dashboard.addChart('bar', participationRateData, { title: 'Taux de Participation des Utilisateurs' });
+ 
+             const memoirePerMonthResponse = await fetch('/api/memoire-per-month-data/');
+             const memoirePerMonthData = await memoirePerMonthResponse.json();
+             dashboard.addChart('line', memoirePerMonthData, { title: 'Mémoires Publiés par Mois' });
+ 
+           
+             const conversionRateResponse = await fetch('/api/conversion-rate-data/');
+             const conversionRateData = await conversionRateResponse.json();
+             dashboard.addChart('doughnut', conversionRateData, { title: 'Taux de Conversion des Utilisateurs' });
+ 
+             const downloadsPerMonthResponse = await fetch('/api/downloads-per-month-data/');
+             const downloadsPerMonthData = await downloadsPerMonthResponse.json();
+             dashboard.addChart('line', downloadsPerMonthData, { title: 'Téléchargements par Mois' });
+ 
+             const topRatedResponse = await fetch('/api/top-rated-memoires/');
+             const topRatedData = await topRatedResponse.json();
+             dashboard.addChart('bar', topRatedData, { title: 'Top 5 des Mémoires' });
+ 
+             const encadrementPerMemoireResponse = await fetch('/api/encadrement-per-memoire-data/');
+             const encadrementPerMemoireData = await encadrementPerMemoireResponse.json();
+             dashboard.addChart('bar', encadrementPerMemoireData, { title: 'Encadrements par Mémoire' });
+ 
+             const commentsPerMemoireResponse = await fetch('/api/comments-per-memoire-data/');
+             const commentsPerMemoireData = await commentsPerMemoireResponse.json();
+             dashboard.addChart('pie', commentsPerMemoireData, { title: 'Commentaires par Mémoire' });
+
+        } catch (error) {
+            console.error('Erreur lors de la récupération des données:', error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadData);
+</script>
 
 <script>
     
@@ -675,43 +789,7 @@ $('#editUserForm').on('submit', function (event) {
             filterInputIds.forEach(id => filterTable(tableId, id, filterInputIds.indexOf(id) + 1));
         }
         
-        document.addEventListener('DOMContentLoaded', function () {
-            const spinner = document.getElementById('spinner-visiteurs');
-            
-            // Masquer le spinner immédiatement après que la page soit prête
-            spinner.style.display = 'none';
-        
-            // Fonction pour afficher le spinner
-            function showSpinner() {
-                spinner.style.display = 'flex';  // Affiche le spinner (mode flex pour centrer)
-            }
-        
-            // Fonction pour masquer le spinner
-            function hideSpinner() {
-                spinner.style.display = 'none'; // Cache le spinner
-            }
-        
-            // Afficher le spinner lors de l'envoi d'une recherche
-            document.getElementById('visiteurSearchInput').addEventListener('keyup', function() {
-                showSpinner(); // Affiche le spinner lors de la recherche
-                setTimeout(() => {
-                    hideSpinner(); // Masque le spinner après un délai (simulateur de chargement)
-                }, 500);  // Simuler un temps de recherche
-            });
-        
-            // Afficher le spinner lors du filtrage des visiteurs
-            document.getElementById('visiteurEmailFilter').addEventListener('keyup', function() {
-                showSpinner(); // Affiche le spinner lors du filtrage
-                setTimeout(() => {
-                    hideSpinner(); // Masque le spinner après un délai (simulateur de filtrage)
-                }, 500);  // Simuler un temps de filtrage
-            });
-        
-            // Masquer le spinner après le chargement complet de la page
-            window.addEventListener('load', () => {
-                hideSpinner(); // Cache le spinner une fois la page chargée
-            });
-        });
+   
         
        
     

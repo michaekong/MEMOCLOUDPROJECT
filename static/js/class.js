@@ -1,11 +1,9 @@
-console.log("Fichier JS correctement chargé !");
-
 class AdvancedDashboard {
     constructor(containerId) {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
         this.gridContainer = this._createGridContainer();
-
+       
         // Initialisation des sous-modules
         this.chartManager = new SimpleChartManager(this.gridContainer);
         this.mapManager = new SimpleMapManager(this.gridContainer);
@@ -28,110 +26,7 @@ class AdvancedDashboard {
     }
 
     addMap(title, center, options = {}) {
-        this.mapManager.addMap(title, center, options);
-    }
-
-    // Méthode pour récupérer les données et afficher un graphique
-    fetchAndDisplayChart(url, chartType, title) {
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Erreur HTTP: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data || !data.labels || !data.data) {
-                    console.error("Données incorrectes ou manquantes :", data);
-                    return;
-                }
-
-                const chartData = {
-                    labels: data.labels,
-                    datasets: [{
-                        data: data.data,
-                        backgroundColor: ['#FF6384', '#36A2EB'],
-                        borderColor: '#ffffff',
-                        borderWidth: 1
-                    }]
-                };
-
-                // Appel à la méthode pour ajouter un graphique
-                this.addChart(chartType, chartData, { title });
-            })
-            .catch(error => {
-                console.error("Erreur lors de la récupération des données :", error);
-                alert("Une erreur est survenue lors du chargement des données. Veuillez réessayer.");
-            });
-    }
-
-    // Ajouter 10 types de graphiques
-    displayAllCharts() {
-        const data = {
-            labels: ["Q1", "Q2", "Q3", "Q4"],
-            data: [10, 20, 30, 40],
-        };
-
-        // Ligne
-        this.addChart('line', data, { title: "Graphique en Ligne" });
-
-        // Barres
-        this.addChart('bar', data, { title: "Graphique en Barres" });
-
-        // Secteurs
-        this.addChart('pie', data, { title: "Graphique en Secteurs" });
-
-        // Radar
-        this.addChart('radar', data, { title: "Graphique en Radar" });
-
-        // Nuage de points
-        this.addChart('scatter', data, { title: "Graphique en Nuage de Points" });
-
-        // Aires
-        this.addChart('line', {
-            labels: ["Jan", "Feb", "Mar", "Apr"],
-            datasets: [{
-                label: "2024",
-                data: [5, 10, 15, 20],
-                fill: true,
-                backgroundColor: 'rgba(75,192,192,0.2)',
-                borderColor: 'rgba(75,192,192,1)',
-                tension: 0.1
-            }]
-        }, { title: "Graphique en Aires" });
-
-        // Doughnut
-        this.addChart('doughnut', data, { title: "Graphique en Doughnut" });
-
-        // Graphique polaire
-        this.addChart('polarArea', data, { title: "Graphique Polaire" });
-
-        // Bulles
-        this.addChart('bubble', {
-            labels: ["A", "B", "C", "D"],
-            datasets: [{
-                label: "Bubble Data",
-                data: [{x: 20, y: 30, r: 15}, {x: 25, y: 25, r: 20}],
-                backgroundColor: ['#FF5733', '#33FF57'],
-            }]
-        }, { title: "Graphique à Bulles" });
-
-        // Barres empilées
-        this.addChart('bar', {
-            labels: ["2019", "2020", "2021"],
-            datasets: [
-                {
-                    label: "Catégorie A",
-                    data: [12, 19, 23],
-                    backgroundColor: '#FF6F61'
-                },
-                {
-                    label: "Catégorie B",
-                    data: [13, 22, 29],
-                    backgroundColor: '#6A1B9A'
-                }
-            ]
-        }, { title: "Graphique en Barres Empilées" });
+        return this.mapManager.addMap(title, center, options);
     }
 }
 
@@ -203,42 +98,38 @@ class SimpleChartManager {
         return canvas;
     }
 
-    // Obtenir les couleurs spécifiées ou le schéma par défaut
+    // Obtenir les couleurs spécifiées (et non un schéma de couleurs par défaut)
     _getColorScheme(schemeName, count) {
-        let colors = [];
-
-        // Vérifie si un nom de schéma de couleurs ou un tableau de couleurs a été fourni
-        if (Array.isArray(schemeName)) {
-            colors = schemeName;
-        } else if (this.colorSchemes[schemeName]) {
-            colors = this.colorSchemes[schemeName];
-        } else {
-            colors = this.colorSchemes['default'];
+        const specifiedColors = schemeName || [];  // Si les couleurs sont spécifiées, utiliser ces couleurs
+        const colors = [];
+        
+        for (let i = 0; i < count; i++) {
+            colors.push(specifiedColors[i % specifiedColors.length]);  // Utiliser les couleurs spécifiées seulement
         }
-
-        return Array.from({ length: count }, (_, i) => colors[i % colors.length]);
+        
+        return colors;
     }
 
     // Ajouter un graphique
     async addChart(type, data, options = {}) {
-        console.log("Ajout du graphique avec les données : ", data);  // Ajout de log
         await this._loadChartJS(); // Assurer le chargement de Chart.js
+
         const id = `chart-${this.charts.size}`;
         const finalOptions = { ...this.defaultOptions, ...options };
         const canvas = this._createChartContainer(id, options.title);
-    
-        // Vérification des couleurs
+        
+        // Vérifier si des couleurs personnalisées sont spécifiées
         const chartColors = this._getColorScheme(
-            finalOptions.colorScheme,
+            finalOptions.colors,  // Utiliser les couleurs définies dans options (si spécifiées)
             data.labels?.length || data.datasets?.[0]?.data?.length || 0
         );
-    
+
         const chartConfig = {
             type: type,
             data: {
                 labels: data.labels || [],
-                datasets: [{
-                    data: data.data,
+                datasets: data.datasets || [{
+                    data: data,
                     backgroundColor: chartColors,
                     borderColor: type === 'line' ? chartColors[0] : chartColors,
                     borderWidth: type === 'line' ? 2 : 1
@@ -257,7 +148,8 @@ class SimpleChartManager {
                 }
             }
         };
-    
+
+        // Configuration des types de graphiques spécifiques
         if (type === 'line' || type === 'bar') {
             chartConfig.options.scales = {
                 y: {
@@ -265,23 +157,22 @@ class SimpleChartManager {
                 }
             };
         }
-    
+
+        // Configuration des graphiques Radar, Pie, Doughnut, etc.
         if (type === 'radar' || type === 'polarArea' || type === 'pie' || type === 'doughnut') {
             chartConfig.options.plugins.legend.position = 'right';
         }
-    
+
         const chart = new Chart(canvas.getContext('2d'), chartConfig);
         this.charts.set(id, chart);
         return id;
     }
-    
+
     // Méthode pour ajouter une palette de couleurs personnalisée
     addCustomColorScheme(name, colors) {
         this.colorSchemes[name] = colors;
     }
 }
-
-
 
 
 class SimpleMapManager {
@@ -628,3 +519,5 @@ _getMarkersInsidePolygon(polygon) {
     }
     
 }
+
+

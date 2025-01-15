@@ -37,45 +37,6 @@
     </table>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const spinner = document.getElementById('spinner-visiteurs');
-        
-        // Masquer le spinner immédiatement après que la page soit prête
-        spinner.style.display = 'none';
-    
-        // Fonction pour afficher le spinner
-        function showSpinner() {
-            spinner.style.display = 'flex';  // Affiche le spinner (mode flex pour centrer)
-        }
-    
-        // Fonction pour masquer le spinner
-        function hideSpinner() {
-            spinner.style.display = 'none'; // Cache le spinner
-        }
-    
-        // Afficher le spinner lors de l'envoi d'une recherche
-        document.getElementById('visiteurSearchInput').addEventListener('keyup', function() {
-            showSpinner(); // Affiche le spinner lors de la recherche
-            setTimeout(() => {
-                hideSpinner(); // Masque le spinner après un délai (simulateur de chargement)
-            }, 500);  // Simuler un temps de recherche
-        });
-    
-        // Afficher le spinner lors du filtrage des visiteurs
-        document.getElementById('visiteurEmailFilter').addEventListener('keyup', function() {
-            showSpinner(); // Affiche le spinner lors du filtrage
-            setTimeout(() => {
-                hideSpinner(); // Masque le spinner après un délai (simulateur de filtrage)
-            }, 500);  // Simuler un temps de filtrage
-        });
-    
-        // Masquer le spinner après le chargement complet de la page
-        window.addEventListener('load', () => {
-            hideSpinner(); // Cache le spinner une fois la page chargée
-        });
-    });
-    
-</script>
+
 
 </section>

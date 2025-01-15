@@ -1513,7 +1513,7 @@ def send_admin_email(user, subject, action_type, action_details, object_before, 
     # Récupérer tous les utilisateurs ayant le rôle d'admin ou superadmin
     admins = UserProfile.objects.filter(type__in=["superadmin", "admin"])
     recipients = [admin.email for admin in admins if admin.email]
-    print("Recipients:", recipients)  # Pour le débogage
+ 
 
     # Préparer le contexte pour le template de l'email
     verification_url = f"{settings.SITE_URL}/login"
@@ -1565,3 +1565,267 @@ def telecharger_pdf(request, memoire_id):
     response = FileResponse(open(memoire.fichier_memoire.path, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{memoire.fichier_memoire.name}"'
     return response
+# views.py
+from django.http import JsonResponse
+from .models import Memoire, NotationCommentaire, UserProfile, Visiteur
+
+# Graphique 1: Notes Moyennes par Mémoire
+def get_memoire_data(request):
+    memoires = Memoire.objects.all()
+    data = {
+        'labels': [memoire.titre for memoire in memoires],
+        'datasets': [{
+            'label': 'Notes Moyennes',
+            'data': [memoire.note_moyenne() for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 2: Nombre de Mémoires par Utilisateur
+def get_user_data(request):
+    users = UserProfile.objects.all()
+    data = {
+        'labels': [f"{user.prenom} {user.nom}" for user in users],
+        'datasets': [{
+            'label': 'Mémoires',
+            'data': [user.memoires.count() for user in users],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 3: Nombre de Visiteurs par Date
+def get_visiteur_data(request):
+    visiteurs = Visiteur.objects.all()
+    data = {}
+    for visiteur in visiteurs:
+        date = visiteur.datev.date()
+        if date not in data:
+            data[date] = 0
+        data[date] += 1
+
+    return JsonResponse({
+        'labels': list(data.keys()),
+        'datasets': [{
+            'label': 'Visiteurs',
+            'data': list(data.values()),
+        }]
+    })
+
+# Graphique 4: Nombre de Notations par Mémoire
+def get_notation_data(request):
+    memoires = Memoire.objects.all()
+    data = {
+        'labels': [memoire.titre for memoire in memoires],
+        'datasets': [{
+            'label': 'Nombre de Notations',
+            'data': [memoire.notations.count() for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 5: Nombre de Mémoires par Domaine
+def get_domaine_data(request):
+    domaines = {domaine.nom: domaine.memoires.count() for domaine in Domaine.objects.all()}
+    return JsonResponse({
+        'labels': list(domaines.keys()),
+        'datasets': [{
+            'label': 'Mémoires par Domaine',
+            'data': list(domaines.values()),
+        }]
+    })
+
+# Graphique 6: Répartition des Utilisateurs par Sexe
+def get_sexe_data(request):
+    sexe_counts = UserProfile.objects.values('sexe').annotate(count=models.Count('id'))
+    data = {sexe['sexe']: sexe['count'] for sexe in sexe_counts}
+    return JsonResponse({
+        'labels': list(data.keys()),
+        'datasets': [{
+            'label': 'Utilisateurs par Sexe',
+            'data': list(data.values()),
+        }]
+    })
+
+# Graphique 7: Nombre d'Encadrements par Utilisateur
+def get_encadrement_data(request):
+    users = UserProfile.objects.all()
+    data = {
+        'labels': [f"{user.prenom} {user.nom}" for user in users],
+        'datasets': [{
+            'label': 'Encadrements',
+            'data': [user.encadrements.count() for user in users],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 8: Téléchargements par Mémoire
+def get_telechargement_data(request):
+    memoires = Memoire.objects.all()
+    data = {
+        'labels': [memoire.titre for memoire in memoires],
+        'datasets': [{
+            'label': 'Téléchargements',
+            'data': [memoire.telechargements.count() for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 9: Nombre d'Utilisateurs par Type
+def get_type_user_data(request):
+    type_counts = UserProfile.objects.values('type').annotate(count=models.Count('id'))
+    data = {type_user['type']: type_user['count'] for type_user in type_counts}
+    return JsonResponse({
+        'labels': list(data.keys()),
+        'datasets': [{
+            'label': 'Utilisateurs par Type',
+            'data': list(data.values()),
+        }]
+    })
+
+# Graphique 10: Répartition des Notations
+
+    from datetime import timedelta
+
+# Graphique 11: Nombre total d'utilisateurs au fil du temps
+def get_user_growth_data(request):
+    users = UserProfile.objects.annotate(date=Count('id')).values('date').annotate(count=Count('id'))
+    data = {
+        'labels': [user['date'].strftime("%Y-%m") for user in users],
+        'datasets': [{
+            'label': 'Utilisateurs au fil du temps',
+            'data': [user['count'] for user in users],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 12: Taux de participation des utilisateurs
+def get_participation_rate_data(request):
+    users = UserProfile.objects.all()
+    data = {
+        'labels': [f"{user.prenom} {user.nom}" for user in users],
+        'datasets': [{
+            'label': 'Participation (Notes/Commentaires)',
+            'data': [user.notations.count() for user in users],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 13: Nombre de mémoires publiés par mois
+def get_memoire_per_month_data(request):
+    memoires = Memoire.objects.values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
+    data = {
+        'labels': [memoire['annee_publication'] for memoire in memoires],
+        'datasets': [{
+            'label': 'Mémoires publiés par mois',
+            'data': [memoire['count'] for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 14: Répartition des mémoires par année de publication
+def get_memoire_by_year_data(request):
+    memoires = Memoire.objects.values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
+    data = {
+        'labels': [memoire['annee_publication'] for memoire in memoires],
+        'datasets': [{
+            'label': 'Mémoires par Année',
+            'data': [memoire['count'] for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 15: Taux de conversion des utilisateurs
+def get_conversion_rate_data(request):
+    total_visiteurs = Visiteur.objects.count()
+    total_utilisateurs = UserProfile.objects.count()
+    conversion_rate = (total_utilisateurs / total_visiteurs) * 100 if total_visiteurs > 0 else 0
+    data = {
+        'labels': ['Visiteurs', 'Utilisateurs'],
+        'datasets': [{
+            'label': 'Taux de Conversion',
+            'data': [total_visiteurs, total_utilisateurs],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 16: Nombre de téléchargements par mois
+def get_downloads_per_month_data(request):
+    downloads = Telechargement.objects.values('datet__date').annotate(count=Count('id')).order_by('datet__date')
+    data = {
+        'labels': [download['datet__date'].strftime("%Y-%m") for download in downloads],
+        'datasets': [{
+            'label': 'Téléchargements par mois',
+            'data': [download['count'] for download in downloads],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 17: Statistiques sur les types de mémoires
+def get_memoire_types_data(request):
+    types = Memoire.objects.values('fichier_memoire').annotate(count=Count('id'))
+    data = {
+        'labels': [type['fichier_memoire'] for type in types],
+        'datasets': [{
+            'label': 'Types de Mémoires',
+            'data': [type['count'] for type in types],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 18: Top 5 des mémoires les mieux notés
+def get_top_rated_memoires(request):
+    top_memoires = Memoire.objects.annotate(avg_rating=Count('notations__note')).order_by('-avg_rating')[:5]
+    data = {
+        'labels': [memoire.titre for memoire in top_memoires],
+        'datasets': [{
+            'label': 'Top 5 Mémoires',
+            'data': [memoire.note_moyenne() for memoire in top_memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 19: Nombre d'encadrements par mémoire
+def get_encadrement_per_memoire_data(request):
+    memoires = Memoire.objects.values('titre').annotate(count=Count('encadrements')).order_by('titre')
+    data = {
+        'labels': [memoire['titre'] for memoire in memoires],
+        'datasets': [{
+            'label': 'Encadrements par Mémoire',
+            'data': [memoire['count'] for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+
+# Graphique 20: Répartition des commentaires par mémoire
+def get_comments_per_memoire_data(request):
+    memoires = Memoire.objects.values('titre').annotate(count=Count('notations')).order_by('titre')
+    data = {
+        'labels': [memoire['titre'] for memoire in memoires],
+        'datasets': [{
+            'label': 'Commentaires par Mémoire',
+            'data': [memoire['count'] for memoire in memoires],
+        }]
+    }
+    return JsonResponse(data)
+# Graphique: Nombre de mémoires par encadrant
+def get_memoire_per_encadrant_data(request):
+    encadrants = UserProfile.objects.annotate(memoire_count=Count('encadrements')).order_by('-memoire_count')
+    data = {
+        'labels': [f"{encadrant.prenom} {encadrant.nom}" for encadrant in encadrants],
+        'datasets': [{
+            'label': 'Mémoires par Encadrant',
+            'data': [encadrant.memoire_count for encadrant in encadrants],
+        }]
+    }
+    return JsonResponse(data)
+# Graphique: Nombre de mémoires par auteur
+def get_memoire_per_auteur_data(request):
+    auteurs = UserProfile.objects.annotate(memoire_count=Count('memoires')).order_by('-memoire_count')
+    data = {
+        'labels': [f"{auteur.prenom} {auteur.nom}" for auteur in auteurs],
+        'datasets': [{
+            'label': 'Mémoires par Auteur',
+            'data': [auteur.memoire_count for auteur in auteurs],
+        }]
+    }
+    return JsonResponse(data)

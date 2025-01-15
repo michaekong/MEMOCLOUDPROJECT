@@ -70,9 +70,28 @@ urlpatterns = [
      
     
 
-
-    
-    
+    path('api/memoire-data/', get_memoire_data, name='memoire-data'),
+    path('api/user-data/', get_user_data, name='user-data'),
+    path('api/visiteur-data/', get_visiteur_data, name='visiteur-data'),
+    path('api/notation-data/', get_notation_data, name='notation-data'),
+    path('api/domaine-data/', get_domaine_data, name='domaine-data'),
+    path('api/sexe-data/', get_sexe_data, name='sexe-data'),
+    path('api/encadrement-data/', get_encadrement_data, name='encadrement-data'),
+    path('api/telechargement-data/', get_telechargement_data, name='telechargement-data'),
+    path('api/type-user-data/', get_type_user_data, name='type-user-data'),
+ 
+    path('api/user-growth-data/', get_user_growth_data, name='user-growth-data'),
+    path('api/participation-rate-data/', get_participation_rate_data, name='participation-rate-data'),
+    path('api/memoire-per-month-data/', get_memoire_per_month_data, name='memoire-per-month-data'),
+    path('api/memoire-by-year-data/', get_memoire_by_year_data, name='memoire-by-year-data'),
+    path('api/conversion-rate-data/', get_conversion_rate_data, name='conversion-rate-data'),
+    path('api/downloads-per-month-data/', get_downloads_per_month_data, name='downloads-per-month-data'),
+    path('api/memoire-types-data/', get_memoire_types_data, name='memoire-types-data'),
+    path('api/top-rated-memoires/', get_top_rated_memoires, name='top-rated-memoires'),
+    path('api/encadrement-per-memoire-data/', get_encadrement_per_memoire_data, name='encadrement-per-memoire-data'),
+    path('api/comments-per-memoire-data/', get_comments_per_memoire_data, name='comments-per-memoire-data'),
+     path('api/memoire-per-encadrant-data/', get_memoire_per_encadrant_data, name='memoire-per-encadrant-data'),
+    path('api/memoire-per-auteur-data/', get_memoire_per_auteur_data, name='memoire-per-auteur-data'),
 ]
 
 if settings.DEBUG:

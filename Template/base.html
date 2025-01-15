@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliothèque des Mémoires</title>
     
-
+     
+    <script src="{% static 'js/class.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
@@ -40,9 +41,11 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <!-- Style pour Leaflet Draw -->
     
 
-    <style>
+
+        <style>
         :root {
             --bg-primary-light: #f9fafb;
             --bg-secondary-light: #ffffff;
@@ -573,63 +576,5 @@ input:valid {
     </footer>
     
 
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('darkModeToggle', () => ({
-                darkMode: localStorage.getItem('darkMode') === 'true', // Vérifie l'état stocké
-                init() {
-                    // Applique le mode sombre si l'état est 'true'
-                    if (this.darkMode) {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
-                }
-            }));
-        });
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('searchFilter', () => ({
-                search: '',
-                domaine: '',
-                annee: '',
-                filterResults() {
-                    // Implement client-side filtering logic if needed
-                }
-            }))
-        });
-        document.addEventListener('DOMContentLoaded', function () {
-            const spinner = document.getElementById('spinner');
-            
-            // Masquer le spinner immédiatement après que la page est prête
-            spinner.style.display = 'none';
-        
-            const form = document.querySelector('form');
-            if (form) {
-                // Afficher le spinner lors de la soumission du formulaire
-                form.addEventListener('submit', function () {
-                    showSpinner(); // Affiche le spinner
-                });
-            }
-        });
-        
-        // Fonction pour afficher le spinner
-        function showSpinner() {
-            const spinner = document.getElementById('spinner');
-            spinner.style.display = 'flex'; // Affiche le spinner (mode flex pour le centrer)
-        }
-        
-        // Fonction pour masquer le spinner
-        function hideSpinner() {
-            const spinner = document.getElementById('spinner');
-            spinner.style.display = 'none'; // Cache le spinner
-        }
-        
-        // Masquer le spinner après le chargement complet de la page
-        window.addEventListener('load', () => {
-            hideSpinner(); // Cache le spinner une fois la page chargée
-        });
-        
-    </script>
-    
 </body>
 </html>

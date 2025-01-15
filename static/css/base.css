@@ -1,0 +1,369 @@
+
+
+
+
+:root {
+    --bg-primary-light: #f9fafb;
+    --bg-secondary-light: #ffffff;
+    --text-primary-light: #1a202c;
+    --text-secondary-light: #4a5568;
+    --accent-primary-light: #4299e1;
+
+    --bg-primary-dark: #0a192f;
+    --bg-secondary-dark: #112240;
+    --text-primary-dark: #e6f1ff;
+    --text-secondary-dark: #8892b0;
+    --accent-primary-dark: #64ffda;
+}
+/* Overlay qui recouvre toute la page */
+.overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5); /* Fond semi-transparent */
+z-index: 9998;
+display: none; /* Initialement caché */
+}
+
+
+
+/* Infobulle */
+.tooltip {
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%); /* Centrer l'infobulle */
+background-color: #4CAF50; /* Couleur de fond pour le succès */
+color: white;
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+display: none;
+z-index: 9999;
+transition: opacity 0.3s ease;
+}
+
+.tooltip.error {
+background-color: #f44336; /* Couleur de fond pour l'erreur */
+}
+
+.tooltip .close-btn {
+background: none;
+border: none;
+color: white;
+font-size: 30px;
+font-weight: bold;
+position: absolute;
+top: 5px;
+right: 10px;
+cursor: pointer;
+}
+
+/* Style du message */
+#tooltipMessage {
+font-size: 18px;
+}
+.message-container {
+position: fixed;
+top: 20%;
+left: 50%;
+transform: translateX(-50%);
+z-index: 9999;
+width: 50%;
+}
+
+.alert {
+padding: 10px;
+margin: 10px 0;
+border-radius: 5px;
+}
+
+.alert-success {
+background-color: #4CAF50;
+color: white;
+}
+
+.alert-danger {
+background-color: #f44336;
+color: white;
+}
+
+
+/* Effet de transition pour l'infobulle */
+.tooltip.show {
+display: block;
+opacity: 1;
+}
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    background-color: var(--bg-primary-light);
+    color: var(--text-primary-light);
+    transition: all 0.3s ease-in-out;
+}
+
+body.dark {
+    background-color: var(--bg-primary-dark);
+    color: var(--text-primary-dark);
+}
+/* Mode jour */
+.day-mode .btn-info {
+background-color: #007bff; /* Couleur de fond jour */
+color: white; /* Couleur du texte jour */
+}
+
+/* Mode nuit */
+.night-mode .btn-info {
+background-color: #343a40; /* Couleur de fond nuit */
+color: white; /* Couleur du texte nuit */
+}
+
+.card {
+    background-color: var(--bg-secondary-light);
+    border: 1px solid rgba(66, 153, 225, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+.card {
+    margin-bottom: 1.5rem; /* Ajustez selon vos besoins */
+}
+body.dark .card {
+    background-color: var(--bg-secondary-dark);
+    border-color: rgba(100, 255, 218, 0.1);
+}
+input:focus, select:focus, button:focus {
+    outline: 2px solid blue; /* ou une couleur de votre choix */
+}
+/* Mode jour */
+.day-mode .btn-info {
+background-color: #0056b3; /* Un bleu plus foncé */
+}
+
+/* Mode nuit */
+.night-mode .btn-info {
+background-color: #343a40; /* Couleur de fond nuit */
+}
+.button {
+transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--accent-primary-light);
+    color: var(--bg-secondary-light);
+}
+
+body.dark .btn-primary {
+    background-color: var(--accent-primary-dark);
+    color: var(--bg-primary-dark);
+}
+body { font-family: Arial, sans-serif; background-color: #f9f9f9; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+th { background-color: #f2f2f2; cursor: pointer; }
+.hidden { display: none; }
+
+.scrollable-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.scrollable-container input {
+    margin-right: 10px;
+}
+
+.scrollable-container label {
+    display: inline-block;
+}
+
+
+.img-container {
+    position: relative;
+    height: 160px;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .img-container img {
+    transform: scale(1.05);
+}
+
+.btn-info {
+    background: linear-gradient(145deg, #3b82f6, #2563eb);
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+    background: linear-gradient(145deg, #2563eb, #1d4ed8);
+    transform: translateY(-2px);
+}
+
+.icon {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .icon {
+    transform: rotate(5deg);
+}
+
+.modal-content {
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.note-badge {
+    background: linear-gradient(145deg, #fbbf24, #f59e0b);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.author-link {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.author-link:hover {
+    color: #2563eb;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal.show .modal-content {
+    animation: fadeIn 0.3s ease-out;
+}
+.modal-content {
+    color: black; /* Force le texte à être noir */
+}
+/* Styles généraux pour les champs d'entrée */
+.filter-input {
+padding: 10px; /* Espacement interne */
+border: 1px solid #ccc; /* Bordure légère */
+border-radius: 5px; /* Coins arrondis */
+width: 100%; /* Prend toute la largeur disponible */
+box-sizing: border-box; /* Inclut padding et bordure dans la largeur totale */
+}
+
+/* Styles pour le bouton */
+.filter-button {
+padding: 10px; /* Espacement interne */
+background-color: #007bff; /* Couleur de fond */
+color: white; /* Couleur du texte */
+border: none; /* Pas de bordure */
+border-radius: 5px; /* Coins arrondis */
+width: 100%; /* Prend toute la largeur disponible */
+cursor: pointer; /* Curseur pointer */
+}
+
+/* Changement de couleur au survol pour le bouton */
+.filter-button:hover {
+background-color: #0056b3; /* Couleur au survol */
+}
+
+/* Espacement entre les éléments */
+.mt-4 {
+margin-top: 1.5rem; /* Espacement supérieur */
+}
+
+/* Espacement entre les champs */
+.mb-3 {
+margin-bottom: 1rem; /* Espacement inférieur */
+}
+.spinner-overlay {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0.5);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+}
+
+.spinner {
+width: 50px;
+height: 50px;
+border: 5px solid rgba(255, 255, 255, 0.3);
+border-top: 5px solid var(--accent-primary);
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+from {
+transform: rotate(0deg);
+}
+to {
+transform: rotate(360deg);
+}
+}
+.error-message {
+color: red;
+font-size: 14px;
+display: none;
+}
+input:invalid {
+border: 2px solid red; /* Met en évidence un champ invalide */
+}
+
+input:valid {
+border: 2px solid green; /* Met en évidence un champ valide */
+}
+
+.error-message {
+display: none; /* Empêche tout affichage des erreurs par défaut */
+}
+
+
+[x-cloak] {
+display: none !important;
+}
+
+#dashboard-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
