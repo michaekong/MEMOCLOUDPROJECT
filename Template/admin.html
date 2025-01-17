@@ -249,7 +249,7 @@
                // Graphique: Nombre de mémoires par encadrant
                const encadrantResponse = await fetch('/api/memoire-per-encadrant-data/');
                const encadrantData = await encadrantResponse.json();
-               dashboard.addChart('bar', encadrantData, { title: 'Mémoires par Encadrant' });
+               dashboard.addChart('doughnut', encadrantData, { title: 'Mémoires par Encadrant' });
    
                // Graphique: Nombre de mémoires par auteur
                const auteurResponse = await fetch('/api/memoire-per-auteur-data/');
@@ -259,7 +259,7 @@
             // Graphique 1: Notes Moyennes par Mémoire
             const memoireResponse = await fetch('/api/memoire-data/');
             const memoireData = await memoireResponse.json();
-            dashboard.addChart('bar', memoireData, { title: 'Notes Moyennes des Mémoires' });
+            dashboard.addChart('doughnut', memoireData, { title: 'Notes Moyennes des Mémoires' });
 
             // Graphique 2: Nombre de Mémoires par Utilisateur
             const userResponse = await fetch('/api/user-data/');

@@ -352,9 +352,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
 def login(request, *args, **kwargs):
-    storage = get_messages(request)
-    for _ in storage:
-        pass  # Permet de vider les messages
+
 
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -722,10 +720,9 @@ def ajouter_commentaire(request, memoire_id):
     try:
         # Vérification de l'authentification
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except KeyError:
         return redirect('logout')
-    
-    user = UserProfile.objects.get(id=idp)# Récupérer le profil de l'utilisateur connecté
 
     # Récupérer le mémoire concerné
     memoire = get_object_or_404(Memoire, id=memoire_id)
@@ -793,10 +790,11 @@ def admins(request, *args, **kwargs):
     
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)
+    
   
     
     # Context for rendering the page
@@ -826,10 +824,11 @@ def admins(request, *args, **kwargs):
 def delete_memoire(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)
+    
     
     if request.method == 'POST':
         memoire_id = request.POST.get('memoire_id')
@@ -862,10 +861,11 @@ def delete_memoire(request):
 def delete_comment(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)
+
     
     if request.method == 'POST':
         comment_id = request.POST.get('comment_id')
@@ -898,10 +898,11 @@ def delete_comment(request):
 def delete_domaine(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)
+
     
     if request.method == 'POST':
         domaine_id = request.POST.get('domaine_id')
@@ -933,6 +934,12 @@ def delete_domaine(request):
 
 # Supprimer un utilisateur
 def delete_user(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except:
+        return redirect('logout')
+    
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         try:
@@ -972,10 +979,11 @@ def delete_user(request):
 def delete_encadrement(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
+    
 
-    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
 
     if request.method == 'POST':
         encadrement_id = request.POST.get('encadrement_id')
@@ -1007,10 +1015,12 @@ def delete_encadrement(request):
 def add_user(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
+    
 
-    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+
 
     if request.method == 'POST':
         try:
@@ -1067,10 +1077,12 @@ from .models import Memoire, Domaine, UserProfile
 def add_memoire(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
+    
 
-    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+  
 
     if request.method == 'POST':
         try:
@@ -1127,10 +1139,12 @@ def add_memoire(request):
 def add_domaine(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
+    
 
-    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+    
 
     if request.method == 'POST':
         try:
@@ -1168,10 +1182,12 @@ def add_domaine(request):
 def add_encadrement(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
     
-    user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+    
+
     
     if request.method == 'POST':
         try:
@@ -1214,9 +1230,11 @@ def add_encadrement(request):
 def edit_user(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
-    admin_user = UserProfile.objects.get(id=idp)  # Utilisateur qui effectue l'action
+    
+   
 
     if request.method == 'POST':
         print("Données reçues : ", request.POST)
@@ -1251,8 +1269,8 @@ def edit_user(request):
 
             # Envoyer un email avec les détails
             send_admin_email(
-                user=admin_user,  # L'utilisateur qui a effectué l'action
-                subject="Modification d'un utilisateur",
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un utilisateur ",
                 action_type="modification",
                 action_details=f"L'utilisateur {user.nom} {user.prenom} a été modifié avec succès.",
                 object_before=object_before,
@@ -1274,9 +1292,10 @@ from django.core.exceptions import ValidationError
 def edit_memoire(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
-    user = UserProfile.objects.get(id=idp)
+    
 
     if request.method == 'POST':
         try:
@@ -1333,9 +1352,10 @@ def edit_memoire(request):
 def edit_domaine(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
-    user = UserProfile.objects.get(id=idp)
+    
     
     if request.method == 'POST':
         try:
@@ -1371,9 +1391,10 @@ def edit_domaine(request):
 def edit_encadrement(request):
     try:
         idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
-    user = UserProfile.objects.get(id=idp)
+    
     
     if request.method == 'POST':
         try:
