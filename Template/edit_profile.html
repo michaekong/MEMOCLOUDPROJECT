@@ -57,13 +57,13 @@
                     <option value="standard" {% if request.user.type == 'standard' %}selected{% endif %}>standard</option>
                     {% if user.type %}{% endif %}
                     {% if user.type == 'superadmin' %}
-                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Administrateur</option>
+                    <option value="admin" {% if request.user.type == 'admin' %}selected{% endif %}>Administrateur</option>
                     <option value="superadmin" {% if request.user.type == 'superadmin' %}selected{% endif %}>SuperAdministrateur</option>
                 
                     {% endif %}
                     {% if user.type == 'admin' %}
                     
-                    <option value="Admin" {% if request.user.type == 'Admin' %}selected{% endif %}>Administrateur</option>
+                    <option value="admin" {% if request.user.type == 'admin' %}selected{% endif %}>Administrateur</option>
                    
                     {% endif %}
 

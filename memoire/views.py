@@ -427,9 +427,7 @@ def liste_memoires(request):
         user = UserProfile.objects.get(id=idp)
     except KeyError:
         return redirect('logout')
-    
-   
-    
+
     try:
         # Récupération des mémoires avec toutes leurs relations
         memoires = Memoire.objects.prefetch_related(
@@ -451,7 +449,7 @@ def liste_memoires(request):
             nbr_telechargements=Count('telechargements'),
             note_moyenne=Avg('notations__note'),
             nbr_notations=Count('notations'),
-            nbr_commentaires=Count('notations')  # Vérifiez que cela compte correctement
+            nbr_commentaires=Count('notations')
         )
 
         # Recherche textuelle
@@ -462,7 +460,8 @@ def liste_memoires(request):
                 Q(domaines__nom__icontains=query) |
                 Q(auteur__prenom__icontains=query) |
                 Q(auteur__nom__icontains=query) |
-                Q(resume__icontains=query)
+                Q(resume__icontains=query) |
+                Q(universites__name__icontains=query)  # Recherche par nom de l'université
             ).distinct()
 
         # Filtres additionnels
@@ -470,6 +469,7 @@ def liste_memoires(request):
         annee = request.GET.get('annee')
         encadreur_id = request.GET.get('encadreur')
         auteur_id = request.GET.get('auteur')
+        universite_id = request.GET.get('universite')  # Filtre par université
 
         if domaine_id:
             memoires = memoires.filter(domaines__id=domaine_id)
@@ -482,6 +482,9 @@ def liste_memoires(request):
 
         if auteur_id:
             memoires = memoires.filter(auteur__id=auteur_id)
+
+        if universite_id:
+            memoires = memoires.filter(universites__id=universite_id)  # Filtrage par université
 
         # Construction du dictionnaire détaillé pour la liste de mémoires
         memoires_list = []
@@ -515,7 +518,7 @@ def liste_memoires(request):
                     'nbr_telechargements': memoire.nbr_telechargements,
                     'note_moyenne': round(memoire.note_moyenne, 2) if memoire.note_moyenne else 0,
                     'nbr_notations': memoire.nbr_notations,
-                    'nbr_commentaires': memoire.nbr_commentaires  # Nombre de commentaires
+                    'nbr_commentaires': memoire.nbr_commentaires
                 },
                 'notations': [{
                     'utilisateur': {
@@ -536,11 +539,21 @@ def liste_memoires(request):
                 'fichiers': {
                     'image': memoire.images.url if memoire.images else None,
                     'document': memoire.fichier_memoire.url if memoire.fichier_memoire else None
-                }
+                },
+                'universites': [{
+                    'id': university.id,
+                    'lien': university.university_link,
+                    'name': university.name,
+                    'acronime': university.acronime,
+                    'slogan': university.slogan,
+                    'description': university.description,
+                    'logo': university.logo.url if university.logo else None
+                } for university in memoire.universites.all()]
             })
 
         # Données pour les filtres
         domaines_uniques = Domaine.objects.all()
+        universite_uniques = University.objects.all()
         annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
         encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
         auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
@@ -548,6 +561,7 @@ def liste_memoires(request):
         context = {
             'memoires': memoires_list,
             'domaines': domaines_uniques,
+            'universites': universite_uniques,
             'annees': sorted(annees_uniques),
             'encadreurs': encadreurs_uniques,
             'auteurs': auteurs_uniques,
@@ -560,7 +574,6 @@ def liste_memoires(request):
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
         return redirect('liste_memoires')
-       
 def enraport(request):
     try:
         # Vérification de l'authentification
@@ -651,12 +664,12 @@ def enraport(request):
                     'email': encadrement.encadrant.email,
                     'photo_profil': encadrement.encadrant.photo_profil.url if encadrement.encadrant.photo_profil else None,
                     'linkedin': encadrement.encadrant.realisation_linkedin
-                } for encadrement in memoire.encadreur_list],
+                } for encadrement in memoire.encadrements.all()],
                 'statistiques': {
-                    'nbr_telechargements': memoire.nbr_telechargements,
-                    'note_moyenne': round(memoire.note_moyenne, 2) if memoire.note_moyenne else 0,
-                    'nbr_notations': memoire.nbr_notations,
-                    'nbr_commentaires': memoire.nbr_commentaires  # Nombre de commentaires
+                    'nbr_telechargements': memoire.telechargements.count(),
+                    'note_moyenne': round(memoire.note_moyenne(), 2) if memoire.note_moyenne() else 0,
+                    'nbr_notations': memoire.notations.count(),
+                    'nbr_commentaires': memoire.notations.count()  # Nombre de commentaires
                 },
                 'notations': [{
                     'utilisateur': {
@@ -669,7 +682,7 @@ def enraport(request):
                     'note': notation.note,
                     'commentaire': notation.commentaire,
                     'date': notation.date_creation
-                } for notation in memoire.notations_list],
+                } for notation in memoire.notations.all()],
                 'telechargements': [{
                     'email': telechargement.emailt,
                     'date': telechargement.datet
@@ -677,10 +690,18 @@ def enraport(request):
                 'fichiers': {
                     'image': memoire.images.url if memoire.images else None,
                     'document': memoire.fichier_memoire.url if memoire.fichier_memoire else None
-                }
+                },
+                'universites': [{
+                    'id': university.id,
+                    'name': university.name,
+                    'acronime': university.acronime,
+                    'slogan': university.slogan,
+                    'description': university.description,
+                    'logo': university.logo.url if university.logo else None
+                } for university in memoire.universites.all()]  # Ajout des universités ici
             })
         memoires =list(filter(lambda x: x['encadreurs']['id']==idp or x['auteur']['id']==idp ,memoires_list ))
-        print(memoires_list)    
+        print("fjcnvldkngvldngldgnml")    
 
         # Données pour les filtres
         domaines_uniques = Domaine.objects.all()
@@ -778,6 +799,7 @@ def admins(request, *args, **kwargs):
     total_dom = Domaine.objects.count()
     dom = Domaine.objects.all()
     vis = visiteur.objects.all()
+    universitys = University.objects.all()
     tel = telechargement.objects.all()
     # Récupération des données
     total_users = UserProfile.objects.count()
@@ -803,6 +825,7 @@ def admins(request, *args, **kwargs):
         'utilisateurs': utilisateurs,
         'encadrements': encadrements,
         'visiteurs': vis,
+        'universitys':universitys,
         'telechargement': tel,
         'user': user,
         'total_users': total_users,
@@ -1012,6 +1035,49 @@ def delete_encadrement(request):
             return JsonResponse({'status': 'success', 'message': 'Encadrement supprimé avec succès.'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
+def delete_university(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except:
+        return redirect('logout')
+    
+
+
+    if request.method == 'POST':
+        university_id = request.POST.get('university_id')
+        try:
+            
+            university = get_object_or_404(University, id=university_id)
+            
+            # Préparer les détails pour l'email
+            object_before = {
+                "university_id": university.id,
+                "university_name": university.name,
+                "university_slogan": university.slogan,
+                "university_acronime": university.acronime,
+                "university_description": university.description,
+                "university_logo": university.logo,
+                "university_link": university.university_link
+                
+              
+            }
+
+            # Supprimer l'encadrement
+            university.delete()
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Suppression d'une université",
+                action_type="Suppression",
+                action_details=f"L'universite avec l'ID: {university_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'université supprimé avec succès.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})        
 def add_user(request):
     try:
         idp = request.session['user_id']
@@ -1073,7 +1139,61 @@ from .models import Memoire, Domaine, UserProfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Memoire, Domaine, UserProfile
+def add_university(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except UserProfile.DoesNotExist:
+        return redirect('logout')
 
+    if request.method == 'POST':
+        try:
+            logo = request.FILES.get('logo')
+            nom = request.POST.get('nom')
+            acronime = request.POST.get('acronime')
+            slogan = request.POST.get('slogan')
+            description = request.POST.get('description')
+            lien = request.POST.get('lien')
+
+            if not nom or not acronime or not slogan or not description:
+                messages.error(request, "Tous les champs sont requis.")
+                return redirect("admins")
+
+            uni = University.objects.create(
+                name=nom,
+                acronime=acronime,
+                slogan=slogan,
+                description=description,
+                university_link=lien,
+                logo=logo,
+            )
+
+            object_after = {
+                "id": uni.id,
+                "name": uni.name,
+                "slogan": uni.slogan,
+                "acronime": uni.acronime,
+                "lien": uni.university_link,
+                "description": uni.description
+            }
+
+            send_admin_email(
+                user=user,
+                subject="Ajout d'une université",
+                action_type="ajout",
+                action_details=f"L'université '{uni.name}' a été ajoutée avec succès.",
+                object_before=None,
+                object_after=object_after
+            )
+
+            messages.success(request, "Université ajoutée avec succès.")
+            return redirect("admins")
+
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'ajout de l'université : {str(e)}")
+            return redirect("admins")
+
+    return redirect("admins")  # Pour les requêtes GET
 def add_memoire(request):
     try:
         idp = request.session['user_id']
@@ -1388,6 +1508,59 @@ def edit_domaine(request):
             return JsonResponse({'status': 'error', 'message': str(e)})
 
 # Modifier un encadrement
+def edit_university(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+    except UserProfile.DoesNotExist:
+        return redirect('logout')
+    
+    if request.method == 'POST':
+        try:
+            university_id = request.POST.get('university_id')
+            university = get_object_or_404(University, id=university_id)
+
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(university).copy()
+
+            # Récupérer les nouvelles données du formulaire
+            nom = request.POST.get('nom')
+            acronime = request.POST.get('acronime')
+            slogan = request.POST.get('slogan')
+            description = request.POST.get('description')
+            lien = request.POST.get('lien')
+
+            # Appliquer les modifications
+            university.name = nom
+            university.acronime = acronime
+            university.slogan = slogan
+            university.description = description
+            university.university_link = lien
+            
+            # Si un nouveau logo est uploadé, mettez à jour le champ logo
+            if request.FILES.get('logo'):
+                university.logo = request.FILES.get('logo')
+
+            # Sauvegarder les modifications
+            university.save()
+
+            # Capturer l'état après modification
+            object_after = vars(university)
+
+            # Envoyer l'email
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'une université",
+                action_type="modification",
+                action_details=f"L'université avec l'ID {university_id} a été modifiée avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
+            return JsonResponse({'status': 'success', 'message': 'Université modifiée avec succès.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+    return JsonResponse({'status': 'error', 'message': 'Méthode de requête non autorisée.'})
 def edit_encadrement(request):
     try:
         idp = request.session['user_id']

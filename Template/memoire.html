@@ -7,7 +7,7 @@
             <i class="fa fa-filter"></i> Filtrer les mémoires
         </button>
     </div>
-
+    
     <!-- Formulaire de filtrage qui se cache au départ -->
     <div id="filterForm" class="collapse shadow-lg p-4 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-300">
         <form method="GET" action="{% url 'liste_memoires' %}" class="mb-4">
@@ -17,7 +17,7 @@
                 <input type="text" class="form-control dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" 
                        id="q" name="q" value="{{ query_params.q }}" placeholder="Rechercher un titre, un auteur, etc.">
             </div>
-
+    
             <!-- Filtre par domaine -->
             <div class="form-group">
                 <label for="domaine" class="font-weight-bold dark:text-gray-300">Domaine</label>
@@ -28,7 +28,7 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
             <!-- Filtre par année -->
             <div class="form-group">
                 <label for="annee" class="font-weight-bold dark:text-gray-300">Année de publication</label>
@@ -39,7 +39,7 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
             <!-- Filtre par encadrant -->
             <div class="form-group">
                 <label for="encadreur" class="font-weight-bold dark:text-gray-300">Encadrant</label>
@@ -50,7 +50,7 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
             <!-- Filtre par auteur -->
             <div class="form-group">
                 <label for="auteur" class="font-weight-bold dark:text-gray-300">Auteur</label>
@@ -61,7 +61,18 @@
                     {% endfor %}
                 </select>
             </div>
-
+    
+            <!-- Filtre par université -->
+            <div class="form-group">
+                <label for="universite" class="font-weight-bold dark:text-gray-300">Université</label>
+                <select class="form-control dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" id="universite" name="universite">
+                    <option value="">-- Sélectionner une université --</option>
+                    {% for universite in universites %}
+                        <option value="{{ universite.id }}" {% if universite.id == query_params.universite %}selected{% endif %}>{{ universite.name }} ({{ universite.acronime }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+    
             <!-- Boutons de filtrage -->
             <div class="d-flex justify-content-between mt-3">
                 <button type="submit" class="btn btn-outline-primary w-48">Filtrer</button>
@@ -69,8 +80,7 @@
             </div>
         </form>
     </div>
-</div>
-
+    
     <div class="mb-4">
        
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -102,6 +112,21 @@
                 Domaines: 
                 {% for domaine in memoire.domaines %}
                     {{ domaine.nom }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            <p class="text-lg font-semibold mt-2 mb-1 flex items-center">
+               
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2 L2 7 L12 12 L22 7 L12 2 Z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 12 L2 17 L12 22 L22 17 L12 12 Z" />
+                    </svg>
+               
+                    Universités: 
+                
+                {% for universite in memoire.universites %}
+                <a href="{{ universites.lien }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-teal-300 ml-1">
+                    {{ universite.acronime }}{% if not forloop.last %}, {% endif %}
+                </a>
                 {% endfor %}
             </p>
             
@@ -146,7 +171,7 @@
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <button data-toggle="modal" data-target="#commentModal{{ memoire.id }}" title="Cliquez pour voir les commentaires">
                     <span class="note-badge">
-                      comments:
+                        <i class="fas fa-comments text-xl "></i>
                         {% if memoire.statistiques.note_moyenne > 0 %}
                                 {{ memoire.statistiques.note_moyenne }}/5
                             {% else %}

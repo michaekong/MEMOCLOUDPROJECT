@@ -26,6 +26,12 @@
                     </button>
                 </li>
                 <li>
+                    <button @click="activeSection = 'univers'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        University
+                    </button>
+                </li>
+                <li>
                     <button @click="activeSection = 'graphique'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Dashboard
@@ -226,7 +232,7 @@
         
         
 
-     
+        {% include "sectionuniversity.html" %}
         {% include "sectionuser.html" %}
         {% include "sectionmemoire.html" %}
         {% include "sectionencadrement.html" %}
@@ -610,7 +616,50 @@ $('#editUserForm').on('submit', function (event) {
     });
 });
 
+$('#edituniversityForm').on('submit', function(event) {
+    event.preventDefault();  // Empêcher la soumission par défaut du formulaire
 
+    var form = $(this);
+    var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+
+    // Envoyer les données via Ajax
+    $.ajax({
+        url: form.attr('action'),  // URL de la vue pour modifier une université
+        method: 'POST',
+        data: formData,
+        processData: false,  // Ne pas traiter les données
+        contentType: false,  // Ne pas définir de content-type
+        success: function(response) {
+            if (response.status === 'success') {
+                // Fermer la modal de modification
+                $('#edituniversityModal').modal('hide');
+
+                showTooltip("Université modifiée avec succès !", false, "ou", "tou", "meso");
+                // Vous pouvez également recharger la liste des universités ici si nécessaire
+            } else {
+                showTooltip("Erreur lors de la modification de l'université : " + response.message, true, "ou", "tou", "meso");
+            }
+        },
+        error: function() {
+            showTooltip('Une erreur est survenue. Veuillez réessayer.', true, "ou", "tou", "meso");
+        }
+    });
+});
+
+// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
+$('#edituniversityModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var universityId = button.data('id');  // Récupérer l'ID de l'université
+    var modal = $(this);
+
+    // Remplir les champs du formulaire avec les données de l'université
+    modal.find('#university_id').val(universityId);
+    modal.find('#nom').val(button.data('nom'));
+    modal.find('#acronime').val(button.data('acronime'));
+    modal.find('#slogan').val(button.data('slogan'));
+    modal.find('#description').val(button.data('description'));
+    modal.find('#lien').val(button.data('lien'));
+});
     
     
     function deleteEncadrement(encadrementId) {
@@ -662,6 +711,33 @@ $('#editUserForm').on('submit', function (event) {
                 },
                 error: function(xhr, errmsg, err) {
                     showTooltip(" erreurs  de supression du domaine ,Veuillez reessayer !", true,"ovm","tolm","mesm");
+                }
+            });
+        }
+       
+    }
+    function deleteuniversity(universityId) {
+        
+        if (confirm('Êtes-vous sûr de vouloir supprimer cette?')) {
+            $.ajax({
+                url: '/delete_university/',  // URL vers la vue delete_encadrement
+                type: 'POST',
+                data: {
+                    'university_id': universityId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Exemple d'utilisation
+// Afficher une infobulle de succès
+
+                                    showTooltip("université supprimer avec succès !", false,"ou","tou","meso");
+                    } else {
+                        showTooltip("université supprimer avec succès !", false,"ou","tou","meso");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    showTooltip(" erreurs  de supression du domaine ,Veuillez reessayer !", true,"ou","tou","meso");
                 }
             });
         }

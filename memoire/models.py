@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
-from django.db import models
-from django.contrib.auth.hashers import make_password
-
 class UserProfile(models.Model):
     SEXE_CHOICES = [
         ('M', 'Masculin'),
@@ -14,18 +11,19 @@ class UserProfile(models.Model):
     TYPE_CHOICES = [
         ('standard', 'Standard'),
         ('admin', 'Administrateur'),
-        ('superadmin', 'superAdministrateur'),
+        ('superadmin', 'Super Administrateur'),
     ]
 
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES)
     email = models.EmailField(unique=True)
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES ,default='standard')
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='standard')
     realisation_linkedin = models.URLField(max_length=200, blank=True, null=True)
     photo_profil = models.ImageField(upload_to='photos_profil/', blank=True, null=True)
     password = models.CharField(max_length=128)
-   
+    universites = models.ManyToManyField('University', related_name='utilisateurs', blank=True)
+
     def save(self, *args, **kwargs):
         if not self.password.startswith('pbkdf2_'):
             self.password = make_password(self.password)
@@ -39,15 +37,13 @@ class Domaine(models.Model):
 
     def __str__(self):
         return self.nom
-from django.db import models
 
 class UnverifiedUserProfile(models.Model):
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
-   
     sexe = models.CharField(max_length=1, choices=[('M', 'Masculin'), ('F', 'Féminin')])
-    type = models.CharField(max_length=50,default='standard')
+    type = models.CharField(max_length=50, default='standard')
     realisation_linkedin = models.URLField(null=True, blank=True)
     photo_profil = models.ImageField(upload_to='profiles/', null=True, blank=True)
     password = models.CharField(max_length=255)  # Mot de passe haché
@@ -62,12 +58,25 @@ class Memoire(models.Model):
     auteur = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='memoires')
     resume = models.TextField()
     fichier_memoire = models.FileField(upload_to='memoires/pdf/', blank=False, null=False)
+    universites = models.ManyToManyField('University', related_name='memoires')
+
     def note_moyenne(self):
         notes = self.notations.values_list('note', flat=True)
         return round(sum(notes) / len(notes), 2) if notes else 0
-    
+
     def __str__(self):
         return self.titre
+
+class University(models.Model):
+    name = models.CharField(max_length=200)
+    university_link = models.URLField(null=True, blank=True)
+    slogan = models.TextField()
+    acronime = models.CharField(max_length=200)
+    logo = models.ImageField(upload_to='university/logo/', blank=True, null=True)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.name
 
 class NotationCommentaire(models.Model):
     memoire = models.ForeignKey(Memoire, on_delete=models.CASCADE, related_name='notations')
@@ -82,18 +91,17 @@ class NotationCommentaire(models.Model):
     class Meta:
         unique_together = ('memoire', 'utilisateur')  # Un utilisateur peut noter/commenter un mémoire une seule fois
 
-
 class Visiteur(models.Model):
     emailv = models.EmailField()    
     datev = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return self.emailv
 
 class Encadrement(models.Model):
     memoire = models.ForeignKey(Memoire, on_delete=models.CASCADE, related_name='encadrements')
     encadrant = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='encadrements')
-   
+
     def __str__(self):
         return self.memoire.titre
 
@@ -101,3 +109,6 @@ class Telechargement(models.Model):
     memoire = models.ForeignKey(Memoire, on_delete=models.CASCADE, related_name='telechargements')
     emailt = models.EmailField()
     datet = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Téléchargement de {self.memoire.titre} par {self.emailt}"

@@ -36,7 +36,9 @@ urlpatterns = [
     path('memoire/<int:memoire_id>/ajouter_commentaire/', ajouter_commentaire, name='ajouter_commentaire'),
     path('telecharger/<int:memoire_id>/', telecharger_pdf, name='telecharger_pdf'),
     
-
+       path('delete_university/', delete_university, name='delete_university'),
+       path('edit_university/', edit_university, name='edit_university'),
+       path('add_university/',add_university, name='add_university'),
     path('delete_memoire/', delete_memoire, name='delete_memoire'),
     path('delete_user/', delete_user, name='delete_user'),
     path('delete_encadrement/', delete_encadrement, name='delete_encadrement'),

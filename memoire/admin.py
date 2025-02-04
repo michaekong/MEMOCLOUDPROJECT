@@ -40,6 +40,10 @@ class NotationCommentaireAdmin(admin.ModelAdmin):
 class VisiteurAdmin(admin.ModelAdmin):
     list_display = ('emailv', 'datev')
     search_fields = ('emailv',)
+@admin.register(University)
+class UniversityAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slogan','logo')
+    search_fields = ('name',)
 
 
 @admin.register(Encadrement)
