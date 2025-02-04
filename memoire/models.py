@@ -58,7 +58,7 @@ class Memoire(models.Model):
     auteur = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='memoires')
     resume = models.TextField()
     fichier_memoire = models.FileField(upload_to='memoires/pdf/', blank=False, null=False)
-    universites = models.ManyToManyField('University', related_name='memoires')
+    universites = models.ManyToManyField('University', related_name='memoires', blank=True)
 
     def note_moyenne(self):
         notes = self.notations.values_list('note', flat=True)
