@@ -415,6 +415,13 @@ input:valid {
     display: none !important;
 }
 
+    .avatar {
+        width: 100px; /* Ajustez la largeur */
+        height: 100px; /* Ajustez la hauteur */
+        object-fit: cover; /* Couvre le conteneur */
+        border-radius: 50%; /* Arrondi pour un affichage circulaire */
+    }
+
         
     </style>
     <body 
@@ -438,6 +445,7 @@ input:valid {
     <header class="bg-gray-800 text-white shadow-md">
         <div class="container mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
             <!-- Logo et Titre -->
+            {% block header %}
             <div class="flex items-center space-x-4 mb-4 sm:mb-0">
                 <img 
                     x-show="!darkMode" 
@@ -459,7 +467,7 @@ input:valid {
                     Mémoire ENSTP
                 </h1>
             </div>
-
+             {% endblock header %}
             <!-- Boutons d'action -->
             <div class="flex items-center space-x-6">
                 <!-- Bouton Mode Sombre/Clair -->

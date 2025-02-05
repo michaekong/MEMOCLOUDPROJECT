@@ -1,6 +1,29 @@
 {% extends "base.html" %}
 
 {% load static %}
+{% block header %}
+            <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+                <img 
+                    x-show="!darkMode" 
+                    x-cloak
+                    src="{{ university.logo.url }}" 
+                    
+                    alt="Logo clair" 
+                    class="h-10 w-auto">
+            
+                <img 
+                    x-show="darkMode" 
+                    x-cloak
+                    
+                     src="{{ university.logo.url }}"
+                    alt="Logo sombre" 
+                    class="h-10 w-auto">
+            
+                <h1 class="text-xl sm:text-2xl font-bold text-blue-300 dark:text-teal-400">
+                    {{ university.name }}({{ university.acronime }})
+                </h1>
+            </div>
+             {% endblock header %}
 {% block content %}
 
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">

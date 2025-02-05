@@ -838,13 +838,14 @@ def admins(request, university_id, *args, **kwargs):
     utilisateurs = UserProfile.objects.filter(user_universities__university=university)
     encadrements = Encadrement.objects.filter(memoire__universites=university)
     comments = NotationCommentaire.objects.filter(memoire__universites=university)
-    total_comments = comments.count()
-    total_dom = Domaine.objects.count()
-    dom = Domaine.objects.all()
+    
+    dom = Domaine.objects.filter(universites=university)
     vis = Visiteur.objects.all()  # Vous pouvez également filtrer les visiteurs si nécessaire
     tel = Telechargement.objects.filter(memoire__universites=university)
 
     # Récupération des données
+    total_comments = comments.count()
+    total_dom = dom.count()
     total_users = utilisateurs.count()
     total_memoires = memoires.count()
     total_encadrements = encadrements.count()
@@ -873,7 +874,7 @@ def admins(request, university_id, *args, **kwargs):
         'total_dom': total_dom,
         'total_comments': total_comments,
     }
-    print(universites)
+   
 
     return render(request, "admin.html", context)
 
@@ -1309,11 +1310,12 @@ def add_domaine(request):
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        uni=request.session.get('uni_id')
     except:
         return redirect('logout')
     
-
     
+    university = get_object_or_404(University, id=uni)
 
     if request.method == 'POST':
         try:
@@ -1321,13 +1323,15 @@ def add_domaine(request):
 
             # Création de l'objet Domaine
             domaine = Domaine.objects.create(
-                nom=nom
+                nom=nom,
+                universites=university
             )
 
             # Préparer les détails pour l'email
             object_after = {
                 "id": domaine.id,
                 "nom": domaine.nom
+            
             }
 
             send_admin_email(
