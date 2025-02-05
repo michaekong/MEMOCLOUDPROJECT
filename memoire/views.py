@@ -379,7 +379,8 @@ def login(request, *args, **kwargs):
 
                 # Redirection en fonction du type d'utilisateur
                 if user.type in ["admin", "superadmin"]:
-                    return redirect('/admins')  # Page pour les administrateurs
+                    
+                    return redirect('/chooseuniversity')  # Page pour les administrateurs
                 else:
                     # Création d'une visite pour un utilisateur standard
                     visiteur.objects.create(emailv=email)
@@ -410,7 +411,22 @@ def logout(request):
     # Rediriger vers la page de connexion
     return redirect('/login')
 
+def chooseuniversity(request):
+    try:
+        # Vérification de l'authentification
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        universities = UserUniversity.objects.filter(user=user).select_related('university')
+    except KeyError:
+        return redirect('logout')
 
+    context = {
+            
+            'user': user,
+            'universities':universities,
+        }
+    
+    return render(request,"chooseuniversity.html",context)
 
 
 from django.shortcuts import render
@@ -779,68 +795,76 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from .models import *
 from django.db.models.functions import ExtractMonth
 # Vue principale qui charge les données pour le tableau de bord
-def admins(request, *args, **kwargs):
-    # Fetching data for memoires, users, and encadrements
-    memoires = Memoire.objects.prefetch_related(
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Count, Avg, Prefetch
+
+def admins(request, university_id, *args, **kwargs):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        
+
+        # Vérifiez si l'utilisateur est associé à l'université demandée
+        if not user.user_universities.filter(university_id=university_id).exists():
+            return redirect('logout')  # ou une autre page d'erreur
+
+        # Récupérer l'université
+        university = get_object_or_404(University, id=university_id)
+
+    except UserProfile.DoesNotExist:
+        return redirect('logout')
+    request.session['uni_id'] = university_id
+    # Filtrer les données par l'université spécifiée
+    memoires = Memoire.objects.filter(universites=university).prefetch_related(
         Prefetch(
             'encadrements',
             queryset=Encadrement.objects.select_related('encadrant'),
             to_attr='encadreur_list'
         ),
-        'domaines'  # Préfetch des domaines
+        'domaines'
     ).annotate(
-        nbr_telechargements=Count('telechargements'),  # Nombre de téléchargements
-        note_moyenne=Avg('notations__note')  # Moyenne des notes
-    )  # Comptage des téléchargements pour chaque mémoire
-    utilisateurs = UserProfile.objects.all()
-    encadrements = Encadrement.objects.all()
-    comments=NotationCommentaire.objects.all()
-    total_comments=NotationCommentaire.objects.count()
+        nbr_telechargements=Count('telechargements'),
+        note_moyenne=Avg('notations__note')
+    )
+
+    utilisateurs = UserProfile.objects.filter(user_universities__university=university)
+    encadrements = Encadrement.objects.filter(memoire__universites=university)
+    comments = NotationCommentaire.objects.filter(memoire__universites=university)
+    total_comments = comments.count()
     total_dom = Domaine.objects.count()
     dom = Domaine.objects.all()
-    vis = visiteur.objects.all()
-    universitys = University.objects.all()
-    tel = telechargement.objects.all()
-    # Récupération des données
-    total_users = UserProfile.objects.count()
-    total_memoires = Memoire.objects.count()
-    total_encadrements = Encadrement.objects.count()
-    total_telechargements = telechargement.objects.count()
-    total_visites=visiteur.objects.count()
+    vis = Visiteur.objects.all()  # Vous pouvez également filtrer les visiteurs si nécessaire
+    tel = Telechargement.objects.filter(memoire__universites=university)
 
-    
-    
-    try:
-        idp = request.session['user_id']
-        user = UserProfile.objects.get(id=idp)
-    except:
-        return redirect('logout')
-    
-    
-  
-    
+    # Récupération des données
+    total_users = utilisateurs.count()
+    total_memoires = memoires.count()
+    total_encadrements = encadrements.count()
+    total_telechargements = tel.count()
+    total_visites = vis.count()
+    universites=University.objects.all()
+
     # Context for rendering the page
     context = {
         'memoires': memoires,
         'utilisateurs': utilisateurs,
         'encadrements': encadrements,
+        'universites':universites,
         'visiteurs': vis,
-        'universitys':universitys,
+        'university': university,
         'telechargement': tel,
         'user': user,
         'total_users': total_users,
         'total_memoires': total_memoires,
         'total_encadrements': total_encadrements,
         'total_telechargements': total_telechargements,
-        'total_visites':total_visites,
-        'domaines':dom,
-        'comments':comments,
-        'total_dom':total_dom,
-        'total_comments':total_comments,
-        
-       
+        'total_visites': total_visites,
+        'domaines': dom,
+        'comments': comments,
+        'total_dom': total_dom,
+        'total_comments': total_comments,
     }
-    
+
     return render(request, "admin.html", context)
 
 # Supprimer un mémoire
@@ -1157,7 +1181,7 @@ def add_university(request):
 
             if not nom or not acronime or not slogan or not description:
                 messages.error(request, "Tous les champs sont requis.")
-                return redirect("admins")
+                return redirect("admin_university", university_id=request.session.get('uni_id'))
 
             uni = University.objects.create(
                 name=nom,
@@ -1187,22 +1211,27 @@ def add_university(request):
             )
 
             messages.success(request, "Université ajoutée avec succès.")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'université : {str(e)}")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
 
-    return redirect("admins")  # Pour les requêtes GET
+    return redirect("admin_university", university_id=request.session.get('uni_id'))  # Pour les requêtes GET
+
 def add_memoire(request):
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        user_id = request.session.get('user_id')
+        uni=request.session.get('uni_id')
     except:
         return redirect('logout')
+    # Vérifier si l'utilisateur est authentifié
     
-
-  
+    
+    
+    user = get_object_or_404(UserProfile, id=user_id)
 
     if request.method == 'POST':
         try:
@@ -1229,6 +1258,13 @@ def add_memoire(request):
             
             # Associer les domaines au mémoire
             memoire.domaines.set(domaines)
+
+            # Mettre à jour les universités associées au mémoire
+            universites_ids = request.POST.getlist('universites')  # Liste des universités sélectionnées
+            universites = University.objects.filter(id__in=universites_ids)  # Récupérer les universités sélectionnées
+            memoire.universites.set(universites)  # Mettre à jour la relation ManyToMany
+
+            # Sauvegarder le mémoire modifié
             memoire.save()
 
             # Préparer les détails pour l'email
@@ -1238,24 +1274,27 @@ def add_memoire(request):
                 "annee_publication": memoire.annee_publication,
                 "auteur": f"{auteur.nom} {auteur.prenom}",
                 "domaines": [d.nom for d in domaines],
-                "resume": memoire.resume
+                "resume": memoire.resume,
+                "universites": [u.nom for u in universites]  # Ajouter les noms des universités
             }
 
             send_admin_email(
-                user=user,  # L'utilisateur qui a effectué l'action
+                user=user,
                 subject="Ajout d'un mémoire",
                 action_type="ajout",
                 action_details=f"Le mémoire '{memoire.titre}' a été ajouté avec succès.",
-                object_before=None,  # Pas d'état initial
+                object_before=None,
                 object_after=object_after
             )
 
             messages.success(request, "Mémoire ajouté avec succès.")
-            return redirect("admins")
-
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout du mémoire : {str(e)}")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
+    
+    # Si la méthode n'est pas POST, rediriger
+    return redirect("admin_university", university_id=uni)
 def add_domaine(request):
     try:
         idp = request.session['user_id']
@@ -1291,11 +1330,11 @@ def add_domaine(request):
             )
 
             messages.success(request, "Domaine ajouté avec succès.")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
 
         except Exception as e:
             messages.error(request, f"Erreur d'ajout du domaine : {str(e)}")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
 
 
 # Ajouter un encadrement
@@ -1340,11 +1379,11 @@ def add_encadrement(request):
             )
 
             messages.success(request, "Encadrement ajouté avec succès.")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
         
         except Exception as e:
             messages.error(request, f"Erreur d'ajout de l'encadrement : {str(e)}")
-            return redirect("admins")
+            return redirect("admin_university", university_id=request.session.get('uni_id'))
 
 # Modifier un utilisateur
 def edit_user(request):
@@ -1409,13 +1448,14 @@ from django.http import JsonResponse
 from .models import Memoire, UserProfile, Domaine
 from django.core.exceptions import ValidationError
 
+
 def edit_memoire(request):
+    # Vérifier si l'utilisateur est authentifié
     try:
-        idp = request.session['user_id']
-        user = UserProfile.objects.get(id=idp)
-    except:
+        user_id = request.session['user_id']
+        user = UserProfile.objects.get(id=user_id)
+    except UserProfile.DoesNotExist:
         return redirect('logout')
-    
 
     if request.method == 'POST':
         try:
@@ -1431,12 +1471,12 @@ def edit_memoire(request):
             memoire.resume = request.POST.get('resume')
 
             # Mettre à jour l'image (si présente)
-            if 'images' in request.FILES:
-                memoire.images = request.FILES.get('images')
+            if 'images' in request.FILES and request.FILES['images']:
+                memoire.images = request.FILES['images']
 
             # Mettre à jour le fichier du mémoire (si présent)
-            if 'lien_telecharger' in request.FILES:
-                memoire.fichier_memoire = request.FILES.get('lien_telecharger')
+            if 'lien_telecharger' in request.FILES and request.FILES['lien_telecharger']:
+                memoire.fichier_memoire = request.FILES['lien_telecharger']
 
             # Mettre à jour l'auteur
             auteur_id = request.POST.get('auteur')
@@ -1446,6 +1486,11 @@ def edit_memoire(request):
             domaines_ids = request.POST.getlist('domaines')  # Liste des domaines sélectionnés
             domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les domaines sélectionnés
             memoire.domaines.set(domaines)  # Mettre à jour la relation ManyToMany
+
+            # Mettre à jour les universités associées au mémoire
+            universites_ids = request.POST.getlist('universites')  # Liste des universités sélectionnées
+            universites = University.objects.filter(id__in=universites_ids)  # Récupérer les universités sélectionnées
+            memoire.universites.set(universites)  # Mettre à jour la relation ManyToMany
 
             # Sauvegarder le mémoire modifié
             memoire.save()
@@ -1468,6 +1513,7 @@ def edit_memoire(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)})
 
+    return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée.'})
 
 def edit_domaine(request):
     try:

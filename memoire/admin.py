@@ -62,3 +62,10 @@ class UnverifiedUserProfileAdmin(admin.ModelAdmin):
     list_display = ('nom', 'prenom', 'email', 'created_at', 'verification_code')
     search_fields = ('nom', 'prenom', 'email')
     list_filter = ('created_at',)
+class UserUniversityAdmin(admin.ModelAdmin):
+    list_display = ('user', 'university', 'role')
+    list_filter = ('university', 'role')
+    search_fields = ('user__email', 'university__name')
+
+# Enregistrer le modèle UserUniversity dans l'admin
+admin.site.register(UserUniversity, UserUniversityAdmin)    

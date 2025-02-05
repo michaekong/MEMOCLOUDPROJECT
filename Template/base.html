@@ -469,7 +469,7 @@ input:valid {
                     class="px-4 py-2 rounded-full flex items-center space-x-2 shadow-md transition-colors">
                     <i :class="darkMode ? 'fas fa-sun' : 'fas fa-moon'" class="text-xl"></i>
                 </button>
-    
+                 {% block menu %}
                 <!-- Menu Compte -->
                 <div class="relative" x-data="{ accountMenu: false }">
                     <!-- Bouton Menu -->
@@ -515,6 +515,7 @@ input:valid {
                         </a>
                     </div>
                 </div>
+                {% endblock menu %} 
             </div>
         </div>
     </header>

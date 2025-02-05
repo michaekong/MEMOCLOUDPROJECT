@@ -69,12 +69,12 @@
             <div class="modal-body">
                 <form class="myForm" id="editMemoireForm" action="{% url 'edit_memoire' %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input type="hidden" id="memoire_id" name="memoire_id">
+                    <input type="hidden" id="memoire_id" name="memoire_id" value="{{ memoire.id }}">
                     
                     <!-- Champ Titre -->
                     <div class="mb-3">
                         <label for="titre" class="form-label">Titre</label>
-                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
+                        <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" value="{{ memoire.titre }}" required>
                     </div>
                     
                     <!-- Champ Domaine (Multiple Selection) -->
@@ -91,23 +91,32 @@
                         </div>
                     </div>
                     
-                
+                    <!-- Champ Universités (Multiple Selection) -->
+                    <div class="mb-3">
+                        <label class="form-label">Universités</label>
+                        <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="universites" name="universites" multiple required>
+                            {% for universite in universites %}
+                                <option value="{{ universite.id }}" {% if universite in memoire.universites.all %}selected{% endif %}>{{ universite.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
                     <!-- Champ Année de Publication -->
                     <div class="mb-3">
                         <label for="annee_publication" class="form-label">Année de publication</label>
-                        <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" required>
+                        <input type="number" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="annee_publication" name="annee_publication" value="{{ memoire.annee_publication }}" required>
                     </div>
                     
                     <!-- Champ Résumé -->
                     <div class="mb-3">
                         <label for="resume" class="form-label">Résumé</label>
-                        <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required></textarea>
+                        <textarea class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="resume" name="resume" required>{{ memoire.resume }}</textarea>
                     </div>
                     
                     <!-- Champ Lien de téléchargement (fichier du mémoire) -->
                     <div class="mb-3">
-                        <label for="lien_telecharger" class="form-label">Emplacement du mémoire</label>
-                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_telecharger" name="lien_telecharger">
+                        <label for="fichier_memoire" class="form-label">Emplacement du mémoire</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="fichier_memoire" name="fichier_memoire">
                     </div>
                     
                     <!-- Champ Image -->
@@ -136,7 +145,7 @@
     </div>
 </div>
 
-    <!-- Modal pour ajouter un mémoire -->
+   <!-- Modal pour ajouter un mémoire -->
 <div class="modal fade" id="addMemoireModal" tabindex="-1" aria-labelledby="addMemoireModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
@@ -153,21 +162,30 @@
                         <label for="titre" class="form-label">Titre</label>
                         <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="titre" name="titre" required>
                     </div>
+                    
+                    <!-- Champ Domaines (Multiple Selection) -->
                     <div class="mb-3">
                         <label class="form-label">Domaines</label><br>
-                        <!-- Utilisation de la classe CSS pour le défilement -->
-                        <div class="scrollable-container">
+                        <div class="scrollable-container" style="max-height: 150px; overflow-y: auto;">
                             {% for domaine in domaines %}
                             <div>
-                                <input type="checkbox" name="domaines" value="{{ domaine.id }}" id="domaine_{{ domaine.id }}" 
-                                {% if domaine in memoire.domaines.all %}checked{% endif %}>
+                                <input type="checkbox" name="domaines" value="{{ domaine.id }}" id="domaine_{{ domaine.id }}">
                                 <label for="domaine_{{ domaine.id }}">{{ domaine.nom }}</label>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
-                    
 
+                    <!-- Champ Universités (Multiple Selection) -->
+                    <div class="mb-3">
+                        <label class="form-label">Universités</label>
+                        <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="universites" name="universites" multiple required>
+                            {% for universite in universites %}
+                                <option value="{{ universite.id }}">{{ universite.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
                     <!-- Champ Année de Publication -->
                     <div class="mb-3">
                         <label for="annee_publication" class="form-label">Année de publication</label>
@@ -211,7 +229,6 @@
         </div>
     </div>
 </div>
-
     <div id="ov" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
 
 <!-- Infobulle -->

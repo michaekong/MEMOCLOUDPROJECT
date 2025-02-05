@@ -31,11 +31,12 @@ urlpatterns = [
     path('common',  common,name="common"),
     path('profil',  profil,name="profil"),
     path('eprofil',  profil,name="eprofil"),
-    path('admins',  admins,name="admins"),
+    path('admins/university/<int:university_id>/', admins, name='admin_university'),
     path('admins/', admins, name='admins'),
     path('memoire/<int:memoire_id>/ajouter_commentaire/', ajouter_commentaire, name='ajouter_commentaire'),
     path('telecharger/<int:memoire_id>/', telecharger_pdf, name='telecharger_pdf'),
     
+    path('chooseuniversity/', chooseuniversity, name='chooseuniversity'),
        path('delete_university/', delete_university, name='delete_university'),
        path('edit_university/', edit_university, name='edit_university'),
        path('add_university/',add_university, name='add_university'),

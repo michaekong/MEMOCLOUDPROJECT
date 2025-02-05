@@ -77,7 +77,21 @@ class University(models.Model):
 
     def __str__(self):
         return self.name
+class UserUniversity(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='user_universities')
+    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='university_users')
+    role = models.CharField(max_length=50, choices=[
+        ('etudiant', 'Étudiant'),
+        ('professeur', 'Professeur'),
+        ('admin', 'Administrateur'),
+        ('autre', 'Autre'),
+    ])
 
+    class Meta:
+        unique_together = ('user', 'university')  # Un utilisateur ne peut être associé à une université qu'une seule fois
+
+    def __str__(self):
+        return f"{self.user} - {self.university} ({self.role})"
 class NotationCommentaire(models.Model):
     memoire = models.ForeignKey(Memoire, on_delete=models.CASCADE, related_name='notations')
     utilisateur = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='notations')
