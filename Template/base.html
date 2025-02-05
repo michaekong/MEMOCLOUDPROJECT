@@ -495,11 +495,13 @@ input:valid {
                            class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
                             Liste des mémoires
                         </a>
-                        {% if user.type == 'admin' or user.type == 'superadmin' %}
-                        <a href="/admins" 
-                           class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
-                            Page admin
-                        </a>
+                        {% if university_id %}
+                            <a href="{% url 'admin_university' university_id %}" 
+                            class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                Page admin
+                            </a>
+                        {% else %}
+                            <span class="block px-4 py-2 text-gray-500">Aucune université sélectionnée</span>
                         {% endif %}
                         <a href="/profil" 
                            class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">

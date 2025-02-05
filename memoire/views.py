@@ -365,8 +365,11 @@ def login(request, *args, **kwargs):
             return redirect('/login')
 
         try:
+            
             # Recherche de l'utilisateur par email
             user = UserProfile.objects.get(email=email)
+            universities = UserUniversity.objects.filter(user=user).select_related('university')
+            number_of_universities = universities.count()
 
             # Vérification du mot de passe
             if check_password(password, user.password):
@@ -379,6 +382,9 @@ def login(request, *args, **kwargs):
 
                 # Redirection en fonction du type d'utilisateur
                 if user.type in ["admin", "superadmin"]:
+                    if(number_of_universities == 1):
+                        return redirect("admin_university", university_id=universities[0].university.id)
+                        
                     
                     return redirect('/chooseuniversity')  # Page pour les administrateurs
                 else:
@@ -443,6 +449,7 @@ def liste_memoires(request):
         user = UserProfile.objects.get(id=idp)
     except KeyError:
         return redirect('logout')
+    uni=request.session.get('uni_id')
 
     try:
         # Récupération des mémoires avec toutes leurs relations
@@ -581,6 +588,7 @@ def liste_memoires(request):
             'annees': sorted(annees_uniques),
             'encadreurs': encadreurs_uniques,
             'auteurs': auteurs_uniques,
+            'university_id':uni,
             'query_params': request.GET,
             'user': user
         }
@@ -860,10 +868,12 @@ def admins(request, university_id, *args, **kwargs):
         'total_telechargements': total_telechargements,
         'total_visites': total_visites,
         'domaines': dom,
+        'university_id':university_id,
         'comments': comments,
         'total_dom': total_dom,
         'total_comments': total_comments,
     }
+    print(universites)
 
     return render(request, "admin.html", context)
 

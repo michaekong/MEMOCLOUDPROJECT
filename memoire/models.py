@@ -34,6 +34,8 @@ class UserProfile(models.Model):
 
 class Domaine(models.Model):
     nom = models.CharField(max_length=100, unique=True)
+    universites = models.ManyToManyField('University', related_name='domaines', blank=True)
+    
 
     def __str__(self):
         return self.nom
