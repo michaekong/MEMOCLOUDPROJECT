@@ -1320,13 +1320,17 @@ def add_domaine(request):
     if request.method == 'POST':
         try:
             nom = request.POST.get('nom')
+            
 
             # Création de l'objet Domaine
+            print(university.name)
             domaine = Domaine.objects.create(
                 nom=nom,
-                universites=university
+               
             )
+            domaine.universites.add(university)
 
+            
             # Préparer les détails pour l'email
             object_after = {
                 "id": domaine.id,
