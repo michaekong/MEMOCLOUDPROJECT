@@ -1,70 +1,97 @@
 {% extends "base.html" %}
-{% load static %}
-{% block menu %}
 
-{% endblock menu %}
+{% load static %}
 {% block content %}
 
 <div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
     <div class="mb-4">
         <!-- Sidebar Menu -->
-        <h4 class="text-2xl font-semibold text-center mb-4">CONNECTEZ-VOUS À UNE UNIVERSITÉ POUR EFFECTUER DES TÂCHES</h4>
-        <h4 class="text-2xl font-semibold text-center mb-6">SÉLECTIONNEZ CELLES DONT VOUS VOULEZ VOIR LES STATISTIQUES</h4>   
+      
+        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
+            <!-- Bouton pour afficher/masquer le menu -->
+            <button @click="adminMenu = !adminMenu; $nextTick(() => { if (adminMenu) { setTimeout(() => { adminMenu = false }, 3000) } })" 
+                class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+            <span>Menu Admin</span>
+            <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+    
+            <!-- Menu déroulant -->
+            <ul x-show="adminMenu" x-transition @click.outside="adminMenu = false" class="mt-4 space-y-2">
+                <button @click="activeSection = 'dashboard'; adminMenu = false"
+                    class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                se connecter a une université
+            </button>
+                  {% if user.type == "bigboss" %}
+                    <button @click="activeSection = 'univers'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        administrer les universités
+                    </button>
+                    {% endif %}
+                </li>
+               
+            
+               
+            </ul>
+        </aside>
     </div>
     
 
     <div class="col-span-2">
         <!-- Content Sections -->
 
-<section x-show="activeSection === 'dashboard'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8"p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
-    <!-- Title Section with theme toggle -->
-    <div class="flex justify-between items-center mb-6">
-        
-            <h3 class="text-3xl font-semibold ">LISTE DES UNIVERSITÉS AUXQUELLES VOUS ÊTES ASSOCIÉ(E)</h3>
-       
-      
-        
-     
-    </div>
-
-
-    <!-- Statistiques Section -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {% for user_university in universities %}
-        <a href="{% url 'admin_university' user_university.university.id %}" class="block">
-            <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between  transition-transform transform hover:scale-105">
-                <div>
-                    <h3 class="text-lg font-semibold">{{ user_university.university.name }}</h3>
-                    <h4 class="text-lg font-semibold">({{ user_university.university.acronime }})</h4>
-                    <p class="text-sm">Rôle : {{ user_university.role }}</p>
-                </div>
+        <section x-show="activeSection === 'dashboard'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8"p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+            <!-- Title Section with theme toggle -->
+            <div class="flex justify-between items-center mb-6">
+                
+                    <h3 class="text-3xl font-semibold ">LISTE DES UNIVERSITÉS AUXQUELLES VOUS ÊTES ASSOCIÉ(E)</h3>
+               
               
                 
-                <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
-                    <img src="{{ user_university.university.logo.url }}" alt="Avatar" class="avatar">
-                </div>
+             
             </div>
-        </a>
-        {% endfor %}
-    </div>
-<button @click="activeSection = 'users';"
->
-
-
-
-
+           
         
-    </div>
-   
+        
+            <!-- Statistiques Section -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {% for user_university in universities %}
+                {% if user_university.role == "admin" or user_university.role == "superadmin" %}
+                <a href="{% url 'admin_university' user_university.university.id %}" class="block">
+                    <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between  transition-transform transform hover:scale-105">
+                        <div>
+                            <h3 class="text-lg font-semibold">{{ user_university.university.name }}</h3>
+                            <h4 class="text-lg font-semibold">({{ user_university.university.acronime }})</h4>
+                            <p class="text-sm">Rôle : {{ user_university.role }}</p>
+                           
+                            
+                        
+                            
+                        </div>
+                      
+                        
+                        <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                            <img src="{{ user_university.university.logo.url }}" alt="Avatar" class="avatar">
+                        </div>
+                        
+                    </div>
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+        
+          
+          
+        </section>
 
-
-  
-</section>
-
-      
+       
+        
+        
         
 
-        
+        {% include "sectionuniversity.html" %}
+       
     </div>
 </div>
 <script src="{% static 'js/class.js' %}"></script>

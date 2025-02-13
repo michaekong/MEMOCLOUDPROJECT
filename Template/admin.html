@@ -50,12 +50,7 @@
                         Admin bord
                     </button>
                 </li>
-                <li>
-                    <button @click="activeSection = 'univers'; adminMenu = false"
-                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-                        University
-                    </button>
-                </li>
+             
                 <li>
                     <button @click="activeSection = 'graphique'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
@@ -256,8 +251,6 @@
         
         
         
-
-        {% include "sectionuniversity.html" %}
         {% include "sectionuser.html" %}
         {% include "sectionmemoire.html" %}
         {% include "sectionencadrement.html" %}
@@ -327,11 +320,7 @@
             const telechargementData = await telechargementResponse.json();
             dashboard.addChart('line', telechargementData, { title: 'Téléchargements par Mémoire' });
 
-            // Graphique 9: Nombre d'Utilisateurs par Type
-            const typeUserResponse = await fetch('/api/type-user-data/');
-            const typeUserData = await typeUserResponse.json();
-            dashboard.addChart('bar', typeUserData, { title: 'Utilisateurs par Type' });
-
+      
          // Ajoutez les nouveaux graphiques
           
              const participationRateResponse = await fetch('/api/participation-rate-data/');
@@ -592,7 +581,8 @@ $('#editEncadrementModal').on('show.bs.modal', function(event) {
 // Script pour récupérer l'ID de l'utilisateur et remplir la modal avec ses données
 $('#editUserModal').on('show.bs.modal', function (event) {
 var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
-var userId = button.data('id');  // Récupère l'ID de l'utilisateur
+var userId = button.data('id');
+  // Récupère l'ID de l'utilisateur
 var modal = $(this);
 
 // Remplir le champ caché avec l'ID de l'utilisateur
@@ -630,7 +620,7 @@ $('#editUserForm').on('submit', function (event) {
                 showTooltip("utilisateur modifier avec succès !", false,"ov3","tol3","mes3");
             } else {
                 // Afficher un message d'erreur
-                showTooltip("utilisateur supprimer avec succès !", false,"ov3","tol3","mes3");
+                showTooltip("utilisateur modifier avec succès !", false,"ov3","tol3","mes3");
             }
         },
         error: function() {
@@ -640,7 +630,58 @@ $('#editUserForm').on('submit', function (event) {
         }
     });
 });
-
+// Script pour récupérer l'ID de l'utilisateur et remplir la modal avec ses données
+$('#addUserModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var userId = button.data('id');
+      // Récupère l'ID de l'utilisateur
+    var modal = $(this);
+    
+    // Remplir le champ caché avec l'ID de l'utilisateur
+    modal.find('#user_id').val(userId);
+    
+    // Vous pouvez également remplir d'autres champs du formulaire si nécessaire
+    // Exemple :
+    modal.find('#nom').val(button.data('nom'));
+    modal.find('#prenom').val(button.data('prenom'));
+    modal.find('#email').val(button.data('email'));
+    
+    modal.find('#sexe').val(button.data('sexe'));
+    modal.find('#type').val(button.data('type'));
+    modal.find('#realisation_linkedin').val(button.data('linkedin'));
+    
+    });
+    $('#addUserForm').on('submit', function (event) {
+        event.preventDefault();  // Empêche la soumission normale du formulaire
+    
+        var form = $(this);
+        var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+    
+        // Envoi du formulaire via Ajax
+        $.ajax({
+            url: form.attr('action'),  // URL de la vue qui traite le formulaire
+            method: 'POST',
+            data: formData,
+            processData: false,  // Ne pas traiter les données
+            contentType: false,  // Ne pas définir de content-type pour l'envoi des données
+            success: function(response) {
+                if (response.status === 'success') {
+                    // Fermer la modal
+                    $('#addUserModal').modal('hide');
+                    
+                    showTooltip("utilisateur ajouter avec succès !", false,"ov3","tol3","mes3");
+                } else {
+                    // Afficher un message d'erreur
+                    showTooltip("utilisateur ajouter avec succès !", false,"ov3","tol3","mes3");
+                }
+            },
+            error: function() {
+                // Gérer les erreurs réseau
+            
+                showTooltip("Une erreur est survenue. Veuillez réessayer.", true,"ov3","tol3","mes3");
+            }
+        });
+    });
 $('#edituniversityForm').on('submit', function(event) {
     event.preventDefault();  // Empêcher la soumission par défaut du formulaire
 

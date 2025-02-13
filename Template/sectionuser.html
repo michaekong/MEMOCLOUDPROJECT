@@ -31,14 +31,15 @@
         </thead>
         <tbody>
             {% for users in utilisateurs %}
+            {% if users.id != user.id  %}
                 <tr >
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.nom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.prenom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.email }}</td>
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.type }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.role }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
-                        {% if user.type == "superadmin" %}
+                        {% if useruni.university  in users.universites %}
                             <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
                                 Supprimer
                             </button>
@@ -54,25 +55,23 @@
                                 Modifier
                             </button>
                         {% else %}
-                            {% if user.type == "admin" and users.type == "standard" %}
-                                <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
-                                    Supprimer
-                                </button>
-                                <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserModal"
-                                    data-id="{{ users.id }}"
-                                    data-nom="{{ users.nom }}"
-                                    data-prenom="{{ users.prenom }}"
-                                    data-email="{{ users.email }}"
-                                   
-                                    data-sexe="{{ users.sexe }}"
-                                    data-type="{{ users.type }}"
-                                    data-linkedin="{{ users.realisation_linkedin }}">
-                                    Modifier
-                                </button>
-                            {% endif %}
+                        <button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#addUserModal"
+                                data-id="{{ users.id }}"
+                                data-nom="{{ users.nom }}"
+                                data-prenom="{{ users.prenom }}"
+                                data-email="{{ users.email }}"
+                                
+                                data-sexe="{{ users.sexe }}"
+                                data-type="{{ users.type }}"
+                                data-linkedin="{{ users.realisation_linkedin }}">
+                                Ajouter
+                            </button>
+                            
+                           
                         {% endif %}
                     </td>
                 </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
@@ -92,46 +91,76 @@
                         {% csrf_token %}
                         <input type="hidden" id="user_id" name="user_id">
 
-                        <div class="mb-3">
-                            <label for="nom" class="form-label">Nom</label>
-                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="nom" name="nom" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="prenom" class="form-label">Prénom</label>
-                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="prenom" name="prenom" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="email" name="email" required>
-                        </div>
                        
-                        <div class="mb-3">
-                            <label for="sexe" class="form-label">Sexe</label>
-                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="sexe" name="sexe" required>
-                                <option value="M">Masculin</option>
-                                <option value="F">Féminin</option>
-                                <option value="A">Autre</option>
-                            </select>
-                        </div>
                         <div class="mb-3">
                             <label for="type" class="form-label">Type</label>
                             <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="type" name="type" required>
                                 <option value="standard">Standard</option>
-                                {% if user.type == 'superadmin' %}
+                                <option value="etudiant">Étudiant</option>
+                                <option value="professeur">ENSEIGNANT</option>
+                                <option value="autre">Autre</option>
+
+                        
+                                {% if useruni.role == 'superadmin' %}
+                                
+                                
+                               
                             <option value="admin">Administrateur</option>
                             <option value="superadmin">superAdministrateur</option>
                             {% endif %}
-                            {% if user.type == 'admin' %}
+                            {% if useruni.role == 'admin' %}
                     
                             <option value="admin">Administrateur</option>
                     {% endif %}
                             </select>
                         </div>
 
+                       
+                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                            Enregistrer les modifications
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+       <!-- Modal pour Ajouter un utilisateur -->
+       <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby=addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+                <div class="modal-header">
+                    <h5 class="modal-title" id=addUserModalLabel">Ajouter l'Utilisateur</h5>
+                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form  class="myForm" id="addUserForm" enctype="multipart/form-data" action="{% url 'add_user' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" id="user_id" name="user_id">
+
+                       
                         <div class="mb-3">
-                            <label for="realisation_linkedin" class="form-label">Lien LinkedIn</label>
-                            <input type="url" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="realisation_linkedin" name="realisation_linkedin">
+                            <label for="type" class="form-label">Type</label>
+                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="type" name="type" required>
+                                <option value="standard">Standard</option>
+                                <option value="etudiant">Étudiant</option>
+                                <option value="professeur">ENSEIGNANT</option>
+                                <option value="autre">Autre</option>
+
+                        
+                                {% if useruni.role == 'superadmin' %}
+                                
+                                
+                               
+                            <option value="admin">Administrateur</option>
+                            <option value="superadmin">superAdministrateur</option>
+                            {% endif %}
+                            {% if useruni.role == 'admin' %}
+                    
+                            <option value="admin">Administrateur</option>
+                    {% endif %}
+                            </select>
                         </div>
+
                        
                         <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
                             Enregistrer les modifications
@@ -142,65 +171,7 @@
         </div>
     </div>
      
-<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addUserModalLabel">Ajouter un Utilisateur</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form  class="myForm" id="addUserForm" enctype="multipart/form-data" action="{% url 'add_user' %}" method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="nom" class="form-label">Nom</label>
-                        <input type="text" class="form-control" id="nom" name="nom" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="prenom" class="form-label">Prénom</label>
-                        <input type="text" class="form-control" id="prenom" name="prenom" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="sexe" class="form-label">Sexe</label>
-                        <select class="form-select" id="sexe" name="sexe" required>
-                            <option value="M">Masculin</option>
-                            <option value="F">Féminin</option>
-                            <option value="A">Autre</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="type" class="form-label">Type</label>
-                        <select class="form-select" id="type" name="type" required>
-                            <option value="standard">Standard</option>
-                            {% if user.type == 'superadmin' %}
-                            <option value="admin">Administrateur</option>
-                            <option value="superadmin">superAdministrateur</option>
-                            {% endif %}
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="realisation_linkedin" class="form-label">Lien LinkedIn</label>
-                        <input type="url" class="form-control" id="realisation_linkedin" name="realisation_linkedin">
-                    </div>
-                    <div class="mb-3">
-                        <label for="photo_profil" class="form-label">Photo de profil</label>
-                        <input type="file" class="form-control" id="photo_profil" name="photo_profil">
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Mot de passe</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 <div id="ov3" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
 
 <!-- Infobulle -->

@@ -464,7 +464,7 @@ input:valid {
                     class="h-10 w-auto">
             
                 <h1 class="text-xl sm:text-2xl font-bold text-blue-300 dark:text-teal-400">
-                    Mémoire ENSTP
+                    MEMOCLOUD
                 </h1>
             </div>
              {% endblock header %}
@@ -509,7 +509,11 @@ input:valid {
                                 Page admin
                             </a>
                         {% else %}
-                            <span class="block px-4 py-2 text-gray-500">Aucune université sélectionnée</span>
+                        <a href="{% url 'chooseuniversity' %}" 
+                            class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">
+                            Aucune université sélectionnée
+                            </a>
+                            
                         {% endif %}
                         <a href="/profil" 
                            class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600">

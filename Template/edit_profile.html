@@ -46,29 +46,7 @@
                 </select>
             </div>
 
-            <!-- Type -->
-            <div class="mb4">
-                <label for="type" class="block text-lg font-semibold mb-2">Type</label>
-                <select 
-                    name="type" 
-                    id="type" 
-                    class="w-full p-3 border rounded-md bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
-                    
-                    <option value="standard" {% if request.user.type == 'standard' %}selected{% endif %}>standard</option>
-                    {% if user.type %}{% endif %}
-                    {% if user.type == 'superadmin' %}
-                    <option value="admin" {% if request.user.type == 'admin' %}selected{% endif %}>Administrateur</option>
-                    <option value="superadmin" {% if request.user.type == 'superadmin' %}selected{% endif %}>SuperAdministrateur</option>
-                
-                    {% endif %}
-                    {% if user.type == 'admin' %}
-                    
-                    <option value="admin" {% if request.user.type == 'admin' %}selected{% endif %}>Administrateur</option>
-                   
-                    {% endif %}
-
-               </select>
-            </div>
+           
 
             <!-- LinkedIn -->
             <div class="mb4">

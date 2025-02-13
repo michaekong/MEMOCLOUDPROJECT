@@ -29,7 +29,7 @@
         <tbody>
             {% for university in universites %}
                 <tr >
-                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ university.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{university.id }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ university.name }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ university.acronime }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ university.slogan }}</td>
@@ -46,7 +46,7 @@
                             data-slogan="{{ university.slogan }}"
                             data-description="{{ university.description }}"
                             data-lien="{{ university.university_link}}"
-                            data-logo="{{ university.logo }}">
+                            data-logo="{{university.logo }}">
                             Modifier
                         </button>
                     </td>

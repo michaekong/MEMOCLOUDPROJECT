@@ -12,6 +12,7 @@ class UserProfile(models.Model):
         ('standard', 'Standard'),
         ('admin', 'Administrateur'),
         ('superadmin', 'Super Administrateur'),
+        ('bigboss', 'BIGBOSS'),
     ]
 
     nom = models.CharField(max_length=100)
@@ -86,6 +87,7 @@ class UserUniversity(models.Model):
         ('etudiant', 'Étudiant'),
         ('professeur', 'Professeur'),
         ('admin', 'Administrateur'),
+        ('superadmin', 'SUPERAdministrateur'),
         ('autre', 'Autre'),
     ])
 

@@ -11,9 +11,9 @@
     <!-- Conteneur principal -->
     <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
         <!-- Section Avatar -->
-        {% if user.photo_profil %}
+        {% if useruni.user.photo_profil %}
         <div class="flex-shrink-0">
-            <img src="{{ user.photo_profil.url }}" alt="Avatar" 
+            <img src="{{ useruni.user.photo_profil.url }}" alt="Avatar" 
                  class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
         </div>
             {% endif %}
@@ -23,23 +23,23 @@
         <div class="flex-grow">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <p class="text-lg font-medium"><strong>Nom :</strong> {{ user.nom }} {{ user.prenom }}</p>
+                    <p class="text-lg font-medium"><strong>Nom :</strong> {{ useruni.user.nom }} {{ useruni.user.prenom }}</p>
                 </div>
                 <div>
-                    <p class="text-lg font-medium"><strong>Email :</strong> {{ user.email }}</p>
+                    <p class="text-lg font-medium"><strong>Email :</strong> {{ useruni.user.email }}</p>
                 </div>
                
                 <div>
-                    <p class="text-lg font-medium"><strong>Sexe :</strong> {{ user.get_sexe_display }}</p>
+                    <p class="text-lg font-medium"><strong>Sexe :</strong> {{ useruni.user.get_sexe_display }}</p>
                 </div>
                 <div>
-                    <p class="text-lg font-medium"><strong>Type :</strong> {{ user.get_type_display }}</p>
+                    <p class="text-lg font-medium"><strong>Type :</strong> {{ useruni.role }}</p>
                 </div>
                 <div>
-                    {% if  user.realisation_linkedin %}
+                    {% if  useruni.user.realisation_linkedin %}
                     <p class="text-lg font-medium"><strong>LinkedIn :</strong> 
                         <a href="{{ user.realisation_linkedin }}" target="_blank" class="text-blue-500 underline">
-                            {{ user.realisation_linkedin }}
+                            {{ useruni.user.realisation_linkedin }}
                         </a>
                     </p>
                     {% else %}

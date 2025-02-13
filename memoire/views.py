@@ -41,7 +41,8 @@ def edit_profile(request):
     try:
         idp=request.session['user_id']
         user = UserProfile.objects.get(id=idp)
-    
+        university_id=request.session['uni_id']
+
         user_profile = user
     except UserProfile.DoesNotExist:
         messages.error(request, "Profil introuvable.")
@@ -53,7 +54,7 @@ def edit_profile(request):
         prenom = request.POST.get('prenom', user_profile.prenom)
        
         sexe = request.POST.get('sexe', user_profile.sexe)
-        user_type = request.POST.get('type', user_profile.type)
+      
         realisation_linkedin = request.POST.get('realisation_linkedin', user_profile.realisation_linkedin)
         photo_profil = request.FILES.get('photo_profil')
 
@@ -62,7 +63,7 @@ def edit_profile(request):
         user_profile.prenom = prenom
        
         user_profile.sexe = sexe
-        user_profile.type = user_type
+        
         user_profile.realisation_linkedin = realisation_linkedin
         if photo_profil:
             user_profile.photo_profil = photo_profil
@@ -85,7 +86,7 @@ def edit_profile(request):
         messages.success(request, "Profil mis à jour avec succès.")
         return redirect('logout')
 
-    return render(request, 'edit_profile.html', {'user': user_profile})
+    return render(request, 'edit_profile.html', {'user': user_profile,'university_id':request.session['uni_id']})
 
 
 from django.contrib import messages
@@ -259,7 +260,7 @@ def verify_account(request):
             photo_profil=unverified_user.photo_profil,
             password=unverified_user.password,  # Assurez-vous que le mot de passe est sécurisé
         )
-
+        
         # Connexion automatique de l'utilisateur
         login(request, user)
 
@@ -342,9 +343,13 @@ def profil(request):
         
         idp=request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id']
+        useruni=UserUniversity.objects.get(university_id=university_id,user=user)
+        
     except:
-        return redirect("logout")    
-    return render(request, 'profil.html', {'user': user})
+        return redirect("logout")   
+     
+    return render(request, 'profil.html', {'useruni': useruni,'university_id':request.session['uni_id']})
 
 
 from django.shortcuts import redirect, render
@@ -369,7 +374,12 @@ def login(request, *args, **kwargs):
             # Recherche de l'utilisateur par email
             user = UserProfile.objects.get(email=email)
             universities = UserUniversity.objects.filter(user=user).select_related('university')
-            number_of_universities = universities.count()
+            
+            univer=[]
+            for el in universities :
+                if el.role in ["admin", "superadmin"] :
+                    univer.append(el)
+            number_of_universities = len(univer)        
 
             # Vérification du mot de passe
             if check_password(password, user.password):
@@ -379,13 +389,12 @@ def login(request, *args, **kwargs):
                 request.session['emailv'] = user.email
 
                 messages.success(request, "Connexion réussie. Bienvenue !",extra_tags="login")
-
+            
                 # Redirection en fonction du type d'utilisateur
-                if user.type in ["admin", "superadmin"]:
-                    if(number_of_universities == 1):
-                        return redirect("admin_university", university_id=universities[0].university.id)
-                        
-                    
+                
+                if(number_of_universities == 1 ):
+                    return redirect("admin_university", university_id=universities[0].university.id)
+                if(number_of_universities > 1 ):    
                     return redirect('/chooseuniversity')  # Page pour les administrateurs
                 else:
                     # Création d'une visite pour un utilisateur standard
@@ -423,6 +432,8 @@ def chooseuniversity(request):
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
         universities = UserUniversity.objects.filter(user=user).select_related('university')
+        universites=University.objects.all()
+        
     except KeyError:
         return redirect('logout')
 
@@ -430,6 +441,7 @@ def chooseuniversity(request):
             
             'user': user,
             'universities':universities,
+            'universites':universites,
         }
     
     return render(request,"chooseuniversity.html",context)
@@ -811,6 +823,8 @@ def admins(request, university_id, *args, **kwargs):
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
         
+        useruni=UserUniversity.objects.get(university_id=university_id,user=user)
+        
 
         # Vérifiez si l'utilisateur est associé à l'université demandée
         if not user.user_universities.filter(university_id=university_id).exists():
@@ -834,8 +848,10 @@ def admins(request, university_id, *args, **kwargs):
         nbr_telechargements=Count('telechargements'),
         note_moyenne=Avg('notations__note')
     )
-
+    
     utilisateurs = UserProfile.objects.filter(user_universities__university=university)
+    total_users = utilisateurs.count()
+    utilisateurs = UserProfile.objects.all()
     encadrements = Encadrement.objects.filter(memoire__universites=university)
     comments = NotationCommentaire.objects.filter(memoire__universites=university)
     
@@ -846,17 +862,37 @@ def admins(request, university_id, *args, **kwargs):
     # Récupération des données
     total_comments = comments.count()
     total_dom = dom.count()
-    total_users = utilisateurs.count()
+   
     total_memoires = memoires.count()
     total_encadrements = encadrements.count()
     total_telechargements = tel.count()
     total_visites = vis.count()
     universites=University.objects.all()
-
+    
+    
+    user_list = []
+    for users in utilisateurs:
+        role="NONE"
+        try:
+            role=UserUniversity.objects.get(university_id=university_id,user=users).role
+        except:
+            role="NONE"
+                
+            
+        user_list.append({
+            'id': users.id,
+            'nom': users.nom,
+            'prenom':users.prenom,
+            'email':users.email,
+            'role':role,
+            'type':users.type,
+            'universites': [university.university for university in UserUniversity.objects.filter(user=users)]
+        })    
+     
     # Context for rendering the page
     context = {
         'memoires': memoires,
-        'utilisateurs': utilisateurs,
+        'utilisateurs': user_list,
         'encadrements': encadrements,
         'universites':universites,
         'visiteurs': vis,
@@ -873,6 +909,8 @@ def admins(request, university_id, *args, **kwargs):
         'comments': comments,
         'total_dom': total_dom,
         'total_comments': total_comments,
+        'useruni':useruni,
+        
     }
    
 
@@ -995,17 +1033,27 @@ def delete_user(request):
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+       
+     
+    
     except:
         return redirect('logout')
     
     if request.method == 'POST':
         user_id = request.POST.get('user_id')
         try:
-            user = get_object_or_404(UserProfile, id=user_id)
+            user = UserProfile.objects.get(id=user_id)
+            unirelation=UserUniversity.objects.get(university_id=university_id,user=user)
             user_name = f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
-
+          
+            
+            
+            
+        
+            unirelation.delete()
             # Supprimer l'utilisateur
-            user.delete()
+         
 
             # Préparer les détails pour l'email
             object_before = {
@@ -1110,13 +1158,17 @@ def delete_university(request):
                 object_after=None  # Pas d'état après suppression
             )
 
-            return JsonResponse({'status': 'success', 'message': 'université supprimé avec succès.'})
+            messages.success(request, 'université supprimé avec succès.')
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})        
+            messages.error(request, f"Erreur lors de la suppression de l'univerité : {str(e)}")           
+        return redirect('chooseuniversity')   
 def add_user(request):
+    
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+        university=University.objects.get(id=university_id)
     except:
         return redirect('logout')
     
@@ -1126,18 +1178,13 @@ def add_user(request):
     if request.method == 'POST':
         try:
             # Créer un nouvel utilisateur
-            new_user = UserProfile.objects.create(
-                nom=request.POST.get('nom'),
-                prenom=request.POST.get('prenom'),
-           
-                sexe=request.POST.get('sexe'),
-                email=request.POST.get('email'),
-                type=request.POST.get('type'),
-                realisation_linkedin=request.POST.get('realisation_linkedin'),
-                photo_profil=request.FILES.get('photo_profil'),
-                password=make_password(request.POST.get('password'))
+            user_id = request.POST.get('user_id')
+            new_user = get_object_or_404(UserProfile, id=user_id)
+            unirelation=UserUniversity.objects.create(
+                user=new_user,
+                role=request.POST.get('type'),
+                university=university
             )
-
             # Préparer les détails pour l'email
             object_after = {
                 "id": new_user.id,
@@ -1163,7 +1210,7 @@ def add_user(request):
             messages.success(request, 'Utilisateur ajouté avec succès.')
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
-        return redirect('admins')
+        return redirect("admin_university", university_id=request.session.get('uni_id'))
 
 
 # Ajouter un mémoire
@@ -1192,7 +1239,7 @@ def add_university(request):
 
             if not nom or not acronime or not slogan or not description:
                 messages.error(request, "Tous les champs sont requis.")
-                return redirect("admin_university", university_id=request.session.get('uni_id'))
+                return redirect('chooseuniversity')
 
             uni = University.objects.create(
                 name=nom,
@@ -1202,7 +1249,15 @@ def add_university(request):
                 university_link=lien,
                 logo=logo,
             )
-
+            addbigboss = UserProfile.objects.filter(type="bigboss")
+         
+            for  el in addbigboss:
+                
+                unirelation=UserUniversity.objects.create(
+                    user=el,
+                    role="superadmin",
+                    university=uni
+                )
             object_after = {
                 "id": uni.id,
                 "name": uni.name,
@@ -1222,13 +1277,13 @@ def add_university(request):
             )
 
             messages.success(request, "Université ajoutée avec succès.")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect('chooseuniversity')
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'université : {str(e)}")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect('chooseuniversity')
 
-    return redirect("admin_university", university_id=request.session.get('uni_id'))  # Pour les requêtes GET
+    return redirect('chooseuniversity')  # Pour les requêtes GET
 
 def add_memoire(request):
     try:
@@ -1267,8 +1322,10 @@ def add_memoire(request):
                 fichier_memoire=fichier_memoire
             )
             
+            
             # Associer les domaines au mémoire
             memoire.domaines.set(domaines)
+            
 
             # Mettre à jour les universités associées au mémoire
             universites_ids = request.POST.getlist('universites')  # Liste des universités sélectionnées
@@ -1277,7 +1334,7 @@ def add_memoire(request):
 
             # Sauvegarder le mémoire modifié
             memoire.save()
-
+            print(memoire)
             # Préparer les détails pour l'email
             object_after = {
                 "id": memoire.id,
@@ -1408,38 +1465,32 @@ def edit_user(request):
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+        
     except:
         return redirect('logout')
     
    
 
     if request.method == 'POST':
-        print("Données reçues : ", request.POST)
+       
         try:
             user_id = request.POST.get('user_id')
             user = get_object_or_404(UserProfile, id=user_id)
-
+            unirelation=UserUniversity.objects.get(university_id=university_id,user=user)
             # Capturer l'état de l'objet avant modification
             object_before = vars(user).copy()
 
-            # Mettre à jour les champs
-            user.nom = request.POST.get('nom')
-            user.prenom = request.POST.get('prenom')
-   
-            user.sexe = request.POST.get('sexe')
-            user.email = request.POST.get('email')
-            user.type = request.POST.get('type')
-            user.realisation_linkedin = request.POST.get('realisation_linkedin')
+            
+       
+           
+            unirelation.role=request.POST.get('type')
+        
+            unirelation.save()
+           
+           
 
-            # Mettre à jour la photo de profil (si présente)
-            if 'photo_profil' in request.FILES:
-                user.photo_profil = request.FILES.get('photo_profil')
-
-            # Mettre à jour le mot de passe (si présent)
-         
-
-            # Sauvegarder l'utilisateur modifié
-            user.save()
+            
 
             # Capturer l'état de l'objet après modification
             object_after = vars(user)
