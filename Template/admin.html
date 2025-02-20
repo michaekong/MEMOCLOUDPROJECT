@@ -28,29 +28,40 @@
 {% endblock header %}
 {% block content %}
 
-<div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+<div x-data="{
+    activeSection: localStorage.getItem('activeSection') || 'dashboard',
+    adminMenu: false,
+    initActiveSection() {
+        this.$watch('activeSection', (value) => {
+            localStorage.setItem('activeSection', value);
+        });
+    }
+}" x-init="initActiveSection()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
     <div class="mb-4">
-        <!-- Sidebar Menu -->
-      
-        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
+        <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md">
             <!-- Bouton pour afficher/masquer le menu -->
-            <button @click="adminMenu = !adminMenu; $nextTick(() => { if (adminMenu) { setTimeout(() => { adminMenu = false }, 3000) } })" 
-                class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-            <span>Menu Admin</span>
-            <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-        </button>
-    
+            <button @click="adminMenu = !adminMenu" 
+                    class="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition flex items-center justify-between">
+                <span>Menu Administrateur</span>
+                <i class="fas fa-chevron-down" :class="{ 'transform rotate-180': adminMenu }"></i>
+            </button>
+
             <!-- Menu déroulant -->
-            <ul x-show="adminMenu" x-transition @click.outside="adminMenu = false" class="mt-4 space-y-2">
+            <ul x-show="adminMenu" 
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 transform -translate-y-2"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 transform translate-y-0"
+                x-transition:leave-end="opacity-0 transform -translate-y-2"
+                @click.outside="adminMenu = false" 
+                class="mt-4 space-y-2">
                 <li>
                     <button @click="activeSection = 'dashboard'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Admin bord
                     </button>
                 </li>
-             
                 <li>
                     <button @click="activeSection = 'graphique'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
@@ -102,158 +113,124 @@
             </ul>
         </aside>
     </div>
-    
+        
 
-    <div class="col-span-2">
-        <!-- Content Sections -->
-
-<section x-show="activeSection === 'dashboard'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8"p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
-    <!-- Title Section with theme toggle -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h2 class="text-3xl font-semibold ">Tableau de Bord Administrateur</h2>
-            <h3 class="text-xl font-medium ">Statistiques Globales</h3>
-        </div>
-       
-     
-    </div>
-
-    <!-- Statistiques Section -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-<!-- Total Utilisateurs -->
-
-<button @click="activeSection = 'users';"
->
-
-
-<div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-<div>
-    
-    <h4 class="text-lg font-semibold ">Total Utilisateurs</h4>
-    <p class="text-2xl  ">{{ total_users }}</p>
-</div>
-<div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-    <i  class="fas fa-user-friends text-xl "></i>
-</div>
-</div>
-</button>
-
-<!-- Total Mémoires -->
-
-<button @click="activeSection = 'memoirs'; adminMenu = false"
-        >
-   
-
-
-<div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-<div>
-    <h4 class="text-lg font-semibold ">Total Mémoires</h4>
-    <p class="text-2xl ">{{ total_memoires }}</p>
-</div>
-<div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-    <i class="fas fa-book text-xl  "></i>
-</div>
-</div>
-</button>
-<!-- Total Encadrements -->
-<button @click="activeSection = 'encadrements'; adminMenu = false"
-                    >
-                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-                        <div>
-                            <h4 class="text-lg font-semibold ">Total Encadrements</h4>
-                            <p class="text-2xl ">{{ total_encadrements }}</p>
-                        </div>
-                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-                            <i class="fas fa-chalkboard-teacher text-xl "></i>
-                        </div>
-                    </div>
-            </button>
-
-
-<!-- Téléchargements -->
-
-<button @click="activeSection = 'TELECHARGEMENTS'; adminMenu = false"
-                   >
-                   <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+        <div class="col-span-2">
+            <!-- Content Sections -->
+            <section x-show="activeSection === 'dashboard'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+                <!-- Title Section with theme toggle -->
+                <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h4 class="text-lg font-semibold ">Téléchargements</h4>
-                        <p class="text-2xl ">{{ total_telechargements }}</p>
-                    </div>
-                    <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-                        <i class="fas fa-download text-xl "></i>
+                        <h2 class="text-3xl font-semibold">Tableau de Bord Administrateur</h2>
+                        <h3 class="text-xl font-medium">Statistiques Globales</h3>
                     </div>
                 </div>
-                
-            </button>
 
-<!-- Total Commentaires -->
-
-<button @click="activeSection = 'comment'; adminMenu = false"
-                    >
-                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-                        <div>
-                            <h4 class="text-lg font-semibold ">Commentaires</h4>
-                            <p class="text-2xl ">{{ total_comments }}</p>
+                <!-- Statistiques Section -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- Total Utilisateurs -->
+                    <button @click="activeSection = 'users'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Total Utilisateurs</h4>
+                                <p class="text-2xl">{{ total_users }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-user-friends text-xl"></i>
+                            </div>
                         </div>
-                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-                            <i class="fas fa-comments text-xl "></i>
+                    </button>
+
+                    <!-- Total Mémoires -->
+                    <button @click="activeSection = 'memoirs'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Total Mémoires</h4>
+                                <p class="text-2xl">{{ total_memoires }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-book text-xl"></i>
+                            </div>
                         </div>
-                    </div>
-            </button>
+                    </button>
 
-<!-- Domaines -->
-
-<button @click="activeSection = 'domaine'; adminMenu = false"
-                    >
-                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-                        <div>
-                            <h4 class="text-lg font-semibold ">Domaines</h4>
-                            <p class="text-2xl ">{{ total_dom }}</p>
+                    <!-- Total Encadrements -->
+                    <button @click="activeSection = 'encadrements'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Total Encadrements</h4>
+                                <p class="text-2xl">{{ total_encadrements }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-chalkboard-teacher text-xl"></i>
+                            </div>
                         </div>
-                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-                            <i class="fas fa-layer-group text-xl "></i>
+                    </button>
+
+                    <!-- Téléchargements -->
+                    <button @click="activeSection = 'TELECHARGEMENTS'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Téléchargements</h4>
+                                <p class="text-2xl">{{ total_telechargements }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-download text-xl"></i>
+                            </div>
                         </div>
-                    </div>
-               
-            </button>
+                    </button>
 
-<!-- Total Visites -->
-
-<button @click="activeSection = 'visiteurs'; adminMenu = false"
-                    >
-                    <div  class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
-                        <div>
-                            <h4 class="text-lg font-semibold ">Total Visites</h4>
-                            <p class="text-2xl ">{{ total_visites }}</p>
+                    <!-- Total Commentaires -->
+                    <button @click="activeSection = 'comment'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Commentaires</h4>
+                                <p class="text-2xl">{{ total_comments }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-comments text-xl"></i>
+                            </div>
                         </div>
-                        <div class="mb-4 rounded-lg bg-gray-900  text-gray-200 p-4 rounded-full">
-                            <i class="fas fa-eye text-xl "></i>
+                    </button>
+
+                    <!-- Domaines -->
+                    <button @click="activeSection = 'domaine'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Domaines</h4>
+                                <p class="text-2xl">{{ total_dom }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-layer-group text-xl"></i>
+                            </div>
                         </div>
-                    </div>
-               
-            </button>
+                    </button>
 
+                    <!-- Total Visites -->
+                    <button @click="activeSection = 'visiteurs'">
+                        <div class="mb-4 border border-gray-700 dark:border-gray-600 rounded-lg p-4 shadow-md flex items-center justify-between">
+                            <div>
+                                <h4 class="text-lg font-semibold">Total Visites</h4>
+                                <p class="text-2xl">{{ total_visites }}</p>
+                            </div>
+                            <div class="mb-4 rounded-lg bg-gray-900 text-gray-200 p-4 rounded-full">
+                                <i class="fas fa-eye text-xl"></i>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </section>
 
-        
-    </div>
-   
-
-
-  
-</section>
-
-        {% include "sectiondomaine.html" %}
-        {% include "sectiongraphique.html" %}
-        {% include "sectioncomment.html" %}
-        
-        {% include "sectiontelechargement.html" %}
-        {% include "sectionvisiteur.html" %}
-        
-        
-        
-        {% include "sectionuser.html" %}
-        {% include "sectionmemoire.html" %}
-        {% include "sectionencadrement.html" %}
+            <!-- Autres sections -->
+            {% include "sectiondomaine.html" %}
+            {% include "sectiongraphique.html" %}
+            {% include "sectioncomment.html" %}
+            {% include "sectiontelechargement.html" %}
+            {% include "sectionvisiteur.html" %}
+            {% include "sectionuser.html" %}
+            {% include "sectionmemoire.html" %}
+            {% include "sectionencadrement.html" %}
+        </div>
     </div>
 </div>
 <script src="{% static 'js/class.js' %}"></script>
@@ -266,6 +243,25 @@
 
 
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Vérifier si une section a été sauvegardée
+        const activeSection = localStorage.getItem('activeSection');
+        if (activeSection) {
+            // Faire défiler vers la section sauvegardée
+            const section = document.getElementById(activeSection);
+            if (section) {
+                section.scrollIntoView();
+            }
+        }
+
+        // Ajouter un écouteur d'événements pour chaque lien ou bouton qui change de section
+        document.querySelectorAll('a.section-link').forEach(link => {
+            link.addEventListener('click', () => {
+                const targetSection = link.getAttribute('href').substring(1);
+                localStorage.setItem('activeSection', targetSection);
+            });
+        });
+    });
     const dashboard = new AdvancedDashboard('dashboard-container');
 
     async function loadData() {
@@ -294,6 +290,9 @@
             const visiteurResponse = await fetch('/api/visiteur-data/');
             const visiteurData = await visiteurResponse.json();
             dashboard.addChart('line', visiteurData, { title: 'Visiteurs par Date' });
+            const professeurDomaineResponse = await fetch('/api/professeur-domaine-data/');
+            const professeurDomaineData = await professeurDomaineResponse.json();
+            dashboard.addChart('pie', professeurDomaineData, { title: 'Répartition des Professeurs par Domaine' }); 
 
             // Graphique 4: Nombre de Notations par Mémoire
             const notationResponse = await fetch('/api/notation-data/');
@@ -480,10 +479,9 @@ $('#editMemoireModal').on('show.bs.modal', function(event) {
     
     // Script pour récupérer l'ID de l'encadrement et le remplir dans le formulaire de la modal
 // Soumission Ajax pour le formulaire de modification de l'encadrement
-$('#editEncadrementForm').on('submit', function(event) {showSpinner();
+$('#editEncadrementForm').on('submit', function(event){ 
     event.preventDefault();  // Empêcher la soumission par défaut du formulaire
     
-
     var form = $(this);
     var formData = new FormData(form[0]);  // Récupérer les données du formulaire
 
@@ -499,7 +497,7 @@ $('#editEncadrementForm').on('submit', function(event) {showSpinner();
                 // Fermer la modal de modification
                 $('#editEncadrementModal').modal('hide');
                 
-                hideSpinner(); // Masque le spinner après l'opération
+                
                 showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
                    
                 
@@ -508,15 +506,29 @@ $('#editEncadrementForm').on('submit', function(event) {showSpinner();
                 // Rafraîchir la page pour afficher les modifications
                 
             } else {
-                hideSpinner(); // Masque le spinner après l'opération
+               
                 showTooltip("lien d'encadrement modifier avec succès !", false,"ov2","tol2","mes2");
             }
         },
         error: function() {
-            hideSpinner(); // Masque le spinner après l'opération
+        
             showTooltip(" erreurs  de modification du lien d'encadrement ,Veuillez reessayer !", true,"ov2","tol2","mes2");
         }
     });
+});
+// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
+$('#editEncadrementModal').on('show.bs.modal', function(event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var encadrementId = button.data('encadrement_id');  // ID de l'encadrement
+    var memoireId = button.data('memoire');  // ID du mémoire
+    var encadrantId = button.data('encadrant');  // ID de l'encadrant
+
+    var modal = $(this);
+    
+    // Remplir les champs du formulaire avec les données de l'encadrement
+    modal.find('#encadrement_id').val(encadrementId);
+    modal.find('#memoire').val(memoireId);
+    modal.find('#encadrant').val(encadrantId);
 });
 $('#editdomaineForm').on('submit', function(event) {
     event.preventDefault();  // Empêcher la soumission par défaut du formulaire
@@ -563,20 +575,7 @@ $('#editdomaineModal').on('show.bs.modal', function(event) {
  
 });
 
-// Remplir les champs du formulaire de modification lors de l'ouverture de la modal
-$('#editEncadrementModal').on('show.bs.modal', function(event) {
-    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
-    var encadrementId = button.data('encadrement_id');  // ID de l'encadrement
-    var memoireId = button.data('memoire');  // ID du mémoire
-    var encadrantId = button.data('encadrant');  // ID de l'encadrant
 
-    var modal = $(this);
-    
-    // Remplir les champs du formulaire avec les données de l'encadrement
-    modal.find('#encadrement_id').val(encadrementId);
-    modal.find('#memoire').val(memoireId);
-    modal.find('#encadrant').val(encadrantId);
-});
 
 // Script pour récupérer l'ID de l'utilisateur et remplir la modal avec ses données
 $('#editUserModal').on('show.bs.modal', function (event) {
@@ -730,7 +729,7 @@ $('#edituniversityModal').on('show.bs.modal', function(event) {
     
     function deleteEncadrement(encadrementId) {
         if (confirm('Êtes-vous sûr de vouloir supprimer cet encadrement ?')) {
-            showSpinner();
+          
             $.ajax({
                 url: '/delete_encadrement/',  // URL vers la vue delete_encadrement
                 type: 'POST',

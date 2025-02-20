@@ -7,9 +7,9 @@
 <div class="p-6 mb-4 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
     <!-- Titre -->
     <h2 class="text-2xl font-bold mb-6 text-center">Mon Profil</h2>
-
-    <!-- Conteneur principal -->
-    <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+    {% if useruni %}
+     <!-- Conteneur principal -->
+     <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
         <!-- Section Avatar -->
         {% if useruni.user.photo_profil %}
         <div class="flex-shrink-0">
@@ -43,6 +43,7 @@
                         </a>
                     </p>
                     {% else %}
+
                     
                     {% endif %}
                 </div>
@@ -50,6 +51,49 @@
         </div>
     </div>
 
+    {% else %}
+    <!-- Conteneur principal -->
+    <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
+        <!-- Section Avatar -->
+        {% if user.photo_profil %}
+        <div class="flex-shrink-0">
+            <img src="{{user.photo_profil.url }}" alt="Avatar" 
+                 class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
+        </div>
+            {% endif %}
+        
+
+        <!-- Section Informations utilisateur -->
+        <div class="flex-grow">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <p class="text-lg font-medium"><strong>Nom :</strong> {{ user.nom }} {{ user.prenom }}</p>
+                </div>
+                <div>
+                    <p class="text-lg font-medium"><strong>Email :</strong> {{ user.email }}</p>
+                </div>
+               
+                <div>
+                    <p class="text-lg font-medium"><strong>Sexe :</strong> {{ user.get_sexe_display }}</p>
+                </div>
+               
+                <div>
+                    {% if  user.realisation_linkedin %}
+                    <p class="text-lg font-medium"><strong>LinkedIn :</strong> 
+                        <a href="{{ user.realisation_linkedin }}" target="_blank" class="text-blue-500 underline">
+                            {{ user.realisation_linkedin }}
+                        </a>
+                    </p>
+                    {% else %}
+                    
+                    
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+   
     <!-- Bouton Modifier Profil -->
     <div class="mt-8 text-center">
         <a href="{% url 'edit_profile' %}" 

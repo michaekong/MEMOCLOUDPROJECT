@@ -41,7 +41,7 @@ def edit_profile(request):
     try:
         idp=request.session['user_id']
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id']
+        
 
         user_profile = user
     except UserProfile.DoesNotExist:
@@ -86,7 +86,7 @@ def edit_profile(request):
         messages.success(request, "Profil mis à jour avec succès.")
         return redirect('logout')
 
-    return render(request, 'edit_profile.html', {'user': user_profile,'university_id':request.session['uni_id']})
+    return render(request, 'edit_profile.html', {'user': user_profile})
 
 
 from django.contrib import messages
@@ -343,11 +343,18 @@ def profil(request):
         
         idp=request.session['user_id']
         user = UserProfile.objects.get(id=idp)
+        
+        
+    except:
+        return redirect("logout")  
+    try:
+        
+        
         university_id=request.session['uni_id']
         useruni=UserUniversity.objects.get(university_id=university_id,user=user)
         
     except:
-        return redirect("logout")   
+        return render(request, 'profil.html', {'user': user})
      
     return render(request, 'profil.html', {'useruni': useruni,'university_id':request.session['uni_id']})
 
@@ -396,6 +403,9 @@ def login(request, *args, **kwargs):
                     return redirect("admin_university", university_id=universities[0].university.id)
                 if(number_of_universities > 1 ):    
                     return redirect('/chooseuniversity')  # Page pour les administrateurs
+                if(user.type == 'bigboss'):
+                    return redirect('/chooseuniversity')
+                    
                 else:
                     # Création d'une visite pour un utilisateur standard
                     visiteur.objects.create(emailv=email)
@@ -419,6 +429,8 @@ def logout(request):
         del request.session['user_id']
     if 'user_email' in request.session:
         del request.session['user_email']
+    if 'uni_id' in request.session:
+        del request.session['uni_id']  
     
     # Message de succès
     messages.success(request, "Déconnexion réussie. À bientôt !",extra_tags="login")
@@ -855,7 +867,9 @@ def admins(request, university_id, *args, **kwargs):
     encadrements = Encadrement.objects.filter(memoire__universites=university)
     comments = NotationCommentaire.objects.filter(memoire__universites=university)
     
-    dom = Domaine.objects.filter(universites=university)
+    dom1 = Domaine.objects.filter(universites=university)
+    dom2=Domaine.objects.filter()
+    dom=dom1
     vis = Visiteur.objects.all()  # Vous pouvez également filtrer les visiteurs si nécessaire
     tel = Telechargement.objects.filter(memoire__universites=university)
 
@@ -888,6 +902,8 @@ def admins(request, university_id, *args, **kwargs):
             'type':users.type,
             'universites': [university.university for university in UserUniversity.objects.filter(user=users)]
         })    
+        
+        privi=["superadmin","admin"]
      
     # Context for rendering the page
     context = {
@@ -910,11 +926,13 @@ def admins(request, university_id, *args, **kwargs):
         'total_dom': total_dom,
         'total_comments': total_comments,
         'useruni':useruni,
+        'privi':'privi',
         
     }
    
 
     return render(request, "admin.html", context)
+
 
 # Supprimer un mémoire
 def delete_memoire(request):
@@ -1095,6 +1113,7 @@ def delete_encadrement(request):
         encadrement_id = request.POST.get('encadrement_id')
         try:
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
+            print(encadrement)
 
             # Préparer les détails pour l'email
             object_before = {
@@ -1818,9 +1837,20 @@ def send_welcome_email(request, *args, **kwargs):
 from datetime import datetime
 
 from django.utils import timezone
-def send_admin_email(user, subject, action_type, action_details, object_before, object_after):
-    # Récupérer tous les utilisateurs ayant le rôle d'admin ou superadmin
-    admins = UserProfile.objects.filter(type__in=["superadmin", "admin"])
+def send_admin_email(request,user, subject, action_type, action_details, object_before, object_after):
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    # Filtrer les utilisateurs avec les rôles admin ou superadmin pour cette université
+    admins = UserUniversity.objects.filter(
+        university=university,
+        role__in=['admin', 'superadmin']
+    ).select_related('user')  # Optionnel : optimise la requête pour inclure les informations de l'utilisateur
+
+    
     recipients = [admin.email for admin in admins if admin.email]
  
 
@@ -1879,8 +1909,21 @@ from django.http import JsonResponse
 from .models import Memoire, NotationCommentaire, UserProfile, Visiteur
 
 # Graphique 1: Notes Moyennes par Mémoire
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.db.models import Count
+from .models import UserProfile, UserUniversity, University, Memoire, Visiteur, NotationCommentaire, Telechargement, Domaine
+def truncate_title(title, max_length=30):
+    """Tronque le titre à une longueur maximale, ajoutant '...' si nécessaire."""
+    return title if len(title) <= max_length else title[:max_length] + '...'
 def get_memoire_data(request):
-    memoires = Memoire.objects.all()
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university)
     data = {
         'labels': [memoire.titre for memoire in memoires],
         'datasets': [{
@@ -1890,19 +1933,23 @@ def get_memoire_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 2: Nombre de Mémoires par Utilisateur
 def get_user_data(request):
-    users = UserProfile.objects.all()
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    users = UserUniversity.objects.filter(university=university)
     data = {
-        'labels': [f"{user.prenom} {user.nom}" for user in users],
+        'labels': [f"{user.user.prenom} {user.user.nom}" for user in users],
         'datasets': [{
-            'label': 'Mémoires',
-            'data': [user.memoires.count() for user in users],
+            'label': 'Encadrements',
+            'data': [user.user.encadrements.count() for user in users],
         }]
     }
     return JsonResponse(data)
 
-# Graphique 3: Nombre de Visiteurs par Date
 def get_visiteur_data(request):
     visiteurs = Visiteur.objects.all()
     data = {}
@@ -1920,7 +1967,6 @@ def get_visiteur_data(request):
         }]
     })
 
-# Graphique 4: Nombre de Notations par Mémoire
 def get_notation_data(request):
     memoires = Memoire.objects.all()
     data = {
@@ -1932,9 +1978,14 @@ def get_notation_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 5: Nombre de Mémoires par Domaine
 def get_domaine_data(request):
-    domaines = {domaine.nom: domaine.memoires.count() for domaine in Domaine.objects.all()}
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    domaines = {domaine.nom: domaine.memoires.filter(universites=university).count() for domaine in Domaine.objects.filter(universites=university)}
     return JsonResponse({
         'labels': list(domaines.keys()),
         'datasets': [{
@@ -1942,11 +1993,24 @@ def get_domaine_data(request):
             'data': list(domaines.values()),
         }]
     })
-
-# Graphique 6: Répartition des Utilisateurs par Sexe
 def get_sexe_data(request):
-    sexe_counts = UserProfile.objects.values('sexe').annotate(count=models.Count('id'))
-    data = {sexe['sexe']: sexe['count'] for sexe in sexe_counts}
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    # Compter les utilisateurs par sexe pour l'université spécifiée
+    sexe_counts = UserUniversity.objects.filter(university=university).values('user__sexe').annotate(count=Count('user__id'))
+
+    # Créer un dictionnaire pour les résultats
+    data = {sexe['user__sexe']: sexe['count'] for sexe in sexe_counts}
+
+    # Assurez-vous d'ajouter les sexes qui ne sont pas présents dans les résultats
+    for sexe in ['M', 'F', 'A']:  # M, F et A pour Masculin, Féminin, Autre
+        if sexe not in data:
+            data[sexe] = 0
+
     return JsonResponse({
         'labels': list(data.keys()),
         'datasets': [{
@@ -1955,21 +2019,31 @@ def get_sexe_data(request):
         }]
     })
 
-# Graphique 7: Nombre d'Encadrements par Utilisateur
 def get_encadrement_data(request):
-    users = UserProfile.objects.all()
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    users = UserUniversity.objects.filter(university=university)
     data = {
-        'labels': [f"{user.prenom} {user.nom}" for user in users],
+        'labels': [f"{user.user.prenom} {user.user.nom}" for user in users],
         'datasets': [{
             'label': 'Encadrements',
-            'data': [user.encadrements.count() for user in users],
+            'data': [user.user.encadrements.count() for user in users],
         }]
     }
     return JsonResponse(data)
 
-# Graphique 8: Téléchargements par Mémoire
 def get_telechargement_data(request):
-    memoires = Memoire.objects.all()
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university)
     data = {
         'labels': [memoire.titre for memoire in memoires],
         'datasets': [{
@@ -1979,10 +2053,16 @@ def get_telechargement_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 9: Nombre d'Utilisateurs par Type
 def get_type_user_data(request):
-    type_counts = UserProfile.objects.values('type').annotate(count=models.Count('id'))
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    type_counts = UserProfile.objects.values('type').annotate(count=Count('id')).filter(universites=university)
     data = {type_user['type']: type_user['count'] for type_user in type_counts}
+
     return JsonResponse({
         'labels': list(data.keys()),
         'datasets': [{
@@ -1991,15 +2071,16 @@ def get_type_user_data(request):
         }]
     })
 
-# Graphique 10: Répartition des Notations
-
-    from datetime import timedelta
-
-# Graphique 11: Nombre total d'utilisateurs au fil du temps
 def get_user_growth_data(request):
-    users = UserProfile.objects.annotate(date=Count('id')).values('date').annotate(count=Count('id'))
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    users = UserProfile.objects.filter(universites=university).annotate(year=Count('id')).values('year').annotate(count=Count('id'))
     data = {
-        'labels': [user['date'].strftime("%Y-%m") for user in users],
+        'labels': [user['year'].strftime("%Y-%m") for user in users],
         'datasets': [{
             'label': 'Utilisateurs au fil du temps',
             'data': [user['count'] for user in users],
@@ -2007,9 +2088,14 @@ def get_user_growth_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 12: Taux de participation des utilisateurs
 def get_participation_rate_data(request):
-    users = UserProfile.objects.all()
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    users = UserProfile.objects.filter(universites=university)
     data = {
         'labels': [f"{user.prenom} {user.nom}" for user in users],
         'datasets': [{
@@ -2019,9 +2105,14 @@ def get_participation_rate_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 13: Nombre de mémoires publiés par mois
 def get_memoire_per_month_data(request):
-    memoires = Memoire.objects.values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university).values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
     data = {
         'labels': [memoire['annee_publication'] for memoire in memoires],
         'datasets': [{
@@ -2031,19 +2122,23 @@ def get_memoire_per_month_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 14: Répartition des mémoires par année de publication
 def get_memoire_by_year_data(request):
-    memoires = Memoire.objects.values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire['annee_publication'] for memoire in memoires],
+        'labels': [memoire.annee_publication for memoire in memoires],
         'datasets': [{
             'label': 'Mémoires par Année',
-            'data': [memoire['count'] for memoire in memoires],
+            'data': [memoire.id.count() for memoire in memoires],
         }]
     }
     return JsonResponse(data)
 
-# Graphique 15: Taux de conversion des utilisateurs
 def get_conversion_rate_data(request):
     total_visiteurs = Visiteur.objects.count()
     total_utilisateurs = UserProfile.objects.count()
@@ -2057,7 +2152,6 @@ def get_conversion_rate_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 16: Nombre de téléchargements par mois
 def get_downloads_per_month_data(request):
     downloads = Telechargement.objects.values('datet__date').annotate(count=Count('id')).order_by('datet__date')
     data = {
@@ -2069,7 +2163,6 @@ def get_downloads_per_month_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 17: Statistiques sur les types de mémoires
 def get_memoire_types_data(request):
     types = Memoire.objects.values('fichier_memoire').annotate(count=Count('id'))
     data = {
@@ -2080,12 +2173,40 @@ def get_memoire_types_data(request):
         }]
     }
     return JsonResponse(data)
+from django.db.models import Count, F
+def get_professeur_domaine_data(request):
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
 
-# Graphique 18: Top 5 des mémoires les mieux notés
+    # Récupérer le nombre de professeurs par domaine via les encadrements
+    professeur_counts = Encadrement.objects.filter(
+        memoire__universites=university
+    ).annotate(
+        domaine_nom=F('memoire__domaines__nom'),
+        professeur_nom=F('encadrant__nom')
+    ).values(
+        'domaine_nom'
+    ).annotate(
+        count=Count('encadrant')
+    ).order_by('domaine_nom')  # Optionnel : trier par domaine
+
+    # Créer un dictionnaire pour les résultats
+    data = {professeur['domaine_nom']: professeur['count'] for professeur in professeur_counts}
+
+    return JsonResponse({
+        'labels': list(data.keys()),
+        'datasets': [{
+            'label': 'Professeurs par Domaine',
+            'data': list(data.values()),
+        }]
+    })
 def get_top_rated_memoires(request):
     top_memoires = Memoire.objects.annotate(avg_rating=Count('notations__note')).order_by('-avg_rating')[:5]
     data = {
-        'labels': [memoire.titre for memoire in top_memoires],
+        'labels': [truncate_title(memoire.titre, max_length=30) for memoire in top_memoires],
         'datasets': [{
             'label': 'Top 5 Mémoires',
             'data': [memoire.note_moyenne() for memoire in top_memoires],
@@ -2093,9 +2214,14 @@ def get_top_rated_memoires(request):
     }
     return JsonResponse(data)
 
-# Graphique 19: Nombre d'encadrements par mémoire
 def get_encadrement_per_memoire_data(request):
-    memoires = Memoire.objects.values('titre').annotate(count=Count('encadrements')).order_by('titre')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university).values('titre').annotate(count=Count('encadrements')).order_by('titre')
     data = {
         'labels': [memoire['titre'] for memoire in memoires],
         'datasets': [{
@@ -2105,36 +2231,53 @@ def get_encadrement_per_memoire_data(request):
     }
     return JsonResponse(data)
 
-# Graphique 20: Répartition des commentaires par mémoire
 def get_comments_per_memoire_data(request):
-    memoires = Memoire.objects.values('titre').annotate(count=Count('notations')).order_by('titre')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire['titre'] for memoire in memoires],
+        'labels': [memoire.titre for memoire in memoires],
         'datasets': [{
             'label': 'Commentaires par Mémoire',
-            'data': [memoire['count'] for memoire in memoires],
+            'data': [memoire.notations.count() for memoire in memoires],
         }]
     }
     return JsonResponse(data)
-# Graphique: Nombre de mémoires par encadrant
+
 def get_memoire_per_encadrant_data(request):
-    encadrants = UserProfile.objects.annotate(memoire_count=Count('encadrements')).order_by('-memoire_count')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    encadrants = UserProfile.objects.annotate(memoire_count=Count('encadrements')).filter(universites=university)
     data = {
         'labels': [f"{encadrant.prenom} {encadrant.nom}" for encadrant in encadrants],
         'datasets': [{
             'label': 'Mémoires par Encadrant',
-            'data': [encadrant.memoire_count for encadrant in encadrants],
+            'data': [encadrant.encadrements.filter(memoire__universites=university).count() for encadrant in encadrants],
         }]
     }
     return JsonResponse(data)
-# Graphique: Nombre de mémoires par auteur
+
 def get_memoire_per_auteur_data(request):
-    auteurs = UserProfile.objects.annotate(memoire_count=Count('memoires')).order_by('-memoire_count')
+    try:
+        university_id = request.session['uni_id']
+        university = get_object_or_404(University, id=university_id)
+    except KeyError:
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+
+    auteurs = UserProfile.objects.filter(universites=university)
     data = {
         'labels': [f"{auteur.prenom} {auteur.nom}" for auteur in auteurs],
         'datasets': [{
             'label': 'Mémoires par Auteur',
-            'data': [auteur.memoire_count for auteur in auteurs],
+            'data': [auteur.memoires.filter(universites=university).count() for auteur in auteurs],
         }]
     }
     return JsonResponse(data)

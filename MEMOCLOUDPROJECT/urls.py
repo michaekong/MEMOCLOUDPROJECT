@@ -82,7 +82,8 @@ urlpatterns = [
     path('api/encadrement-data/', get_encadrement_data, name='encadrement-data'),
     path('api/telechargement-data/', get_telechargement_data, name='telechargement-data'),
     path('api/type-user-data/', get_type_user_data, name='type-user-data'),
- 
+    
+    path('api/professeur-domaine-data/', get_professeur_domaine_data, name='professeur_domaine_data'),
     path('api/user-growth-data/', get_user_growth_data, name='user-growth-data'),
     path('api/participation-rate-data/', get_participation_rate_data, name='participation-rate-data'),
     path('api/memoire-per-month-data/', get_memoire_per_month_data, name='memoire-per-month-data'),
@@ -95,6 +96,7 @@ urlpatterns = [
     path('api/comments-per-memoire-data/', get_comments_per_memoire_data, name='comments-per-memoire-data'),
      path('api/memoire-per-encadrant-data/', get_memoire_per_encadrant_data, name='memoire-per-encadrant-data'),
     path('api/memoire-per-auteur-data/', get_memoire_per_auteur_data, name='memoire-per-auteur-data'),
+    
 ]
 
 if settings.DEBUG:

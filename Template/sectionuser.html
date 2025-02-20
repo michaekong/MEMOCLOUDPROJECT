@@ -25,8 +25,11 @@
                 <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Nom</th>
                 <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Prénom</th>
                 <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Email</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">University</th>
                 <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Type</th>
                 <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+                
+
             </tr>
         </thead>
         <tbody>
@@ -37,9 +40,24 @@
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.nom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.prenom }}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.email }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{% for el  in  users.universites %}
+                        {{ el }},
+                    
+                    {% endfor %}</td>
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.role }}</td>
+
                     <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
                         {% if useruni.university  in users.universites %}
+                            {% if users.type == "bigboss"  %}
+                            <h5 >NO ACTION</h5>
+                            {% elif useruni.role == "admin" and users.role == "superadmin" %}
+                            <h5 >NO ACTION</h5>
+                            {% elif  useruni.role == "admin" and users.role == "admin"  %}
+                            <h5 >NO ACTION</h5>
+                            {% elif useruni.role == "superadmin" and users.role == "superadmin" %}
+                            <h5 >NO ACTION</h5>
+                            {% else %}
+                            
                             <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUser({{ users.id }})">
                                 Supprimer
                             </button>
@@ -54,6 +72,8 @@
                                 data-linkedin="{{ users.realisation_linkedin }}">
                                 Modifier
                             </button>
+                            {% endif %}
+                            
                         {% else %}
                         <button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#addUserModal"
                                 data-id="{{ users.id }}"
@@ -107,11 +127,12 @@
                                
                             <option value="admin">Administrateur</option>
                             <option value="superadmin">superAdministrateur</option>
-                            {% endif %}
-                            {% if useruni.role == 'admin' %}
-                    
+                            {% elif  useruni.user.type == "bigboss" %}
                             <option value="admin">Administrateur</option>
-                    {% endif %}
+                            <option value="superadmin">superAdministrateur</option>
+
+                            {% endif %}
+                         
                             </select>
                         </div>
 
@@ -129,7 +150,7 @@
         <div class="modal-dialog">
             <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
                 <div class="modal-header">
-                    <h5 class="modal-title" id=addUserModalLabel">Ajouter l'Utilisateur</h5>
+                    <h5 class="modal-title" id="addUserModalLabel">Ajouter l'Utilisateur</h5>
                     <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

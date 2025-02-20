@@ -3,22 +3,38 @@
 {% load static %}
 {% block content %}
 
-<div x-data="dashboard()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+<div x-data="{
+    activeSection: localStorage.getItem('activeSection') || 'dashboard',
+    adminMenu: false,
+    initActiveSection() {
+        this.$watch('activeSection', (value) => {
+            localStorage.setItem('activeSection', value);
+        });
+    }
+}" x-init="initActiveSection()" class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4"> 
     <div class="mb-4">
         <!-- Sidebar Menu -->
       
         <aside class="bg-gray-800 dark:bg-gray-900 text-white p-4 rounded-lg shadow-md" x-data="{ adminMenu: false }">
             <!-- Bouton pour afficher/masquer le menu -->
-            <button @click="adminMenu = !adminMenu; $nextTick(() => { if (adminMenu) { setTimeout(() => { adminMenu = false }, 3000) } })" 
-                class="flex items-center justify-between w-full px-4 py-2 text-lg font-semibold bg-gray-700 dark:bg-gray-600 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-500 transition">
-            <span>Menu Admin</span>
-            <svg xmlns="http://www.w3.org/2000/svg" :class="{ 'rotate-180': adminMenu }" class="w-5 h-5 transition-transform transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
+           
         </button>
+        <button @click="adminMenu = !adminMenu" 
+        class="w-full px-4 py-2 bg-gray-800 dark:bg-gray-700 rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition flex items-center justify-between">
+        <span>Menu Admin</span>
+    <i class="fas fa-chevron-down" :class="{ 'transform rotate-180': adminMenu }"></i>
+</button>
     
             <!-- Menu déroulant -->
-            <ul x-show="adminMenu" x-transition @click.outside="adminMenu = false" class="mt-4 space-y-2">
+            <ul x-show="adminMenu" 
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0 transform -translate-y-2"
+            x-transition:enter-end="opacity-100 transform translate-y-0"
+            x-transition:leave="transition ease-in duration-150"
+            x-transition:leave-start="opacity-100 transform translate-y-0"
+            x-transition:leave-end="opacity-0 transform -translate-y-2"
+            @click.outside="adminMenu = false" 
+            class="mt-4 space-y-2">
                 <button @click="activeSection = 'dashboard'; adminMenu = false"
                     class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                 se connecter a une université

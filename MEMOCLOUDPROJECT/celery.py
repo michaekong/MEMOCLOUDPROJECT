@@ -3,9 +3,9 @@ import os
 from celery import Celery
 
 # Définir le module de configuration par défaut de Django pour le programme Celery.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'votre_projet.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'MEMOCLUODPROJECT.settings')
 
-app = Celery('votre_projet')
+app = Celery('MEMOCLOUDPROJECT')
 
 # Charger la configuration de Django.
 app.config_from_object('django.conf:settings', namespace='CELERY')

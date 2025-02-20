@@ -37,10 +37,15 @@
                             <label for="encadrant" class="form-label">Encadrant</label>
                             <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="encadrant" name="encadrant" required>
                                 {% for user in utilisateurs %}
-                                    <option value="{{ user.id }}" {% if encadrement.encadrant.id == user.id %}selected{% endif %}>
-                                        {{ user.nom }} {{ user.prenom }}
-                                    </option>
-                                {% endfor %}
+                            {% if  university in user.universites %}
+                            
+                            
+                            
+                                <option value="{{ user.id }}" {% if user.id == memoire.auteur.id %}selected{% endif %}>{{ user.prenom }} {{ user.nom }}</option>
+                            
+                            {% else %}
+                            {% endif %}
+                            {% endfor %}
                             </select>
                         </div>
 
@@ -126,8 +131,15 @@
                             <label for="encadrant" class="form-label">Encadrant</label>
                             <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="encadrant" name="encadrant" required>
                                 {% for user in utilisateurs %}
-                                    <option value="{{ user.id }}">{{ user.prenom }} {{ user.nom }}</option>
-                                {% endfor %}
+                            {% if  university in user.universites %}
+                            
+                            
+                            
+                                <option value="{{ user.id }}" {% if user.id == memoire.auteur.id %}selected{% endif %}>{{ user.prenom }} {{ user.nom }}</option>
+                            
+                            {% else %}
+                            {% endif %}
+                            {% endfor %}
                             </select>
                         </div>
                         <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">Ajouter</button>
