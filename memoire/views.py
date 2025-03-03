@@ -898,6 +898,7 @@ def admins(request, university_id, *args, **kwargs):
             'nom': users.nom,
             'prenom':users.prenom,
             'email':users.email,
+            'sexe':users.sexe,
             'role':role,
             'type':users.type,
             'universites': [university.university for university in UserUniversity.objects.filter(user=users)]
@@ -1880,7 +1881,164 @@ def send_admin_email(request,user, subject, action_type, action_details, object_
         print("Erreur lors de l'envoi de l'e-mail :", str(e))
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+def edit_userp(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+        university=University.objects.get(id=university_id)
+    except:
+        return redirect('logout')
+    
+    
+   
 
+    if request.method == 'POST':
+        print("Données reçues : ", request.POST)
+        try:
+            user_id = request.POST.get('user_id')
+            user = get_object_or_404(UserProfile, id=user_id)
+
+            # Capturer l'état de l'objet avant modification
+            object_before = vars(user).copy()
+
+            # Mettre à jour les champs
+            user.nom = request.POST.get('nom')
+            user.prenom = request.POST.get('prenom')
+   
+            user.sexe = request.POST.get('sexe')
+            user.email = request.POST.get('email')
+            user.type = request.POST.get('type')
+            user.realisation_linkedin = request.POST.get('realisation_linkedin')
+
+            # Mettre à jour la photo de profil (si présente)
+            if 'photo_profil' in request.FILES:
+                user.photo_profil = request.FILES.get('photo_profil')
+
+            # Mettre à jour le mot de passe (si présent)
+         
+
+            # Sauvegarder l'utilisateur modifié
+            user.save()
+
+            # Capturer l'état de l'objet après modification
+            object_after = vars(user)
+
+            # Envoyer un email avec les détails
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Modification d'un utilisateur ",
+                action_type="modification",
+                action_details=f"L'utilisateur {user.nom} {user.prenom} a été modifié avec succès.",
+                object_before=object_before,
+                object_after=object_after,
+            )
+
+            return JsonResponse({'status': 'success', 'message': 'Utilisateur modifié avec succès.'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)})
+
+def delete_userp(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+        university=University.objects.get(id=university_id)
+    except:
+        return redirect('logout')
+    
+    
+    if request.method == 'POST':
+        user_id = request.POST.get('user_id')
+        try:
+            user = get_object_or_404(UserProfile, id=user_id)
+            user_name = f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
+
+            # Supprimer l'utilisateur
+            user.delete()
+
+            # Préparer les détails pour l'email
+            object_before = {
+                "id": user.id,
+                "nom": user.nom,
+                "prenom": user.prenom,
+                "email": user.email,
+                "type": user.type,
+                "linkdin":user.realisation_linkedin,
+                "password":user.password,
+                "sex":user.sexe,
+            
+                
+            }
+
+            send_admin_email(
+                user=request.user,  # L'utilisateur qui a effectué l'action
+                subject="Suppression d'un utilisateur",
+                action_type="Suppression",
+                action_details=f"L'utilisateur '{user_name}' avec l'ID: {user_id} a été supprimé.",
+                object_before=object_before,  # Etat avant suppression
+                object_after=None  # Pas d'état après suppression
+            )
+
+            messages.success(request, 'Utilisateur supprimé avec succès.')
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}")
+        return redirect("admin_university", university_id=request.session.get('uni_id'))
+
+def add_userp(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        university_id=request.session['uni_id'] 
+        university=University.objects.get(id=university_id)
+    except:
+        return redirect('logout')
+    
+
+
+
+    if request.method == 'POST':
+        try:
+            # Créer un nouvel utilisateur
+            new_user = UserProfile.objects.create(
+                nom=request.POST.get('nom'),
+                prenom=request.POST.get('prenom'),
+           
+                sexe=request.POST.get('sexe'),
+                email=request.POST.get('email'),
+                type=request.POST.get('type'),
+                realisation_linkedin=request.POST.get('realisation_linkedin'),
+                photo_profil=request.FILES.get('photo_profil'),
+                password=make_password(request.POST.get('password'))
+            )
+
+            # Préparer les détails pour l'email
+            object_after = {
+                "id": new_user.id,
+                "nom": new_user.nom,
+                "prenom": new_user.prenom,
+                "email": new_user.email,
+                "type": new_user.type,
+                "linkdin":new_user.realisation_linkedin,
+                "password":new_user.password,
+                "sex":new_user.sexe,
+        
+            }
+
+            send_admin_email(
+                user=user,  # L'utilisateur qui a effectué l'action
+                subject="Ajout d'un utilisateur",
+                action_type="Ajout",
+                action_details=f"L'utilisateur '{new_user.nom} {new_user.prenom}' a été créé avec le rôle '{new_user.type}'.",
+                object_before=None,  # Pas d'état avant création
+                object_after=object_after  # Détails du nouvel utilisateur
+            )
+
+            messages.success(request, 'Utilisateur ajouté avec succès.')
+        except Exception as e:
+            messages.error(request, f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
+        return redirect("admin_university", university_id=request.session.get('uni_id'))
 def telecharger_pdf(request, memoire_id):
     # Récupérer le mémoire
     memoire = get_object_or_404(Memoire, id=memoire_id)

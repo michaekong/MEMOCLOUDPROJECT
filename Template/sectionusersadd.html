@@ -1,0 +1,236 @@
+<section x-show="activeSection === 'usersp'" class="p-6 border border-gray-700 dark:border-gray-600 rounded-lg shadow-lg transition max-w-4xl mx-auto mt-8">
+    <h2 class="text-xl font-semibold mb-4">Gestion des utilisateurs</h2>
+
+    <!-- Bouton pour ajouter un utilisateur -->
+    <button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#addUserpModal">
+        Ajouter un Utilisateur
+    </button>
+
+    <!-- Liste des utilisateurs -->
+    <h2 class="mt-5 text-lg font-medium">Liste des Utilisateurs</h2>
+ <!-- Search and Filter Section -->
+<div class="mt-4">
+    <input type="text" id="utilisateurpSearchInput" placeholder="Recherche globale..." class="px-4 py-2 border rounded-md" onkeyup="searchTable('utilisateurpTable', 'utilisateurpSearchInput')">
+    <input type="text" id="utilisateurpEmailFilter" placeholder="Filtrer par Email" class="px-4 py-2 border rounded-md" onkeyup="filterTable('utilisateurpTable', 'utilisateurpEmailFilter', 3)">
+    <input type="text" id="utilisateurpTypeFilter" placeholder="Filtrer par Type" class="px-4 py-2 border rounded-md" onkeyup="filterTable('utilisateurpTable', 'utilisateurpTypeFilter', 4)">
+    <button onclick="clearFilters('utilisateurpTable', 'utilisateurpSearchInput', 'utilisateurpEmailFilter', 'utilisateurTypeFilter')" class="px-4 py-2 bg-gray-500 text-white rounded-md">Effacer filtres</button>
+</div>
+
+<!-- Utilisateurs Table -->
+<div class="overflow-x-auto mt-4">
+    <table id="utilisateurpTable" class="min-w-full border-collapse border border-gray-300 dark:border-gray-700">
+        <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">ID</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Nom</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Prénom</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Email</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">University</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Type</th>
+                <th class="border border-gray-300 dark:border-gray-700 px-4 py-2">Actions</th>
+                
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for users in utilisateurs %}
+            {% if users.id != user.id  %}
+                <tr >
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.id }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.nom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.prenom }}</td>
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.email }}</td>
+                  
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">{{ users.role }}</td>
+
+                    <td class="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                        {% if useruni.university  in users.universites %}
+                            {% if users.type == "bigboss"  %}
+                            <h5 >NO ACTION</h5>
+                            {% elif useruni.role == "admin" and users.role == "superadmin" %}
+                            <h5 >NO ACTION</h5>
+                            {% elif  useruni.role == "admin" and users.role == "admin"  %}
+                            <h5 >NO ACTION</h5>
+                            {% elif useruni.role == "superadmin" and users.role == "superadmin" %}
+                            <h5 >NO ACTION</h5>
+                            {% else %}
+
+                            <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUserp({{ users.id }})">
+                                Supprimer
+                            </button>
+                            <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserpModal"
+                                data-idp="{{ users.id }}"
+                                data-nomp="{{ users.nom }}"
+                                data-prenomp="{{ users.prenom }}"
+                                data-emailp="{{ users.email }}"
+                                
+                                data-sexep="{{ users.sexe }}"
+                                data-typep="{{ users.type }}"
+                                data-linkedinp="{{ users.realisation_linkedin }}">
+                                Modifier
+                            </button>
+                            
+                            
+                            
+                            
+                            {% endif %}
+                            {% else %}
+
+                            <button class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md shadow transition focus:outline-none" onclick="deleteUserp({{ users.id }})">
+                                Supprimer
+                            </button>
+                            <button type="button" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#editUserpModal"
+                                data-idp="{{ users.id }}"
+                                data-nomp="{{ users.nom }}"
+                                data-prenomp="{{ users.prenom }}"
+                                data-emailp="{{ users.email }}"
+                                
+                                data-sexep="{{ users.sexe }}"
+                                data-typep="{{ users.type }}"
+                                data-linkedinp="{{ users.realisation_linkedin }}">
+                                Modifier
+                            </button>
+                            
+                      
+                            
+                           
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+    <!-- Modal pour modifier un utilisateur -->
+    <div class="modal fade" id="editUserpModal" tabindex="-1" aria-labelledby="editUserpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserpModalLabel">Modifier l'Utilisateur</h5>
+                    <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form  class="myForm" id="editUserpForm" enctype="multipart/form-data" action="{% url 'edit_userp' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" id="user_id" name="user_id">
+
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="nom" name="nom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="prenom" name="prenom" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="email" name="email" required>
+                        </div>
+                       
+                        <div class="mb-3">
+                            <label for="sexe" class="form-label">Sexe</label>
+                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="sexe" name="sexe" required>
+                                <option value="M">Masculin</option>
+                                <option value="F">Féminin</option>
+                                <option value="A">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Type</label>
+                            <select class="form-select bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="type" name="type" required>
+                                <option value="standard">Standard</option>
+                                {% if user.type == 'superadmin' %}
+                            <option value="admin">Administrateur</option>
+                            <option value="superadmin">superAdministrateur</option>
+                            {% endif %}
+                            {% if user.type == 'admin' %}
+                    
+                            <option value="admin">Administrateur</option>
+                    {% endif %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="realisation_linkedin" class="form-label">Lien LinkedIn</label>
+                            <input type="url" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="realisation_linkedin" name="realisation_linkedin">
+                        </div>
+                       
+                        <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                            Enregistrer les modifications
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+     
+<div class="modal fade" id="addUserpModal" tabindex="-1" aria-labelledby="addUserpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserpModalLabel">Ajouter un Utilisateur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form  class="myForm" id="addUserpForm" enctype="multipart/form-data" action="{% url 'add_userp' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="prenom" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="prenom" name="prenom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="sexe" class="form-label">Sexe</label>
+                        <select class="form-select" id="sexe" name="sexe" required>
+                            <option value="M">Masculin</option>
+                            <option value="F">Féminin</option>
+                            <option value="A">Autre</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type</label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="standard">Standard</option>
+                            {% if user.type == 'superadmin' %}
+                            <option value="admin">Administrateur</option>
+                            <option value="superadmin">superAdministrateur</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="realisation_linkedin" class="form-label">Lien LinkedIn</label>
+                        <input type="url" class="form-control" id="realisation_linkedin" name="realisation_linkedin">
+                    </div>
+                    <div class="mb-3">
+                        <label for="photo_profil" class="form-label">Photo de profil</label>
+                        <input type="file" class="form-control" id="photo_profil" name="photo_profil">
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ovp" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
+
+<!-- Infobulle -->
+<div id="tolp" class="tooltip" style="display:none; position: fixed; top: 20%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background-color: #4CAF50; color: white; border-radius: 5px; z-index: 10000;">
+<span id="mesp"></span>
+<button onclick="closeTooltip('ovp','tolp')">Fermer</button>
+</div>
+</section>

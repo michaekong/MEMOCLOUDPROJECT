@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
+
 <div id="spinner" class="spinner-overlay" style="display: none;">
     <div class="spinner loader"></div>
 </div>
@@ -16,7 +17,12 @@
             <img src="{{ useruni.user.photo_profil.url }}" alt="Avatar" 
                  class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
         </div>
+        {% else %}
+            <img src="{% static 'user.jpg' %}" alt="Avatar" 
+                 class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
+                </div>
             {% endif %}
+            
         
 
         <!-- Section Informations utilisateur -->
@@ -57,10 +63,19 @@
         <!-- Section Avatar -->
         {% if user.photo_profil %}
         <div class="flex-shrink-0">
+            
             <img src="{{user.photo_profil.url }}" alt="Avatar" 
+            class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
+             </div>
+            {% else %}
+            <div class="flex-shrink-0">
+            <img src="{% static 'user.jpg' %}" alt="Avatar" 
                  class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-gray-200 dark:border-gray-700 shadow-lg">
-        </div>
+                </div>
             {% endif %}
+            
+            
+            
         
 
         <!-- Section Informations utilisateur -->

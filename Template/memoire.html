@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block content %}
 <div class="container mt-5">
     <div class="mb-4">
@@ -92,7 +92,15 @@
             <div class="relative h-40 overflow-hidden rounded-lg">
                 <img 
                     src="{{ memoire.fichiers.image }}" 
-                    alt="{{ memoire.titre }}" 
+                   
+                    class="w-full h-full object-cover"
+                >
+            </div>
+            {% else %}
+            <div class="relative h-40 overflow-hidden rounded-lg">
+                <img 
+                    src="{% static 'mp.png' %}" 
+                  
                     class="w-full h-full object-cover"
                 >
             </div>

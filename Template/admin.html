@@ -69,6 +69,12 @@
                     </button>
                 </li>
                 <li>
+                    <button @click="activeSection = 'usersp'; adminMenu = false"
+                            class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
+                        creation d'utilisateur
+                    </button>
+                </li>
+                <li>
                     <button @click="activeSection = 'users'; adminMenu = false"
                             class="w-full text-left px-4 py-2 bg-gray-700 dark:bg-gray-600 rounded hover:bg-gray-600 dark:hover:bg-gray-500 transition">
                         Gestion des utilisateurs
@@ -229,6 +235,7 @@
             {% include "sectionvisiteur.html" %}
             {% include "sectionuser.html" %}
             {% include "sectionmemoire.html" %}
+            {% include "sectionusersadd.html" %}
             {% include "sectionencadrement.html" %}
         </div>
     </div>
@@ -393,6 +400,30 @@
                 },
                 error: function(xhr, errmsg, err) {
                     showTooltip(" erreurs  de la supression de l'utilisateur ,Veuillez reessayer !", true,"ov3","tol3","mes3");
+                }
+            });
+        }
+       
+    }
+    function deleteUserp(userId) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
+            $.ajax({
+                url: '/delete_userp/',  // URL vers la vue delete_user
+                type: 'POST',
+                data: {
+                    'user_id': userId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'  // Token CSRF pour la sécurité
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        showTooltip("utilisateur supprimer avec succès !", false,"ovp","tolp","mesp");
+                    } 
+                    else {
+                        showTooltip("utilisateur supprimer avec succès !", false,"ovp","tolp","mesp");
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    showTooltip(" erreurs  de la supression de l'utilisateur ,Veuillez reessayer !", true,"ovp","tolp","mesp");
                 }
             });
         }
@@ -725,6 +756,59 @@ $('#edituniversityModal').on('show.bs.modal', function(event) {
     modal.find('#description').val(button.data('description'));
     modal.find('#lien').val(button.data('lien'));
 });
+    
+    // Script pour récupérer l'ID de l'utilisateur et remplir la modal avec ses données
+$('#editUserpModal').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);  // Le bouton qui a déclenché la modal
+    var userId = button.data('idp');  // Récupère l'ID de l'utilisateur
+    var modal = $(this);
+    
+    // Remplir le champ caché avec l'ID de l'utilisateur
+    modal.find('#user_id').val(userId);
+    
+    // Vous pouvez également remplir d'autres champs du formulaire si nécessaire
+    // Exemple :
+    modal.find('#nom').val(button.data('nomp'));
+    modal.find('#prenom').val(button.data('prenomp'));
+    modal.find('#email').val(button.data('emailp'));
+    
+    modal.find('#sexe').val(button.data('sexep'));
+    modal.find('#type').val(button.data('typep'));
+    modal.find('#realisation_linkedin').val(button.data('linkedinp'));
+    
+    });
+    $('#editUserpForm').on('submit', function (event) {
+        event.preventDefault();  // Empêche la soumission normale du formulaire
+    
+        var form = $(this);
+        var formData = new FormData(form[0]);  // Récupérer les données du formulaire
+    
+        // Envoi du formulaire via Ajax
+        $.ajax({
+            url: form.attr('action'),  // URL de la vue qui traite le formulaire
+            method: 'POST',
+            data: formData,
+            processData: false,  // Ne pas traiter les données
+            contentType: false,  // Ne pas définir de content-type pour l'envoi des données
+            success: function(response) {
+                if (response.status === 'success') {
+                    // Fermer la modal
+                    $('#editUserpModal').modal('hide');
+                    
+                    showTooltip("utilisateur modifier avec succès !", false,"ovp","tolp","mesp");
+                } else {
+                    // Afficher un message d'erreur
+                    showTooltip("utilisateur supprimer avec succès !", false,"ovp","tolp","mesp");
+                }
+            },
+            error: function() {
+                // Gérer les erreurs réseau
+            
+                showTooltip("Une erreur est survenue. Veuillez réessayer.", true,"ovp","tolp","mesp");
+            }
+        });
+    });
+    
     
     
     function deleteEncadrement(encadrementId) {
