@@ -102,7 +102,7 @@ DATABASES = {
 
 
 SITE_URL = "https://memocloudproject-qi77.onrender.com"
-
+"""
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -127,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-"""
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
