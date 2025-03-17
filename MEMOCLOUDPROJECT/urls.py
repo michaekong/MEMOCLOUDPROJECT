@@ -54,6 +54,7 @@ urlpatterns = [
      path('delete_domaine/', delete_domaine, name='delete_domaine'),
      path('delete_comment/', delete_comment, name='delete_comment'),
      path('add_domaine/', add_domaine, name='add_domaine'),
+     path('add_domainecsv/', add_domainecsv, name='add_domainecsv'),
     path('edit_memoire/', edit_memoire, name='edit_memoire'),
     path('edit_encadrement/', edit_encadrement, name='edit_encadrement'),
    path('verify_account/', verify_account, name='verify_account'),

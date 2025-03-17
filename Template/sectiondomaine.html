@@ -6,7 +6,10 @@
 <button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#adddomaineModal">
     Ajouter un domaine
 </button>
-   
+<button type="button" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none" data-bs-toggle="modal" data-bs-target="#adddomainecsvModal">
+     charger depus le csv 
+</button>
+ 
 
     <!-- Search and Filter Section -->
 <div class="mt-4">
@@ -72,6 +75,31 @@
         </div>
     </div>
 </div>
+<!-- Modal pour ajouter un domaine depuis le csv -->
+
+<!-- Modal pour ajouter un domaine depuis le CSV -->
+<div class="modal fade" id="adddomainecsvModal" tabindex="-1" aria-labelledby="adddomainecsvModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content dark:bg-gray-800 dark:text-gray-100">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adddomainecsvModalLabel">Ajouter des  Domaines a l'aide d'un fichier csv</h5>
+                <button type="button" class="btn-close dark:bg-gray-700 dark:hover:bg-gray-600" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="adddomainecsvForm" enctype="multipart/form-data" action="{% url 'add_domainecsv' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="lien_csv" class="form-label">Emplacement du fichier CSV</label>
+                        <input type="file" class="form-control bg-gray-100 dark:bg-gray-700 dark:text-gray-300" id="lien_csv" name="lien_csv" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md shadow transition focus:outline-none">
+                        Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal pour ajouter un mémoire -->
 <div class="modal fade" id="adddomaineModal" tabindex="-1" aria-labelledby="adddomaineModalLabel" aria-hidden="true">
@@ -98,6 +126,7 @@
         </div>
     </div>
 </div>
+
 <div id="ovm" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 9999;"></div>
 
 <!-- Infobulle -->

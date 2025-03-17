@@ -101,6 +101,7 @@ DATABASES = {
 
 
 
+
 SITE_URL = "https://memocloudproject-qi77.onrender.com"
 """
 DATABASES = {

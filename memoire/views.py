@@ -1400,7 +1400,7 @@ def add_domaine(request):
             
 
             # Création de l'objet Domaine
-            print(university.name)
+            
             domaine = Domaine.objects.create(
                 nom=nom,
                
@@ -1433,12 +1433,38 @@ def add_domaine(request):
 
 
 # Ajouter un encadrement
+import csv ,io
+def add_domainecsv(request):
+    try:
+        idp = request.session['user_id']
+        user = UserProfile.objects.get(id=idp)
+        uni=request.session.get('uni_id')
+    except:
+        return redirect('logout')
+    
+    
+    university = get_object_or_404(University, id=uni)
+    if request.method == 'POST':
+        csv_file = request.FILES['lien_csv']
+        decoded_file = csv_file.read().decode('utf-8')
+        io_string = io.StringIO(decoded_file)
+        reader = csv.DictReader(io_string)
+        for row in reader :
+            print(row)
+            domaine = Domaine.objects.create(
+                nom=row["nom"],
+               
+            )
+            domaine.universites.add(university)
+    return redirect("admin_university", university_id=request.session.get('uni_id'))     
+    
 def add_encadrement(request):
     try:
         idp = request.session['user_id']
         user = UserProfile.objects.get(id=idp)
     except:
         return redirect('logout')
+    
     
     
 
