@@ -1,0 +1,7 @@
+Titre,Annee_Publication,Resume,Auteur_Email,Domaines_IDs,Universites_IDs,Lien_telecharger,Image
+"Analyse des données",2023,"Une étude approfondie sur l'analyse des données en science des données.","michaelndekebai@gmail.com","1,2","1,3,4","/path/to/download/file1.pdf","/path/to/image1.jpg"
+"Machine Learning Basics",2023,"Introduction aux concepts fondamentaux de l'apprentissage automatique.","ali@gmail.com","1","2,4","/path/to/download/file2.pdf","/path/to/image2.jpg"
+"Deep Learning Applications",2023,"Applications pratiques du deep learning dans divers domaines.","michaelndekebai@gmail.com","2","4","/path/to/download/file3.pdf","/path/to/image3.jpg"
+"Data Visualization Techniques",2023,"Techniques de visualisation de données pour une meilleure interprétation.","ali@gmail.com","1,2","4","/path/to/download/file4.pdf","/path/to/image4.jpg"
+"Big Data Analytics",2023,"Analyse des grandes données et leur impact sur l'industrie.","michaelndekebai@gmail.com","3,4","4","/path/to/download/file5.pdf","/path/to/image5.jpg"
+"Artificial Intelligence in Healthcare",2023,"Utilisation de l'intelligence artificielle dans le domaine de la santé.","ali@gmail.com","2,3","4","/path/to/download/file6.pdf","/path/to/image6.jpg"

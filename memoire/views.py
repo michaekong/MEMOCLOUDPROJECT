@@ -19,8 +19,13 @@ from django.db.models import Prefetch, Q
 from django.db.models import Count
 from django.http import JsonResponse
 from django.db.models.functions import TruncMonth
-from .models import UserProfile, Memoire, Telechargement as telechargement, Encadrement,   Visiteur as visiteur
-
+from .models import (
+    UserProfile,
+    Memoire,
+    Telechargement as telechargement,
+    Encadrement,
+    Visiteur as visiteur,
+)
 
 
 from django.contrib.auth.hashers import make_password
@@ -37,77 +42,83 @@ from django.shortcuts import render, redirect
 
 def edit_profile(request):
     # Récupérer l'utilisateur connecté
-   
+
     try:
-        idp=request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        
 
         user_profile = user
     except UserProfile.DoesNotExist:
         messages.error(request, "Profil introuvable.")
-        return redirect('login')
+        return redirect("login")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         # Récupération des champs du formulaire
-        nom = request.POST.get('nom', user_profile.nom)
-        prenom = request.POST.get('prenom', user_profile.prenom)
-       
-        sexe = request.POST.get('sexe', user_profile.sexe)
-      
-        realisation_linkedin = request.POST.get('realisation_linkedin', user_profile.realisation_linkedin)
-        photo_profil = request.FILES.get('photo_profil')
+        nom = request.POST.get("nom", user_profile.nom)
+        prenom = request.POST.get("prenom", user_profile.prenom)
+
+        sexe = request.POST.get("sexe", user_profile.sexe)
+
+        realisation_linkedin = request.POST.get(
+            "realisation_linkedin", user_profile.realisation_linkedin
+        )
+        photo_profil = request.FILES.get("photo_profil")
 
         # Mise à jour des informations utilisateur
         user_profile.nom = nom
         user_profile.prenom = prenom
-       
+
         user_profile.sexe = sexe
-        
+
         user_profile.realisation_linkedin = realisation_linkedin
         if photo_profil:
             user_profile.photo_profil = photo_profil
         user_profile.save()
 
         # Gestion du changement de mot de passe
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
 
         if new_password or confirm_password:
             if new_password == confirm_password:
-                user.password=make_password(new_password ) # Utilise set_password pour gérer le hash
+                user.password = make_password(
+                    new_password
+                )  # Utilise set_password pour gérer le hash
                 user.save()
                 messages.success(request, "Mot de passe modifié avec succès.")
-                return redirect('login')  # Rediriger pour que l'utilisateur se reconnecte
+                return redirect("login")  # Rediriger pour que l'utilisateur se reconnecte
             else:
                 messages.error(request, "Les mots de passe ne correspondent pas.")
-                return render(request, 'edit_profile.html', {'user': user_profile})
+                return render(request, "edit_profile.html", {"user": user_profile})
 
         messages.success(request, "Profil mis à jour avec succès.")
-        return redirect('logout')
+        return redirect("logout")
 
-    return render(request, 'edit_profile.html', {'user': user_profile})
+    return render(request, "edit_profile.html", {"user": user_profile})
 
 
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
 from .models import UserProfile, UnverifiedUserProfile
-from .utils import send_advanced_email  # Suppose que vous avez une fonction pour envoyer des emails
+from .utils import (
+    send_advanced_email,
+)  # Suppose que vous avez une fonction pour envoyer des emails
 import random
 from django.conf import settings
 
+
 def register_user(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         # Récupération des données
-        nom = request.POST.get('nom', '').strip()
-        prenom = request.POST.get('prenom', '').strip()
-        email = request.POST.get('email', '').strip()
-        sexe = request.POST.get('sexe', '').strip()
-        realisation_linkedin = request.POST.get('realisation_linkedin', '').strip()
-        photo_profil = request.FILES.get('photo_profil', None)
-        password = request.POST.get('password', '').strip()
-        confirm_password = request.POST.get('confirm_password', '').strip()
+        nom = request.POST.get("nom", "").strip()
+        prenom = request.POST.get("prenom", "").strip()
+        email = request.POST.get("email", "").strip()
+        sexe = request.POST.get("sexe", "").strip()
+        realisation_linkedin = request.POST.get("realisation_linkedin", "").strip()
+        photo_profil = request.FILES.get("photo_profil", None)
+        password = request.POST.get("password", "").strip()
+        confirm_password = request.POST.get("confirm_password", "").strip()
 
         # Initialiser les données pour remplir le formulaire en cas d'erreur
         form_data = {
@@ -130,7 +141,9 @@ def register_user(request):
 
         # Vérification si l'utilisateur non vérifié existe déjà
         if UnverifiedUserProfile.objects.filter(email=email).exists():
-            messages.error(request, "Vous avez déjà initié une inscription. Vérifiez votre e-mail.")
+            messages.error(
+                request, "Vous avez déjà initié une inscription. Vérifiez votre e-mail."
+            )
             return render(request, "verified.html")
 
         try:
@@ -151,51 +164,63 @@ def register_user(request):
             )
 
             # Enregistrer les informations dans la session
-            request.session['user_email'] = email
-            request.session['verification_code'] = verification_code
-            request.session['user_id'] = unverified_user.id
+            request.session["user_email"] = email
+            request.session["verification_code"] = verification_code
+            request.session["user_id"] = unverified_user.id
 
             # Envoi de l'email avec le code de vérification
             subject = "Code de vérification"
             template = "template.html"
-            verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
+            verification_url = (
+                f"{settings.SITE_URL}/verify_account?code={verification_code}"
+            )
             context = {
-                'verification_code': verification_code,
-                'user': unverified_user,
-                'verification_url': verification_url,
+                "verification_code": verification_code,
+                "user": unverified_user,
+                "verification_url": verification_url,
             }
             send_advanced_email(email, subject, template, context)
-            
-            messages.success(request, "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.")
-            return render(request, "verified.html")  # Redirige vers la page de vérification
+
+            messages.success(
+                request,
+                "Un code de vérification vous a été envoyé par email. Veuillez vérifier votre boîte de réception.",
+            )
+            return render(
+                request, "verified.html"
+            )  # Redirige vers la page de vérification
 
         except Exception as e:
-            messages.error(request, f"Une erreur est survenue lors de l'inscription : {e}")
+            messages.error(
+                request, f"Une erreur est survenue lors de l'inscription : {e}"
+            )
             return render(request, "register.html", {"form_data": form_data})
 
     # Si GET, renvoyer la page d'inscription vide
     return render(request, "register.html")
 
 
-
 def verification_page(request):
     # Vérifier la présence de l'email et du code de vérification dans la session
-    email = request.session.get('user_email')
-    stored_code = request.session.get('verification_code')
+    email = request.session.get("user_email")
+    stored_code = request.session.get("verification_code")
 
     if not email or not stored_code:
-        messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
-        return redirect('register')  # Redirige vers l'inscription si les informations sont manquantes
+        messages.error(
+            request, "Vos informations de session ont expiré. Veuillez vous réinscrire."
+        )
+        return redirect(
+            "register"
+        )  # Redirige vers l'inscription si les informations sont manquantes
 
     try:
         # Récupération de l'utilisateur non vérifié
         unverified_user = UnverifiedUserProfile.objects.get(email=email)
     except UnverifiedUserProfile.DoesNotExist:
         messages.error(request, "Utilisateur non trouvé. Veuillez vous réinscrire.")
-        return redirect('register')
+        return redirect("register")
 
     if request.method == "POST":
-        verification_code = request.POST.get('verification_code')
+        verification_code = request.POST.get("verification_code")
 
         if verification_code == str(stored_code):
             # Création de l'utilisateur vérifié
@@ -203,7 +228,6 @@ def verification_page(request):
                 nom=unverified_user.nom,
                 prenom=unverified_user.prenom,
                 email=unverified_user.email,
-         
                 sexe=unverified_user.sexe,
                 type=unverified_user.type,
                 realisation_linkedin=unverified_user.realisation_linkedin,
@@ -217,8 +241,10 @@ def verification_page(request):
             # Suppression de l'utilisateur non vérifié
             unverified_user.delete()
 
-            messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
-            return redirect('login')  # Redirige vers une page appropriée après connexion
+            messages.success(
+                request, "Votre compte a été vérifié avec succès. Bienvenue !"
+            )
+            return redirect("login")  # Redirige vers une page appropriée après connexion
         else:
             # Gestion des codes incorrects
             messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
@@ -226,27 +252,32 @@ def verification_page(request):
 
     # Si GET, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
+
+
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .models import UnverifiedUserProfile, UserProfile
 
+
 def verify_account(request):
-    code = request.GET.get('code', '')
+    code = request.GET.get("code", "")
     print("Code reçu : " + code)  # Pour le débogage
-    email = request.session.get('user_email')
-    stored_code = request.session.get('verification_code')
+    email = request.session.get("user_email")
+    stored_code = request.session.get("verification_code")
 
     if not email or not stored_code:
-        messages.error(request, "Vos informations de session ont expiré. Veuillez vous réinscrire.")
-        return redirect('register')
+        messages.error(
+            request, "Vos informations de session ont expiré. Veuillez vous réinscrire."
+        )
+        return redirect("register")
 
     try:
         # Récupération de l'utilisateur non vérifié
         unverified_user = UnverifiedUserProfile.objects.get(email=email)
     except UnverifiedUserProfile.DoesNotExist:
         messages.error(request, "Utilisateur non trouvé. Veuillez vous réinscrire.")
-        return redirect('register')
+        return redirect("register")
 
     if code == str(stored_code):
         # Création de l'utilisateur vérifié
@@ -260,7 +291,7 @@ def verify_account(request):
             photo_profil=unverified_user.photo_profil,
             password=unverified_user.password,  # Assurez-vous que le mot de passe est sécurisé
         )
-        
+
         # Connexion automatique de l'utilisateur
         login(request, user)
 
@@ -268,42 +299,43 @@ def verify_account(request):
         unverified_user.delete()
 
         messages.success(request, "Votre compte a été vérifié avec succès. Bienvenue !")
-        return redirect('login')  # Redirige vers une page appropriée après connexion
+        return redirect("login")  # Redirige vers une page appropriée après connexion
     else:
         messages.error(request, "Code de vérification incorrect. Veuillez réessayer.")
         return render(request, "verified.html", {"email": email})
 
     # Si aucune condition n'est remplie, afficher la page de vérification
     return render(request, "verified.html", {"email": email})
+
+
 def resend_email(request, *args, **kwargs):
     verification_code = random.randint(100000, 999999)
-    request.session['verification_code'] = verification_code
+    request.session["verification_code"] = verification_code
     print(verification_code)
     # Récupérer l'email de la session
-    email = request.session.get('user_email')
+    email = request.session.get("user_email")
     unverified_user = UnverifiedUserProfile.objects.get(email=email)
-    
-    unverified_user.verification_code=str(verification_code)
+
+    unverified_user.verification_code = str(verification_code)
     unverified_user.save()
     if not email:
         # Si l'email n'est pas trouvé dans la session, rediriger l'utilisateur
         messages.error(request, "Aucune session utilisateur active.")
-        return redirect('login')  # Remplacez 'login' par l'URL appropriée
+        return redirect("login")  # Remplacez 'login' par l'URL appropriée
 
     try:
         # Génération d'un nouveau code de vérification
-        
 
         # Récupérer l'utilisateur non vérifié à partir de l'email
-        
+
         # Envoi de l'email avec le code de vérification
         subject = "Code de vérification"
         template = "template.html"  # Assurez-vous que ce template existe
         verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
         context = {
-            'verification_code': verification_code,
-            'user': unverified_user,
-            'verification_url':verification_url,
+            "verification_code": verification_code,
+            "user": unverified_user,
+            "verification_url": verification_url,
         }
 
         send_advanced_email(email, subject, template, context)
@@ -315,17 +347,21 @@ def resend_email(request, *args, **kwargs):
     except UnverifiedUserProfile.DoesNotExist:
         # Gestion de l'erreur si l'utilisateur n'est pas trouvé dans la base de données
         messages.error(request, "Aucun utilisateur trouvé avec cet email.")
-        return redirect('/register')  # Rediriger vers la page d'inscription ou une page d'erreur
+        return redirect(
+            "/register"
+        )  # Rediriger vers la page d'inscription ou une page d'erreur
 
     except Exception as e:
         # Gestion de toutes autres erreurs
         messages.error(request, f"Une erreur est survenue : {str(e)}")
-        
-        return redirect('register')
+
+        return redirect("register")
+
 
 # Create your views here.
-def home(request,*args, **kwargs):
+def home(request, *args, **kwargs):
     return HttpResponse("<h2 >Options de la Carte</h2>")
+
 
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import authenticate, login
@@ -340,84 +376,97 @@ def profil(request):
     Vue pour afficher les informations du profil de l'utilisateur connecté.
     """
     try:
-        
-        idp=request.session['user_id']
+
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        
-        
+
     except:
-        return redirect("logout")  
+        return redirect("logout")
     try:
-        
-        
-        university_id=request.session['uni_id']
-        useruni=UserUniversity.objects.get(university_id=university_id,user=user)
-        
+
+        university_id = request.session["uni_id"]
+        useruni = UserUniversity.objects.get(university_id=university_id, user=user)
+
     except:
-        return render(request, 'profil.html', {'user': user})
-     
-    return render(request, 'profil.html', {'useruni': useruni,'university_id':request.session['uni_id']})
+        return render(request, "profil.html", {"user": user})
+
+    return render(
+        request,
+        "profil.html",
+        {"useruni": useruni, "university_id": request.session["uni_id"]},
+    )
 
 
 from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 
+
 def login(request, *args, **kwargs):
 
-
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         # Validation des champs obligatoires
         if not email or not password:
-            messages.error(request, "Veuillez remplir tous les champs.",extra_tags="login")
-            return redirect('/login')
+            messages.error(
+                request, "Veuillez remplir tous les champs.", extra_tags="login"
+            )
+            return redirect("/login")
 
         try:
-            
+
             # Recherche de l'utilisateur par email
             user = UserProfile.objects.get(email=email)
-            universities = UserUniversity.objects.filter(user=user).select_related('university')
-            
-            univer=[]
-            for el in universities :
-                if el.role in ["admin", "superadmin"] :
+            universities = UserUniversity.objects.filter(user=user).select_related(
+                "university"
+            )
+
+            univer = []
+            for el in universities:
+                if el.role in ["admin", "superadmin"]:
                     univer.append(el)
-            number_of_universities = len(univer)        
+            number_of_universities = len(univer)
 
             # Vérification du mot de passe
             if check_password(password, user.password):
                 # Simule une connexion (via session)
-                request.session['user_id'] = user.id
-                request.session['user_email'] = user.email
-                request.session['emailv'] = user.email
+                request.session["user_id"] = user.id
+                request.session["user_email"] = user.email
+                request.session["emailv"] = user.email
 
-                messages.success(request, "Connexion réussie. Bienvenue !",extra_tags="login")
-            
+                messages.success(
+                    request, "Connexion réussie. Bienvenue !", extra_tags="login"
+                )
+
                 # Redirection en fonction du type d'utilisateur
-                
-                if(number_of_universities == 1 ):
-                    return redirect("admin_university", university_id=universities[0].university.id)
-                if(number_of_universities > 1 ):    
-                    return redirect('/chooseuniversity')  # Page pour les administrateurs
-                if(user.type == 'bigboss'):
-                    return redirect('/chooseuniversity')
-                    
+
+                if number_of_universities == 1:
+                    return redirect(
+                        "admin_university", university_id=universities[0].university.id
+                    )
+                if number_of_universities > 1:
+                    return redirect("/chooseuniversity")  # Page pour les administrateurs
+                if user.type == "bigboss":
+                    return redirect("/chooseuniversity")
+
                 else:
                     # Création d'une visite pour un utilisateur standard
                     visiteur.objects.create(emailv=email)
-                    return redirect('liste_memoires')  # Page principale pour les utilisateurs standards
+                    return redirect(
+                        "liste_memoires"
+                    )  # Page principale pour les utilisateurs standards
             else:
-                messages.error(request, "Mot de passe incorrect.",extra_tags="login")
-                return render(request,"login.html",{"error":"Mot de passe incorrect."})
+                messages.error(request, "Mot de passe incorrect.", extra_tags="login")
+                return render(request, "login.html", {"error": "Mot de passe incorrect."})
         except UserProfile.DoesNotExist:
-            messages.error(request, "Aucun compte trouvé avec cet email.",extra_tags="login")
-            return render(request,"login.html",{"error":"Aucun compte trouvé avec cet email."})
-
-        
+            messages.error(
+                request, "Aucun compte trouvé avec cet email.", extra_tags="login"
+            )
+            return render(
+                request, "login.html", {"error": "Aucun compte trouvé avec cet email."}
+            )
 
     # Affichage du formulaire de connexion pour une requête GET
     return render(request, "login.html")
@@ -425,38 +474,40 @@ def login(request, *args, **kwargs):
 
 def logout(request):
     # Supprimer les informations de session
-    if 'user_id' in request.session:
-        del request.session['user_id']
-    if 'user_email' in request.session:
-        del request.session['user_email']
-    if 'uni_id' in request.session:
-        del request.session['uni_id']  
-    
+    if "user_id" in request.session:
+        del request.session["user_id"]
+    if "user_email" in request.session:
+        del request.session["user_email"]
+    if "uni_id" in request.session:
+        del request.session["uni_id"]
+
     # Message de succès
-    messages.success(request, "Déconnexion réussie. À bientôt !",extra_tags="login")
-    
+    messages.success(request, "Déconnexion réussie. À bientôt !", extra_tags="login")
+
     # Rediriger vers la page de connexion
-    return redirect('/login')
+    return redirect("/login")
+
 
 def chooseuniversity(request):
     try:
         # Vérification de l'authentification
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        universities = UserUniversity.objects.filter(user=user).select_related('university')
-        universites=University.objects.all()
-        
+        universities = UserUniversity.objects.filter(user=user).select_related(
+            "university"
+        )
+        universites = University.objects.all()
+
     except KeyError:
-        return redirect('logout')
+        return redirect("logout")
 
     context = {
-            
-            'user': user,
-            'universities':universities,
-            'universites':universites,
-        }
-    
-    return render(request,"chooseuniversity.html",context)
+        "user": user,
+        "universities": universities,
+        "universites": universites,
+    }
+
+    return render(request, "chooseuniversity.html", context)
 
 
 from django.shortcuts import render
@@ -466,57 +517,63 @@ from django.shortcuts import render
 from .models import Memoire, Domaine, Encadrement, UserProfile
 
 from django.db.models import Count, Avg, Prefetch, Q
+
+
 def liste_memoires(request):
     try:
         # Vérification de l'authentification
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except KeyError:
-        return redirect('logout')
-    uni=request.session.get('uni_id')
+        return redirect("logout")
+    uni = request.session.get("uni_id")
 
     try:
         # Récupération des mémoires avec toutes leurs relations
-        memoires = Memoire.objects.prefetch_related(
-            Prefetch(
-                'encadrements',
-                queryset=Encadrement.objects.select_related('encadrant'),
-                to_attr='encadreur_list'
-            ),
-            'domaines',
-            Prefetch(
-                'notations',
-                queryset=NotationCommentaire.objects.select_related('utilisateur'),
-                to_attr='notations_list'
-            ),
-            'telechargements'
-        ).select_related(
-            'auteur'
-        ).annotate(
-            nbr_telechargements=Count('telechargements'),
-            note_moyenne=Avg('notations__note'),
-            nbr_notations=Count('notations'),
-            nbr_commentaires=Count('notations')
+        memoires = (
+            Memoire.objects.prefetch_related(
+                Prefetch(
+                    "encadrements",
+                    queryset=Encadrement.objects.select_related("encadrant"),
+                    to_attr="encadreur_list",
+                ),
+                "domaines",
+                Prefetch(
+                    "notations",
+                    queryset=NotationCommentaire.objects.select_related("utilisateur"),
+                    to_attr="notations_list",
+                ),
+                "telechargements",
+            )
+            .select_related("auteur")
+            .annotate(
+                nbr_telechargements=Count("telechargements"),
+                note_moyenne=Avg("notations__note"),
+                nbr_notations=Count("notations"),
+                nbr_commentaires=Count("notations"),
+            )
         )
 
         # Recherche textuelle
-        query = request.GET.get('q')
+        query = request.GET.get("q")
         if query:
             memoires = memoires.filter(
-                Q(titre__icontains=query) |
-                Q(domaines__nom__icontains=query) |
-                Q(auteur__prenom__icontains=query) |
-                Q(auteur__nom__icontains=query) |
-                Q(resume__icontains=query) |
-                Q(universites__name__icontains=query)  # Recherche par nom de l'université
+                Q(titre__icontains=query)
+                | Q(domaines__nom__icontains=query)
+                | Q(auteur__prenom__icontains=query)
+                | Q(auteur__nom__icontains=query)
+                | Q(resume__icontains=query)
+                | Q(
+                    universites__name__icontains=query
+                )  # Recherche par nom de l'université
             ).distinct()
 
         # Filtres additionnels
-        domaine_id = request.GET.get('domaine')
-        annee = request.GET.get('annee')
-        encadreur_id = request.GET.get('encadreur')
-        auteur_id = request.GET.get('auteur')
-        universite_id = request.GET.get('universite')  # Filtre par université
+        domaine_id = request.GET.get("domaine")
+        annee = request.GET.get("annee")
+        encadreur_id = request.GET.get("encadreur")
+        auteur_id = request.GET.get("auteur")
+        universite_id = request.GET.get("universite")  # Filtre par université
 
         if domaine_id:
             memoires = memoires.filter(domaines__id=domaine_id)
@@ -531,147 +588,186 @@ def liste_memoires(request):
             memoires = memoires.filter(auteur__id=auteur_id)
 
         if universite_id:
-            memoires = memoires.filter(universites__id=universite_id)  # Filtrage par université
+            memoires = memoires.filter(
+                universites__id=universite_id
+            )  # Filtrage par université
 
         # Construction du dictionnaire détaillé pour la liste de mémoires
         memoires_list = []
         for memoire in memoires:
-            memoires_list.append({
-                'id': memoire.id,
-                'titre': memoire.titre,
-                'annee_publication': memoire.annee_publication,
-                'resume': memoire.resume,
-                'auteur': {
-                    'id': memoire.auteur.id,
-                    'nom': memoire.auteur.nom,
-                    'prenom': memoire.auteur.prenom,
-                    'email': memoire.auteur.email,
-                    'photo_profil': memoire.auteur.photo_profil.url if memoire.auteur.photo_profil else None,
-                    'linkedin': memoire.auteur.realisation_linkedin
-                },
-                'domaines': [{
-                    'id': domaine.id,
-                    'nom': domaine.nom
-                } for domaine in memoire.domaines.all()],
-                'encadreurs': [{
-                    'id': encadrement.encadrant.id,
-                    'nom': encadrement.encadrant.nom,
-                    'prenom': encadrement.encadrant.prenom,
-                    'email': encadrement.encadrant.email,
-                    'photo_profil': encadrement.encadrant.photo_profil.url if encadrement.encadrant.photo_profil else None,
-                    'linkedin': encadrement.encadrant.realisation_linkedin
-                } for encadrement in memoire.encadreur_list],
-                'statistiques': {
-                    'nbr_telechargements': memoire.nbr_telechargements,
-                    'note_moyenne': round(memoire.note_moyenne, 2) if memoire.note_moyenne else 0,
-                    'nbr_notations': memoire.nbr_notations,
-                    'nbr_commentaires': memoire.nbr_commentaires
-                },
-                'notations': [{
-                    'utilisateur': {
-                        'id': notation.utilisateur.id,
-                        'nom': notation.utilisateur.nom,
-                        'prenom': notation.utilisateur.prenom,
-                        'linkedin': notation.utilisateur.realisation_linkedin,
-                        'photo_profil': notation.utilisateur.photo_profil.url if notation.utilisateur.photo_profil else None
+            memoires_list.append(
+                {
+                    "id": memoire.id,
+                    "titre": memoire.titre,
+                    "annee_publication": memoire.annee_publication,
+                    "resume": memoire.resume,
+                    "auteur": {
+                        "id": memoire.auteur.id,
+                        "nom": memoire.auteur.nom,
+                        "prenom": memoire.auteur.prenom,
+                        "email": memoire.auteur.email,
+                        "photo_profil": (
+                            memoire.auteur.photo_profil.url
+                            if memoire.auteur.photo_profil
+                            else None
+                        ),
+                        "linkedin": memoire.auteur.realisation_linkedin,
                     },
-                    'note': notation.note,
-                    'commentaire': notation.commentaire,
-                    'date': notation.date_creation
-                } for notation in memoire.notations_list],
-                'telechargements': [{
-                    'email': telechargement.emailt,
-                    'date': telechargement.datet
-                } for telechargement in memoire.telechargements.all()],
-                'fichiers': {
-                    'image': memoire.images.url if memoire.images else None,
-                    'document': memoire.fichier_memoire.url if memoire.fichier_memoire else None
-                },
-                'universites': [{
-                    'id': university.id,
-                    'lien': university.university_link,
-                    'name': university.name,
-                    'acronime': university.acronime,
-                    'slogan': university.slogan,
-                    'description': university.description,
-                    'logo': university.logo.url if university.logo else None
-                } for university in memoire.universites.all()]
-            })
+                    "domaines": [
+                        {"id": domaine.id, "nom": domaine.nom}
+                        for domaine in memoire.domaines.all()
+                    ],
+                    "encadreurs": [
+                        {
+                            "id": encadrement.encadrant.id,
+                            "nom": encadrement.encadrant.nom,
+                            "prenom": encadrement.encadrant.prenom,
+                            "email": encadrement.encadrant.email,
+                            "photo_profil": (
+                                encadrement.encadrant.photo_profil.url
+                                if encadrement.encadrant.photo_profil
+                                else None
+                            ),
+                            "linkedin": encadrement.encadrant.realisation_linkedin,
+                        }
+                        for encadrement in memoire.encadreur_list
+                    ],
+                    "statistiques": {
+                        "nbr_telechargements": memoire.nbr_telechargements,
+                        "note_moyenne": (
+                            round(memoire.note_moyenne, 2) if memoire.note_moyenne else 0
+                        ),
+                        "nbr_notations": memoire.nbr_notations,
+                        "nbr_commentaires": memoire.nbr_commentaires,
+                    },
+                    "notations": [
+                        {
+                            "utilisateur": {
+                                "id": notation.utilisateur.id,
+                                "nom": notation.utilisateur.nom,
+                                "prenom": notation.utilisateur.prenom,
+                                "linkedin": notation.utilisateur.realisation_linkedin,
+                                "photo_profil": (
+                                    notation.utilisateur.photo_profil.url
+                                    if notation.utilisateur.photo_profil
+                                    else None
+                                ),
+                            },
+                            "note": notation.note,
+                            "commentaire": notation.commentaire,
+                            "date": notation.date_creation,
+                        }
+                        for notation in memoire.notations_list
+                    ],
+                    "telechargements": [
+                        {"email": telechargement.emailt, "date": telechargement.datet}
+                        for telechargement in memoire.telechargements.all()
+                    ],
+                    "fichiers": {
+                        "image": memoire.images.url if memoire.images else None,
+                        "document": (
+                            memoire.fichier_memoire.url
+                            if memoire.fichier_memoire
+                            else None
+                        ),
+                    },
+                    "universites": [
+                        {
+                            "id": university.id,
+                            "lien": university.university_link,
+                            "name": university.name,
+                            "acronime": university.acronime,
+                            "slogan": university.slogan,
+                            "description": university.description,
+                            "logo": university.logo.url if university.logo else None,
+                        }
+                        for university in memoire.universites.all()
+                    ],
+                }
+            )
 
         # Données pour les filtres
         domaines_uniques = Domaine.objects.all()
         universite_uniques = University.objects.all()
-        annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
-        encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
+        annees_uniques = Memoire.objects.values_list(
+            "annee_publication", flat=True
+        ).distinct()
+        encadreurs_uniques = UserProfile.objects.filter(
+            encadrements__isnull=False
+        ).distinct()
         auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
 
         context = {
-            'memoires': memoires_list,
-            'domaines': domaines_uniques,
-            'universites': universite_uniques,
-            'annees': sorted(annees_uniques),
-            'encadreurs': encadreurs_uniques,
-            'auteurs': auteurs_uniques,
-            'university_id':uni,
-            'query_params': request.GET,
-            'user': user
+            "memoires": memoires_list,
+            "domaines": domaines_uniques,
+            "universites": universite_uniques,
+            "annees": sorted(annees_uniques),
+            "encadreurs": encadreurs_uniques,
+            "auteurs": auteurs_uniques,
+            "university_id": uni,
+            "query_params": request.GET,
+            "user": user,
         }
 
-        return render(request, 'memoire.html', context)
+        return render(request, "memoire.html", context)
 
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
-        return redirect('liste_memoires')
+        return redirect("liste_memoires")
+
+
 def enraport(request):
     try:
         # Vérification de l'authentification
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except KeyError:
-        return redirect('logout')
-    
-   
-    
+        return redirect("logout")
+
     try:
         # Récupération des mémoires avec toutes leurs relations
-        memoires = Memoire.objects.prefetch_related(
-            Prefetch(
-                'encadrements',
-                queryset=Encadrement.objects.select_related('encadrant'),
-                to_attr='encadreur_list'
-            ),
-            'domaines',
-            Prefetch(
-                'notations',
-                queryset=NotationCommentaire.objects.select_related('utilisateur'),
-                to_attr='notations_list'
-            ),
-            'telechargements'
-        ).select_related(
-            'auteur'
-        ).annotate(
-            nbr_telechargements=Count('telechargements'),
-            note_moyenne=Avg('notations__note'),
-            nbr_notations=Count('notations'),
-            nbr_commentaires=Count('notations')  # Vérifiez que cela compte correctement
+        memoires = (
+            Memoire.objects.prefetch_related(
+                Prefetch(
+                    "encadrements",
+                    queryset=Encadrement.objects.select_related("encadrant"),
+                    to_attr="encadreur_list",
+                ),
+                "domaines",
+                Prefetch(
+                    "notations",
+                    queryset=NotationCommentaire.objects.select_related("utilisateur"),
+                    to_attr="notations_list",
+                ),
+                "telechargements",
+            )
+            .select_related("auteur")
+            .annotate(
+                nbr_telechargements=Count("telechargements"),
+                note_moyenne=Avg("notations__note"),
+                nbr_notations=Count("notations"),
+                nbr_commentaires=Count(
+                    "notations"
+                ),  # Vérifiez que cela compte correctement
+            )
         )
 
         # Recherche textuelle
-        query = request.GET.get('q')
+        query = request.GET.get("q")
         if query:
             memoires = memoires.filter(
-                Q(titre__icontains=query) |
-                Q(domaines__nom__icontains=query) |
-                Q(auteur__prenom__icontains=query) |
-                Q(auteur__nom__icontains=query) |
-                Q(resume__icontains=query)
+                Q(titre__icontains=query)
+                | Q(domaines__nom__icontains=query)
+                | Q(auteur__prenom__icontains=query)
+                | Q(auteur__nom__icontains=query)
+                | Q(resume__icontains=query)
             ).distinct()
 
         # Filtres additionnels
-        domaine_id = request.GET.get('domaine')
-        annee = request.GET.get('annee')
-        encadreur_id = request.GET.get('encadreur')
-        auteur_id = request.GET.get('auteur')
+        domaine_id = request.GET.get("domaine")
+        annee = request.GET.get("annee")
+        encadreur_id = request.GET.get("encadreur")
+        auteur_id = request.GET.get("auteur")
 
         if domaine_id:
             memoires = memoires.filter(domaines__id=domaine_id)
@@ -688,110 +784,148 @@ def enraport(request):
         # Construction du dictionnaire détaillé pour la liste de mémoires
         memoires_list = []
         for memoire in memoires:
-            memoires_list.append({
-                'id': memoire.id,
-                'titre': memoire.titre,
-                'annee_publication': memoire.annee_publication,
-                'resume': memoire.resume,
-                'auteur': {
-                    'id': memoire.auteur.id,
-                    'nom': memoire.auteur.nom,
-                    'prenom': memoire.auteur.prenom,
-                    'email': memoire.auteur.email,
-                    'photo_profil': memoire.auteur.photo_profil.url if memoire.auteur.photo_profil else None,
-                    'linkedin': memoire.auteur.realisation_linkedin
-                },
-                'domaines': [{
-                    'id': domaine.id,
-                    'nom': domaine.nom
-                } for domaine in memoire.domaines.all()],
-                'encadreurs': [{
-                    'id': encadrement.encadrant.id,
-                    'nom': encadrement.encadrant.nom,
-                    'prenom': encadrement.encadrant.prenom,
-                    'email': encadrement.encadrant.email,
-                    'photo_profil': encadrement.encadrant.photo_profil.url if encadrement.encadrant.photo_profil else None,
-                    'linkedin': encadrement.encadrant.realisation_linkedin
-                } for encadrement in memoire.encadrements.all()],
-                'statistiques': {
-                    'nbr_telechargements': memoire.telechargements.count(),
-                    'note_moyenne': round(memoire.note_moyenne(), 2) if memoire.note_moyenne() else 0,
-                    'nbr_notations': memoire.notations.count(),
-                    'nbr_commentaires': memoire.notations.count()  # Nombre de commentaires
-                },
-                'notations': [{
-                    'utilisateur': {
-                        'id': notation.utilisateur.id,
-                        'nom': notation.utilisateur.nom,
-                        'prenom': notation.utilisateur.prenom,
-                        'linkedin': notation.utilisateur.realisation_linkedin,
-                        'photo_profil': notation.utilisateur.photo_profil.url if notation.utilisateur.photo_profil else None
+            memoires_list.append(
+                {
+                    "id": memoire.id,
+                    "titre": memoire.titre,
+                    "annee_publication": memoire.annee_publication,
+                    "resume": memoire.resume,
+                    "auteur": {
+                        "id": memoire.auteur.id,
+                        "nom": memoire.auteur.nom,
+                        "prenom": memoire.auteur.prenom,
+                        "email": memoire.auteur.email,
+                        "photo_profil": (
+                            memoire.auteur.photo_profil.url
+                            if memoire.auteur.photo_profil
+                            else None
+                        ),
+                        "linkedin": memoire.auteur.realisation_linkedin,
                     },
-                    'note': notation.note,
-                    'commentaire': notation.commentaire,
-                    'date': notation.date_creation
-                } for notation in memoire.notations.all()],
-                'telechargements': [{
-                    'email': telechargement.emailt,
-                    'date': telechargement.datet
-                } for telechargement in memoire.telechargements.all()],
-                'fichiers': {
-                    'image': memoire.images.url if memoire.images else None,
-                    'document': memoire.fichier_memoire.url if memoire.fichier_memoire else None
-                },
-                'universites': [{
-                    'id': university.id,
-                    'name': university.name,
-                    'acronime': university.acronime,
-                    'slogan': university.slogan,
-                    'description': university.description,
-                    'logo': university.logo.url if university.logo else None
-                } for university in memoire.universites.all()]  # Ajout des universités ici
-            })
-        memoires =list(filter(lambda x: x['encadreurs']['id']==idp or x['auteur']['id']==idp ,memoires_list ))
-        print("fjcnvldkngvldngldgnml")    
+                    "domaines": [
+                        {"id": domaine.id, "nom": domaine.nom}
+                        for domaine in memoire.domaines.all()
+                    ],
+                    "encadreurs": [
+                        {
+                            "id": encadrement.encadrant.id,
+                            "nom": encadrement.encadrant.nom,
+                            "prenom": encadrement.encadrant.prenom,
+                            "email": encadrement.encadrant.email,
+                            "photo_profil": (
+                                encadrement.encadrant.photo_profil.url
+                                if encadrement.encadrant.photo_profil
+                                else None
+                            ),
+                            "linkedin": encadrement.encadrant.realisation_linkedin,
+                        }
+                        for encadrement in memoire.encadrements.all()
+                    ],
+                    "statistiques": {
+                        "nbr_telechargements": memoire.telechargements.count(),
+                        "note_moyenne": (
+                            round(memoire.note_moyenne(), 2)
+                            if memoire.note_moyenne()
+                            else 0
+                        ),
+                        "nbr_notations": memoire.notations.count(),
+                        "nbr_commentaires": memoire.notations.count(),  # Nombre de commentaires
+                    },
+                    "notations": [
+                        {
+                            "utilisateur": {
+                                "id": notation.utilisateur.id,
+                                "nom": notation.utilisateur.nom,
+                                "prenom": notation.utilisateur.prenom,
+                                "linkedin": notation.utilisateur.realisation_linkedin,
+                                "photo_profil": (
+                                    notation.utilisateur.photo_profil.url
+                                    if notation.utilisateur.photo_profil
+                                    else None
+                                ),
+                            },
+                            "note": notation.note,
+                            "commentaire": notation.commentaire,
+                            "date": notation.date_creation,
+                        }
+                        for notation in memoire.notations.all()
+                    ],
+                    "telechargements": [
+                        {"email": telechargement.emailt, "date": telechargement.datet}
+                        for telechargement in memoire.telechargements.all()
+                    ],
+                    "fichiers": {
+                        "image": memoire.images.url if memoire.images else None,
+                        "document": (
+                            memoire.fichier_memoire.url
+                            if memoire.fichier_memoire
+                            else None
+                        ),
+                    },
+                    "universites": [
+                        {
+                            "id": university.id,
+                            "name": university.name,
+                            "acronime": university.acronime,
+                            "slogan": university.slogan,
+                            "description": university.description,
+                            "logo": university.logo.url if university.logo else None,
+                        }
+                        for university in memoire.universites.all()
+                    ],  # Ajout des universités ici
+                }
+            )
+        memoires = list(
+            filter(
+                lambda x: x["encadreurs"]["id"] == idp or x["auteur"]["id"] == idp,
+                memoires_list,
+            )
+        )
+        print("fjcnvldkngvldngldgnml")
 
         # Données pour les filtres
         domaines_uniques = Domaine.objects.all()
-        annees_uniques = Memoire.objects.values_list('annee_publication', flat=True).distinct()
-        encadreurs_uniques = UserProfile.objects.filter(encadrements__isnull=False).distinct()
+        annees_uniques = Memoire.objects.values_list(
+            "annee_publication", flat=True
+        ).distinct()
+        encadreurs_uniques = UserProfile.objects.filter(
+            encadrements__isnull=False
+        ).distinct()
         auteurs_uniques = UserProfile.objects.filter(memoires__isnull=False).distinct()
 
         context = {
-            'memoires': memoires,
-            'domaines': domaines_uniques,
-            'annees': sorted(annees_uniques),
-            'encadreurs': encadreurs_uniques,
-            'auteurs': auteurs_uniques,
-            'query_params': request.GET,
-            'user': user
+            "memoires": memoires,
+            "domaines": domaines_uniques,
+            "annees": sorted(annees_uniques),
+            "encadreurs": encadreurs_uniques,
+            "auteurs": auteurs_uniques,
+            "query_params": request.GET,
+            "user": user,
         }
 
-        return render(request, 'memoire.html', context)
+        return render(request, "memoire.html", context)
 
     except Exception as e:
         messages.error(request, f"Une erreur s'est produite: {str(e)}")
-        return redirect('enraport')
-    return redirect('liste', memoire_id=memoire.id)
+        return redirect("enraport")
+    return redirect("liste", memoire_id=memoire.id)
 
 
-def common(request,*args, **kwargs):
-   
+def common(request, *args, **kwargs):
 
-    return render(request, 'index.html')
+    return render(request, "index.html")
 
-  
 
 def ajouter_commentaire(request, memoire_id):
     # Vérification de l'authentification
-     # Redirige l'utilisateur vers la page de connexion s'il n'est pas authentifié
+    # Redirige l'utilisateur vers la page de connexion s'il n'est pas authentifié
 
     try:
         # Vérification de l'authentification
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except KeyError:
-        return redirect('logout')
+        return redirect("logout")
 
     # Récupérer le mémoire concerné
     memoire = get_object_or_404(Memoire, id=memoire_id)
@@ -799,138 +933,146 @@ def ajouter_commentaire(request, memoire_id):
     # Vérifier si l'utilisateur a déjà commenté ce mémoire
     if NotationCommentaire.objects.filter(memoire=memoire, utilisateur=user).exists():
         messages.error(request, "Vous avez déjà commenté ce mémoire.")
-        return redirect('liste_memoires')
+        return redirect("liste_memoires")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         # Récupérer les données du formulaire
-        note = request.POST.get('note')
-        commentaire = request.POST.get('commentaire')
+        note = request.POST.get("note")
+        commentaire = request.POST.get("commentaire")
 
         # Ajouter un nouveau commentaire et une note
         notation = NotationCommentaire(
-            memoire=memoire,
-            utilisateur=user,
-            note=note,
-            commentaire=commentaire
+            memoire=memoire, utilisateur=user, note=note, commentaire=commentaire
         )
         notation.save()
 
-        messages.success(request, "Votre commentaire et note ont été ajoutés avec succès.")
-        return redirect('liste_memoires')
+        messages.success(
+            request, "Votre commentaire et note ont été ajoutés avec succès."
+        )
+        return redirect("liste_memoires")
 
-    return redirect('liste_memoires')
-    
-    
-   
+    return redirect("liste_memoires")
+
+
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from .models import *
 from django.db.models.functions import ExtractMonth
+
 # Vue principale qui charge les données pour le tableau de bord
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Avg, Prefetch
 
+
 def admins(request, university_id, *args, **kwargs):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        
-        useruni=UserUniversity.objects.get(university_id=university_id,user=user)
-        
+
+        useruni = UserUniversity.objects.get(university_id=university_id, user=user)
 
         # Vérifiez si l'utilisateur est associé à l'université demandée
         if not user.user_universities.filter(university_id=university_id).exists():
-            return redirect('logout')  # ou une autre page d'erreur
+            return redirect("logout")  # ou une autre page d'erreur
 
         # Récupérer l'université
         university = get_object_or_404(University, id=university_id)
 
     except UserProfile.DoesNotExist:
-        return redirect('logout')
-    request.session['uni_id'] = university_id
+        return redirect("logout")
+    request.session["uni_id"] = university_id
     # Filtrer les données par l'université spécifiée
-    memoires = Memoire.objects.filter(universites=university).prefetch_related(
-        Prefetch(
-            'encadrements',
-            queryset=Encadrement.objects.select_related('encadrant'),
-            to_attr='encadreur_list'
-        ),
-        'domaines'
-    ).annotate(
-        nbr_telechargements=Count('telechargements'),
-        note_moyenne=Avg('notations__note')
+    memoires = (
+        Memoire.objects.filter(universites=university)
+        .prefetch_related(
+            Prefetch(
+                "encadrements",
+                queryset=Encadrement.objects.select_related("encadrant"),
+                to_attr="encadreur_list",
+            ),
+            "domaines",
+        )
+        .annotate(
+            nbr_telechargements=Count("telechargements"),
+            note_moyenne=Avg("notations__note"),
+        )
     )
-    
+
     utilisateurs = UserProfile.objects.filter(user_universities__university=university)
     total_users = utilisateurs.count()
     utilisateurs = UserProfile.objects.all()
     encadrements = Encadrement.objects.filter(memoire__universites=university)
     comments = NotationCommentaire.objects.filter(memoire__universites=university)
-    
+
     dom1 = Domaine.objects.filter(universites=university)
-    dom2=Domaine.objects.filter()
-    dom=dom1
-    vis = Visiteur.objects.all()  # Vous pouvez également filtrer les visiteurs si nécessaire
+    dom2 = Domaine.objects.filter()
+    dom = dom1
+    vis = (
+        Visiteur.objects.all()
+    )  # Vous pouvez également filtrer les visiteurs si nécessaire
     tel = Telechargement.objects.filter(memoire__universites=university)
 
     # Récupération des données
     total_comments = comments.count()
     total_dom = dom.count()
-   
+
     total_memoires = memoires.count()
     total_encadrements = encadrements.count()
     total_telechargements = tel.count()
     total_visites = vis.count()
-    universites=University.objects.all()
-    
-    
+    universites = University.objects.all()
+
     user_list = []
     for users in utilisateurs:
-        role="NONE"
+        role = "NONE"
         try:
-            role=UserUniversity.objects.get(university_id=university_id,user=users).role
+            role = UserUniversity.objects.get(
+                university_id=university_id, user=users
+            ).role
         except:
-            role="NONE"
-                
-            
-        user_list.append({
-            'id': users.id,
-            'nom': users.nom,
-            'prenom':users.prenom,
-            'email':users.email,
-            'sexe':users.sexe,
-            'role':role,
-            'type':users.type,
-            'universites': [university.university for university in UserUniversity.objects.filter(user=users)]
-        })    
-        
-        privi=["superadmin","admin"]
-     
+            role = "NONE"
+
+        user_list.append(
+            {
+                "id": users.id,
+                "nom": users.nom,
+                "prenom": users.prenom,
+                "email": users.email,
+                "sexe": users.sexe,
+                "role": role,
+                "type": users.type,
+                "universites": [
+                    university.university
+                    for university in UserUniversity.objects.filter(user=users)
+                ],
+            }
+        )
+
+        privi = ["superadmin", "admin"]
+
     # Context for rendering the page
     context = {
-        'memoires': memoires,
-        'utilisateurs': user_list,
-        'encadrements': encadrements,
-        'universites':universites,
-        'visiteurs': vis,
-        'university': university,
-        'telechargement': tel,
-        'user': user,
-        'total_users': total_users,
-        'total_memoires': total_memoires,
-        'total_encadrements': total_encadrements,
-        'total_telechargements': total_telechargements,
-        'total_visites': total_visites,
-        'domaines': dom,
-        'university_id':university_id,
-        'comments': comments,
-        'total_dom': total_dom,
-        'total_comments': total_comments,
-        'useruni':useruni,
-        'privi':'privi',
-        
+        "memoires": memoires,
+        "utilisateurs": user_list,
+        "encadrements": encadrements,
+        "universites": universites,
+        "visiteurs": vis,
+        "university": university,
+        "telechargement": tel,
+        "user": user,
+        "total_users": total_users,
+        "total_memoires": total_memoires,
+        "total_encadrements": total_encadrements,
+        "total_telechargements": total_telechargements,
+        "total_visites": total_visites,
+        "domaines": dom,
+        "university_id": university_id,
+        "comments": comments,
+        "total_dom": total_dom,
+        "total_comments": total_comments,
+        "useruni": useruni,
+        "privi": "privi",
     }
-   
 
     return render(request, "admin.html", context)
 
@@ -938,15 +1080,13 @@ def admins(request, university_id, *args, **kwargs):
 # Supprimer un mémoire
 def delete_memoire(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
-    
-    
-    if request.method == 'POST':
-        memoire_id = request.POST.get('memoire_id')
+        return redirect("logout")
+
+    if request.method == "POST":
+        memoire_id = request.POST.get("memoire_id")
         try:
             memoire = get_object_or_404(Memoire, id=memoire_id)
 
@@ -955,7 +1095,7 @@ def delete_memoire(request):
                 "id": memoire.id,
                 "titre": memoire.titre,
                 "auteur": f"{memoire.auteur.nom} {memoire.auteur.prenom}",
-                "annee_publication": memoire.annee_publication
+                "annee_publication": memoire.annee_publication,
             }
 
             # Supprimer le mémoire
@@ -967,24 +1107,26 @@ def delete_memoire(request):
                 action_type="Suppression",
                 action_details=f"Le mémoire avec l'ID: {memoire_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Mémoire supprimé avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Mémoire supprimé avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
+
+
 def delete_comment(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-    
-    if request.method == 'POST':
-        comment_id = request.POST.get('comment_id')
-        
+    if request.method == "POST":
+        comment_id = request.POST.get("comment_id")
+
         try:
             comment = get_object_or_404(NotationCommentaire, id=comment_id)
 
@@ -992,7 +1134,7 @@ def delete_comment(request):
             object_before = {
                 "id": comment.id,
                 "commentaire": comment.commentaire,
-                "utilisateur": f"{comment.utilisateur.nom} {comment.utilisateur.prenom}"
+                "utilisateur": f"{comment.utilisateur.nom} {comment.utilisateur.prenom}",
             }
 
             # Supprimer le commentaire
@@ -1004,31 +1146,30 @@ def delete_comment(request):
                 action_type="Suppression",
                 action_details=f"Le commentaire avec l'ID: {comment_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Commentaire supprimé avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Commentaire supprimé avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
+
+
 def delete_domaine(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-    
-    if request.method == 'POST':
-        domaine_id = request.POST.get('domaine_id')
+    if request.method == "POST":
+        domaine_id = request.POST.get("domaine_id")
         try:
             domaine = get_object_or_404(Domaine, id=domaine_id)
 
             # Préparer les détails pour l'email
-            object_before = {
-                "id": domaine.id,
-                "nom": domaine.nom
-            }
+            object_before = {"id": domaine.id, "nom": domaine.nom}
 
             # Supprimer le domaine
             domaine.delete()
@@ -1039,40 +1180,39 @@ def delete_domaine(request):
                 action_type="Suppression",
                 action_details=f"Le domaine avec l'ID: {domaine_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Domaine supprimé avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Domaine supprimé avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
-  
+            return JsonResponse({"status": "error", "message": str(e)})
+
 
 # Supprimer un utilisateur
 def delete_user(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-       
-     
-    
+        university_id = request.session["uni_id"]
+
     except:
-        return redirect('logout')
-    
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
+        return redirect("logout")
+
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
         try:
             user = UserProfile.objects.get(id=user_id)
-            unirelation=UserUniversity.objects.get(university_id=university_id,user=user)
-            user_name = f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
-          
-            
-            
-            
-        
+            unirelation = UserUniversity.objects.get(
+                university_id=university_id, user=user
+            )
+            user_name = (
+                f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
+            )
+
             unirelation.delete()
             # Supprimer l'utilisateur
-         
 
             # Préparer les détails pour l'email
             object_before = {
@@ -1081,11 +1221,9 @@ def delete_user(request):
                 "prenom": user.prenom,
                 "email": user.email,
                 "type": user.type,
-                "linkdin":user.realisation_linkedin,
-                "password":user.password,
-                "sex":user.sexe,
-            
-                
+                "linkdin": user.realisation_linkedin,
+                "password": user.password,
+                "sex": user.sexe,
             }
 
             send_admin_email(
@@ -1094,24 +1232,26 @@ def delete_user(request):
                 action_type="Suppression",
                 action_details=f"L'utilisateur '{user_name}' avec l'ID: {user_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            messages.success(request, 'Utilisateur supprimé avec succès.')
+            messages.success(request, "Utilisateur supprimé avec succès.")
         except Exception as e:
-            messages.error(request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}")
-        return redirect('admins')
+            messages.error(
+                request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}"
+            )
+        return redirect("admins")
+
+
 def delete_encadrement(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-
-    if request.method == 'POST':
-        encadrement_id = request.POST.get('encadrement_id')
+    if request.method == "POST":
+        encadrement_id = request.POST.get("encadrement_id")
         try:
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
             print(encadrement)
@@ -1120,7 +1260,7 @@ def delete_encadrement(request):
             object_before = {
                 "memoire_id": encadrement.memoire.id,
                 "encadrant": f"{encadrement.encadrant.nom} {encadrement.encadrant.prenom}",
-                "encadrant_email": encadrement.encadrant.email
+                "encadrant_email": encadrement.encadrant.email,
             }
 
             # Supprimer l'encadrement
@@ -1132,27 +1272,29 @@ def delete_encadrement(request):
                 action_type="Suppression",
                 action_details=f"L'encadrement avec l'ID: {encadrement_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Encadrement supprimé avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Encadrement supprimé avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
+
+
 def delete_university(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-
-    if request.method == 'POST':
-        university_id = request.POST.get('university_id')
+    if request.method == "POST":
+        university_id = request.POST.get("university_id")
         try:
-            
+
             university = get_object_or_404(University, id=university_id)
-            
+
             # Préparer les détails pour l'email
             object_before = {
                 "university_id": university.id,
@@ -1161,9 +1303,7 @@ def delete_university(request):
                 "university_acronime": university.acronime,
                 "university_description": university.description,
                 "university_logo": university.logo,
-                "university_link": university.university_link
-                
-              
+                "university_link": university.university_link,
             }
 
             # Supprimer l'encadrement
@@ -1175,35 +1315,34 @@ def delete_university(request):
                 action_type="Suppression",
                 action_details=f"L'universite avec l'ID: {university_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            messages.success(request, 'université supprimé avec succès.')
+            messages.success(request, "université supprimé avec succès.")
         except Exception as e:
-            messages.error(request, f"Erreur lors de la suppression de l'univerité : {str(e)}")           
-        return redirect('chooseuniversity')   
+            messages.error(
+                request, f"Erreur lors de la suppression de l'univerité : {str(e)}"
+            )
+        return redirect("chooseuniversity")
+
+
 def add_user(request):
-    
+
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-        university=University.objects.get(id=university_id)
+        university_id = request.session["uni_id"]
+        university = University.objects.get(id=university_id)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-
-
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             # Créer un nouvel utilisateur
-            user_id = request.POST.get('user_id')
+            user_id = request.POST.get("user_id")
             new_user = get_object_or_404(UserProfile, id=user_id)
-            unirelation=UserUniversity.objects.create(
-                user=new_user,
-                role=request.POST.get('type'),
-                university=university
+            unirelation = UserUniversity.objects.create(
+                user=new_user, role=request.POST.get("type"), university=university
             )
             # Préparer les détails pour l'email
             object_after = {
@@ -1212,10 +1351,9 @@ def add_user(request):
                 "prenom": new_user.prenom,
                 "email": new_user.email,
                 "type": new_user.type,
-                "linkdin":new_user.realisation_linkedin,
-                "password":new_user.password,
-                "sex":new_user.sexe,
-        
+                "linkdin": new_user.realisation_linkedin,
+                "password": new_user.password,
+                "sex": new_user.sexe,
             }
 
             send_admin_email(
@@ -1224,13 +1362,13 @@ def add_user(request):
                 action_type="Ajout",
                 action_details=f"L'utilisateur '{new_user.nom} {new_user.prenom}' a été créé avec le rôle '{new_user.type}'.",
                 object_before=None,  # Pas d'état avant création
-                object_after=object_after  # Détails du nouvel utilisateur
+                object_after=object_after,  # Détails du nouvel utilisateur
             )
 
-            messages.success(request, 'Utilisateur ajouté avec succès.')
+            messages.success(request, "Utilisateur ajouté avec succès.")
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
-        return redirect("admin_university", university_id=request.session.get('uni_id'))
+        return redirect("admin_university", university_id=request.session.get("uni_id"))
 
 
 # Ajouter un mémoire
@@ -1241,25 +1379,27 @@ from .models import Memoire, Domaine, UserProfile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .models import Memoire, Domaine, UserProfile
+
+
 def add_university(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except UserProfile.DoesNotExist:
-        return redirect('logout')
+        return redirect("logout")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            logo = request.FILES.get('logo')
-            nom = request.POST.get('nom')
-            acronime = request.POST.get('acronime')
-            slogan = request.POST.get('slogan')
-            description = request.POST.get('description')
-            lien = request.POST.get('lien')
+            logo = request.FILES.get("logo")
+            nom = request.POST.get("nom")
+            acronime = request.POST.get("acronime")
+            slogan = request.POST.get("slogan")
+            description = request.POST.get("description")
+            lien = request.POST.get("lien")
 
             if not nom or not acronime or not slogan or not description:
                 messages.error(request, "Tous les champs sont requis.")
-                return redirect('chooseuniversity')
+                return redirect("chooseuniversity")
 
             uni = University.objects.create(
                 name=nom,
@@ -1270,13 +1410,11 @@ def add_university(request):
                 logo=logo,
             )
             addbigboss = UserProfile.objects.filter(type="bigboss")
-         
-            for  el in addbigboss:
-                
-                unirelation=UserUniversity.objects.create(
-                    user=el,
-                    role="superadmin",
-                    university=uni
+
+            for el in addbigboss:
+
+                unirelation = UserUniversity.objects.create(
+                    user=el, role="superadmin", university=uni
                 )
             object_after = {
                 "id": uni.id,
@@ -1284,7 +1422,7 @@ def add_university(request):
                 "slogan": uni.slogan,
                 "acronime": uni.acronime,
                 "lien": uni.university_link,
-                "description": uni.description
+                "description": uni.description,
             }
 
             send_admin_email(
@@ -1293,63 +1431,64 @@ def add_university(request):
                 action_type="ajout",
                 action_details=f"L'université '{uni.name}' a été ajoutée avec succès.",
                 object_before=None,
-                object_after=object_after
+                object_after=object_after,
             )
 
             messages.success(request, "Université ajoutée avec succès.")
-            return redirect('chooseuniversity')
+            return redirect("chooseuniversity")
 
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'université : {str(e)}")
-            return redirect('chooseuniversity')
+            return redirect("chooseuniversity")
 
-    return redirect('chooseuniversity')  # Pour les requêtes GET
+    return redirect("chooseuniversity")  # Pour les requêtes GET
+
 
 def add_memoire(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        user_id = request.session.get('user_id')
-        uni=request.session.get('uni_id')
+        user_id = request.session.get("user_id")
+        uni = request.session.get("uni_id")
     except:
-        return redirect('logout')
+        return redirect("logout")
     # Vérifier si l'utilisateur est authentifié
-    
-    
-    
+
     user = get_object_or_404(UserProfile, id=user_id)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            auteur_id = request.POST.get('auteur')
+            auteur_id = request.POST.get("auteur")
             auteur = get_object_or_404(UserProfile, id=auteur_id)
 
             # Récupérer les domaines sélectionnés
-            domaines_ids = request.POST.getlist('domaines')
+            domaines_ids = request.POST.getlist("domaines")
             domaines = Domaine.objects.filter(id__in=domaines_ids)
 
             # Récupérer les fichiers envoyés
-            fichier_memoire = request.FILES.get('lien_telecharger')
-            image = request.FILES.get('images')
+            fichier_memoire = request.FILES.get("lien_telecharger")
+            image = request.FILES.get("images")
 
             # Création de l'objet Memoire
             memoire = Memoire.objects.create(
-                titre=request.POST.get('titre'),
-                annee_publication=request.POST.get('annee_publication'),
+                titre=request.POST.get("titre"),
+                annee_publication=request.POST.get("annee_publication"),
                 images=image,
                 auteur=auteur,
-                resume=request.POST.get('resume'),
-                fichier_memoire=fichier_memoire
+                resume=request.POST.get("resume"),
+                fichier_memoire=fichier_memoire,
             )
-            
-            
+
             # Associer les domaines au mémoire
             memoire.domaines.set(domaines)
-            
 
             # Mettre à jour les universités associées au mémoire
-            universites_ids = request.POST.getlist('universites')  # Liste des universités sélectionnées
-            universites = University.objects.filter(id__in=universites_ids)  # Récupérer les universités sélectionnées
+            universites_ids = request.POST.getlist(
+                "universites"
+            )  # Liste des universités sélectionnées
+            universites = University.objects.filter(
+                id__in=universites_ids
+            )  # Récupérer les universités sélectionnées
             memoire.universites.set(universites)  # Mettre à jour la relation ManyToMany
 
             # Sauvegarder le mémoire modifié
@@ -1363,7 +1502,9 @@ def add_memoire(request):
                 "auteur": f"{auteur.nom} {auteur.prenom}",
                 "domaines": [d.nom for d in domaines],
                 "resume": memoire.resume,
-                "universites": [u.nom for u in universites]  # Ajouter les noms des universités
+                "universites": [
+                    u.nom for u in universites
+                ],  # Ajouter les noms des universités
             }
 
             send_admin_email(
@@ -1372,48 +1513,140 @@ def add_memoire(request):
                 action_type="ajout",
                 action_details=f"Le mémoire '{memoire.titre}' a été ajouté avec succès.",
                 object_before=None,
-                object_after=object_after
+                object_after=object_after,
             )
 
             messages.success(request, "Mémoire ajouté avec succès.")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout du mémoire : {str(e)}")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
-    
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
     # Si la méthode n'est pas POST, rediriger
     return redirect("admin_university", university_id=uni)
+
+
+def upload_memoire_from_csv(request):
+    if request.method == "POST":
+        csv_file = request.FILES.get("lien_csv")
+
+        if not csv_file or not csv_file.name.endswith(".csv"):
+            messages.error(request, "Veuillez télécharger un fichier CSV valide.")
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
+        try:
+            decoded_file = csv_file.read().decode("utf-8")
+            io_string = io.StringIO(decoded_file)
+            reader = csv.DictReader(io_string)
+
+            for row in reader:
+                print("Ligne lue:", row)  # Pour débogage
+
+                titre = row.get("Titre")
+                annee_publication = row.get("Annee_Publication")
+                resume = row.get("Resume")
+                auteur_email = row.get("Auteur_Email")
+                domaines_ids = row.get("Domaines_IDs", "").split(",")
+                universites_ids = row.get("Universites_IDs", "").split(",")
+                lien_telecharger = row.get("Lien_telecharger")
+                image = row.get("Image")
+
+                # Validation des champs nécessaires
+                if not all(
+                    [titre, annee_publication, resume, auteur_email, lien_telecharger]
+                ):
+                    messages.error(
+                        request,
+                        "Un ou plusieurs champs requis sont manquants dans le fichier CSV.",
+                    )
+                    return redirect(
+                        "admin_university", university_id=request.session.get("uni_id")
+                    )
+
+                # Récupérer l'auteur par email
+                try:
+                    auteur = UserProfile.objects.get(email=auteur_email)
+                except UserProfile.DoesNotExist:
+                    messages.warning(
+                        request,
+                        f"Auteur avec l'email {auteur_email} non trouvé. Ligne ignorée.",
+                    )
+                    continue  # Passer à la ligne suivante
+
+                domaines = Domaine.objects.filter(id__in=domaines_ids)
+                universites = University.objects.filter(id__in=universites_ids)
+
+                # Création de l'objet Memoire
+                try:
+                    memoire = Memoire.objects.create(
+                        titre=titre,
+                        annee_publication=annee_publication,
+                        resume=resume,
+                        auteur=auteur,
+                        fichier_memoire=lien_telecharger,
+                        images=image,
+                    )
+                    # Associer les domaines et universités
+                    memoire.domaines.set(domaines)
+                    memoire.universites.set(universites)
+                    print(f"Mémoire ajouté : {memoire.titre}")  # Pour débogage
+
+                except Exception as e:
+                    print(
+                        f"Erreur lors de la création du mémoire : {str(e)}"
+                    )  # Pour voir l'erreur dans la console
+                    messages.error(
+                        request, f"Erreur lors de la création du mémoire : {str(e)}"
+                    )
+                    continue  # Passer à la ligne suivante
+
+            messages.success(
+                request, "Mémoires ajoutés avec succès à partir du fichier CSV."
+            )
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
+        except Exception as e:
+            messages.error(
+                request, f"Erreur lors de l'importation du fichier CSV : {str(e)}"
+            )
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
+    return redirect("admin_university", university_id=request.session.get("uni_id"))
+
+
 def add_domaine(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        uni=request.session.get('uni_id')
+        uni = request.session.get("uni_id")
     except:
-        return redirect('logout')
-    
-    
+        return redirect("logout")
+
     university = get_object_or_404(University, id=uni)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            nom = request.POST.get('nom')
-            
+            nom = request.POST.get("nom")
 
             # Création de l'objet Domaine
-            
+
             domaine = Domaine.objects.create(
                 nom=nom,
-               
             )
             domaine.universites.add(university)
 
-            
             # Préparer les détails pour l'email
-            object_after = {
-                "id": domaine.id,
-                "nom": domaine.nom
-            
-            }
+            object_after = {"id": domaine.id, "nom": domaine.nom}
 
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
@@ -1421,58 +1654,59 @@ def add_domaine(request):
                 action_type="ajout",
                 action_details=f"Le domaine '{domaine.nom}' a été ajouté avec succès.",
                 object_before=None,  # Pas d'état initial
-                object_after=object_after
+                object_after=object_after,
             )
 
             messages.success(request, "Domaine ajouté avec succès.")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
 
         except Exception as e:
             messages.error(request, f"Erreur d'ajout du domaine : {str(e)}")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
 
 
 # Ajouter un encadrement
-import csv ,io
+import csv, io
+
+
 def add_domainecsv(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        uni=request.session.get('uni_id')
+        uni = request.session.get("uni_id")
     except:
-        return redirect('logout')
-    
-    
+        return redirect("logout")
+
     university = get_object_or_404(University, id=uni)
-    if request.method == 'POST':
-        csv_file = request.FILES['lien_csv']
-        decoded_file = csv_file.read().decode('utf-8')
+    if request.method == "POST":
+        csv_file = request.FILES["lien_csv"]
+        decoded_file = csv_file.read().decode("utf-8")
         io_string = io.StringIO(decoded_file)
         reader = csv.DictReader(io_string)
-        for row in reader :
+        for row in reader:
             print(row)
             domaine = Domaine.objects.create(
                 nom=row["nom"],
-               
             )
             domaine.universites.add(university)
-    return redirect("admin_university", university_id=request.session.get('uni_id'))     
-    
+    return redirect("admin_university", university_id=request.session.get("uni_id"))
+
+
 def add_encadrement(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
-    
-    
+        return redirect("logout")
 
-    
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            memoire_id = request.POST.get('memoire')
-            encadrant_id = request.POST.get('encadrant')
+            memoire_id = request.POST.get("memoire")
+            encadrant_id = request.POST.get("encadrant")
 
             # Récupérer les objets Mémoire et Encadrant
             memoire = get_object_or_404(Memoire, id=memoire_id)
@@ -1500,43 +1734,41 @@ def add_encadrement(request):
             )
 
             messages.success(request, "Encadrement ajouté avec succès.")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
-        
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
         except Exception as e:
             messages.error(request, f"Erreur d'ajout de l'encadrement : {str(e)}")
-            return redirect("admin_university", university_id=request.session.get('uni_id'))
+            return redirect(
+                "admin_university", university_id=request.session.get("uni_id")
+            )
+
 
 # Modifier un utilisateur
 def edit_user(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-        
-    except:
-        return redirect('logout')
-    
-   
+        university_id = request.session["uni_id"]
 
-    if request.method == 'POST':
-       
+    except:
+        return redirect("logout")
+
+    if request.method == "POST":
+
         try:
-            user_id = request.POST.get('user_id')
+            user_id = request.POST.get("user_id")
             user = get_object_or_404(UserProfile, id=user_id)
-            unirelation=UserUniversity.objects.get(university_id=university_id,user=user)
+            unirelation = UserUniversity.objects.get(
+                university_id=university_id, user=user
+            )
             # Capturer l'état de l'objet avant modification
             object_before = vars(user).copy()
 
-            
-       
-           
-            unirelation.role=request.POST.get('type')
-        
-            unirelation.save()
-           
-           
+            unirelation.role = request.POST.get("type")
 
-            
+            unirelation.save()
 
             # Capturer l'état de l'objet après modification
             object_after = vars(user)
@@ -1551,10 +1783,12 @@ def edit_user(request):
                 object_after=object_after,
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Utilisateur modifié avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Utilisateur modifié avec succès."}
+            )
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
 
 
 # Modifier un mémoire
@@ -1567,44 +1801,52 @@ from django.core.exceptions import ValidationError
 def edit_memoire(request):
     # Vérifier si l'utilisateur est authentifié
     try:
-        user_id = request.session['user_id']
+        user_id = request.session["user_id"]
         user = UserProfile.objects.get(id=user_id)
     except UserProfile.DoesNotExist:
-        return redirect('logout')
+        return redirect("logout")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            memoire_id = request.POST.get('memoire_id')
+            memoire_id = request.POST.get("memoire_id")
             memoire = get_object_or_404(Memoire, id=memoire_id)
 
             # Capturer l'état de l'objet avant modification
             object_before = vars(memoire).copy()
 
             # Mettre à jour les champs
-            memoire.titre = request.POST.get('titre')
-            memoire.annee_publication = request.POST.get('annee_publication')
-            memoire.resume = request.POST.get('resume')
+            memoire.titre = request.POST.get("titre")
+            memoire.annee_publication = request.POST.get("annee_publication")
+            memoire.resume = request.POST.get("resume")
 
             # Mettre à jour l'image (si présente)
-            if 'images' in request.FILES and request.FILES['images']:
-                memoire.images = request.FILES['images']
+            if "images" in request.FILES and request.FILES["images"]:
+                memoire.images = request.FILES["images"]
 
             # Mettre à jour le fichier du mémoire (si présent)
-            if 'lien_telecharger' in request.FILES and request.FILES['lien_telecharger']:
-                memoire.fichier_memoire = request.FILES['lien_telecharger']
+            if "lien_telecharger" in request.FILES and request.FILES["lien_telecharger"]:
+                memoire.fichier_memoire = request.FILES["lien_telecharger"]
 
             # Mettre à jour l'auteur
-            auteur_id = request.POST.get('auteur')
+            auteur_id = request.POST.get("auteur")
             memoire.auteur = get_object_or_404(UserProfile, id=auteur_id)
 
             # Mettre à jour les domaines associés au mémoire
-            domaines_ids = request.POST.getlist('domaines')  # Liste des domaines sélectionnés
-            domaines = Domaine.objects.filter(id__in=domaines_ids)  # Récupérer les domaines sélectionnés
+            domaines_ids = request.POST.getlist(
+                "domaines"
+            )  # Liste des domaines sélectionnés
+            domaines = Domaine.objects.filter(
+                id__in=domaines_ids
+            )  # Récupérer les domaines sélectionnés
             memoire.domaines.set(domaines)  # Mettre à jour la relation ManyToMany
 
             # Mettre à jour les universités associées au mémoire
-            universites_ids = request.POST.getlist('universites')  # Liste des universités sélectionnées
-            universites = University.objects.filter(id__in=universites_ids)  # Récupérer les universités sélectionnées
+            universites_ids = request.POST.getlist(
+                "universites"
+            )  # Liste des universités sélectionnées
+            universites = University.objects.filter(
+                id__in=universites_ids
+            )  # Récupérer les universités sélectionnées
             memoire.universites.set(universites)  # Mettre à jour la relation ManyToMany
 
             # Sauvegarder le mémoire modifié
@@ -1623,38 +1865,40 @@ def edit_memoire(request):
                 object_after=object_after,
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Mémoire modifié avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Mémoire modifié avec succès."}
+            )
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
 
-    return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée.'})
+    return JsonResponse({"status": "error", "message": "Méthode non autorisée."})
+
 
 def edit_domaine(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
-    
-    if request.method == 'POST':
+        return redirect("logout")
+
+    if request.method == "POST":
         try:
-            domaine_id = request.POST.get('domaine_id')
+            domaine_id = request.POST.get("domaine_id")
             domaine = get_object_or_404(Domaine, id=domaine_id)
-            
+
             # Capturer l'état de l'objet avant modification
             object_before = vars(domaine).copy()
-            
+
             # Appliquer les modifications
-            domaine.nom = request.POST.get('nom')
-            
+            domaine.nom = request.POST.get("nom")
+
             # Sauvegarder les modifications
             domaine.save()
-            
+
             # Capturer l'état de l'objet après modification
             object_after = vars(domaine)
-            
+
             # Envoyer un email avec les détails
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
@@ -1664,32 +1908,35 @@ def edit_domaine(request):
                 object_before=object_before,
                 object_after=object_after,
             )
-            return JsonResponse({'status': 'success', 'message': 'Domaine modifié avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Domaine modifié avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
+
 
 # Modifier un encadrement
 def edit_university(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except UserProfile.DoesNotExist:
-        return redirect('logout')
-    
-    if request.method == 'POST':
+        return redirect("logout")
+
+    if request.method == "POST":
         try:
-            university_id = request.POST.get('university_id')
+            university_id = request.POST.get("university_id")
             university = get_object_or_404(University, id=university_id)
 
             # Capturer l'état de l'objet avant modification
             object_before = vars(university).copy()
 
             # Récupérer les nouvelles données du formulaire
-            nom = request.POST.get('nom')
-            acronime = request.POST.get('acronime')
-            slogan = request.POST.get('slogan')
-            description = request.POST.get('description')
-            lien = request.POST.get('lien')
+            nom = request.POST.get("nom")
+            acronime = request.POST.get("acronime")
+            slogan = request.POST.get("slogan")
+            description = request.POST.get("description")
+            lien = request.POST.get("lien")
 
             # Appliquer les modifications
             university.name = nom
@@ -1697,10 +1944,10 @@ def edit_university(request):
             university.slogan = slogan
             university.description = description
             university.university_link = lien
-            
+
             # Si un nouveau logo est uploadé, mettez à jour le champ logo
-            if request.FILES.get('logo'):
-                university.logo = request.FILES.get('logo')
+            if request.FILES.get("logo"):
+                university.logo = request.FILES.get("logo")
 
             # Sauvegarder les modifications
             university.save()
@@ -1717,42 +1964,47 @@ def edit_university(request):
                 object_before=object_before,
                 object_after=object_after,
             )
-            return JsonResponse({'status': 'success', 'message': 'Université modifiée avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Université modifiée avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
 
-    return JsonResponse({'status': 'error', 'message': 'Méthode de requête non autorisée.'})
+    return JsonResponse(
+        {"status": "error", "message": "Méthode de requête non autorisée."}
+    )
+
+
 def edit_encadrement(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except:
-        return redirect('logout')
-    
-    
-    if request.method == 'POST':
+        return redirect("logout")
+
+    if request.method == "POST":
         try:
-            encadrement_id = request.POST.get('encadrement_id')
-           
+            encadrement_id = request.POST.get("encadrement_id")
+
             encadrement = get_object_or_404(Encadrement, id=encadrement_id)
-            
+
             # Capturer l'état de l'objet avant modification
             object_before = vars(encadrement).copy()
-            
+
             # Récupérer les nouvelles données du formulaire
-            memoire_id = request.POST.get('memoire')
-            encadrant_id = request.POST.get('encadrant')
-            
+            memoire_id = request.POST.get("memoire")
+            encadrant_id = request.POST.get("encadrant")
+
             # Appliquer les modifications
             encadrement.memoire = get_object_or_404(Memoire, id=memoire_id)
             encadrement.encadrant = get_object_or_404(UserProfile, id=encadrant_id)
-            
+
             # Sauvegarder les modifications
             encadrement.save()
-            
+
             # Capturer l'état après modification
             object_after = vars(encadrement)
-            
+
             # Envoyer l'email
             send_admin_email(
                 user=user,  # L'utilisateur qui a effectué l'action
@@ -1762,9 +2014,11 @@ def edit_encadrement(request):
                 object_before=object_before,
                 object_after=object_after,
             )
-            return JsonResponse({'status': 'success', 'message': 'Encadrement modifié avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Encadrement modifié avec succès."}
+            )
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
 
 
 from django.shortcuts import render, redirect
@@ -1772,53 +2026,49 @@ from django.http import HttpResponse
 
 
 def verification_Email(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         # Récupération des données de session et du code saisi
-        
-       
+
         try:
-            user_email =request.POST.get('email')
-            request.session['emailv'] = user_email
+            user_email = request.POST.get("email")
+            request.session["emailv"] = user_email
             user = UserProfile.objects.get(email=user_email)
-            
-            
-            
-        
-            if user.type == "admin" or user.type == "superadmin" :
-                
-            
+
+            if user.type == "admin" or user.type == "superadmin":
+
                 return redirect("login")
             else:
-                 visiteur.objects.create(emailv=user_email)
-                 
-                 return redirect("liste_memoires")
-        
-        except :
+                visiteur.objects.create(emailv=user_email)
+
+                return redirect("liste_memoires")
+
+        except:
             visiteur.objects.create(emailv=user_email)
-            return redirect("liste_memoires/")     
-    return render(request, "verified.html")     
-        
+            return redirect("liste_memoires/")
+    return render(request, "verified.html")
 
-       
+    return render(request, "conection.html")  # Chargez le template pour saisir le code
 
-    return render(request, 'conection.html')  # Chargez le template pour saisir le code
+
 def telecharger_pdf(request):
 
-    
     if request.method == "POST":
         try:
-            idm = request.POST.get('memoire_id')
-            
-            emails=request.session.get('emailv')
+            idm = request.POST.get("memoire_id")
+
+            emails = request.session.get("emailv")
             me = get_object_or_404(Memoire, id=idm)
             print(f"Le mémoire avec l'ID {emails} a été téléchargé.")
-            telechargement.objects.create(memoire=me,emailt=emails)
+            telechargement.objects.create(memoire=me, emailt=emails)
             return redirect("liste_memoires/")
         except:
             return redirect("liste_memoires/")
     else:
         return redirect("liste_memoires/")
-from django.db.models import Count    
+
+
+from django.db.models import Count
+
 # Vue pour obtenir la répartition des utilisateurs par type
 
 
@@ -1826,71 +2076,74 @@ from django.shortcuts import render
 from datetime import datetime
 from .utils import *
 
+
 def send_welcome_email(request, *args, **kwargs):
-    ctx={}
+    ctx = {}
     verification_code = random.randint(100000, 999999)
-    request.session['verification_code'] = verification_code
+    request.session["verification_code"] = verification_code
     print(verification_code)
-    
+
     if request.method == "POST":
-        subjet='verification code '
-        email=request.POST.get("email")
-      
-        request.session['user_email'] = email  
-       
+        subjet = "verification code "
+        email = request.POST.get("email")
+
+        request.session["user_email"] = email
 
         verification_url = f"{settings.SITE_URL}/verify_account?code={verification_code}"
 
-        
         user = UserProfile.objects.get(email=email)
-        template='template.html'
-        context={
-            'date':datetime.today().date(),
-            'email':email,
-            'user':user,
-            'verification_code':verification_code,
-            'verification_url':verification_url,
-            
-            
-            
-                 }
-        receivers=[email]
-        has_send=send_advanced_email(recipient =receivers, subject=subjet, template=template, context=context)
+        template = "template.html"
+        context = {
+            "date": datetime.today().date(),
+            "email": email,
+            "user": user,
+            "verification_code": verification_code,
+            "verification_url": verification_url,
+        }
+        receivers = [email]
+        has_send = send_advanced_email(
+            recipient=receivers, subject=subjet, template=template, context=context
+        )
         if has_send:
-            ctx={ 'messages':"Mail envoyes avec success ,consulter votre boite email."}
-            return redirect('/verification_page')
-        ctx={ 'messages':'ERREUR d envoie du mails .'}
-    return render(request,"verified.html",ctx) 
+            ctx = {"messages": "Mail envoyes avec success ,consulter votre boite email."}
+            return redirect("/verification_page")
+        ctx = {"messages": "ERREUR d envoie du mails ."}
+    return render(request, "verified.html", ctx)
+
+
 from datetime import datetime
 
 from django.utils import timezone
-def send_admin_email(request,user, subject, action_type, action_details, object_before, object_after):
+
+
+def send_admin_email(
+    request, user, subject, action_type, action_details, object_before, object_after
+):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     # Filtrer les utilisateurs avec les rôles admin ou superadmin pour cette université
     admins = UserUniversity.objects.filter(
-        university=university,
-        role__in=['admin', 'superadmin']
-    ).select_related('user')  # Optionnel : optimise la requête pour inclure les informations de l'utilisateur
+        university=university, role__in=["admin", "superadmin"]
+    ).select_related(
+        "user"
+    )  # Optionnel : optimise la requête pour inclure les informations de l'utilisateur
 
-    
     recipients = [admin.email for admin in admins if admin.email]
- 
 
     # Préparer le contexte pour le template de l'email
     verification_url = f"{settings.SITE_URL}/login"
     context = {
-        'action_type': action_type,
-        'action_details': action_details,
-        'user': user,
-        'date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'object_before': object_before,
-        'object_after': object_after,
-        'login_url': verification_url,
+        "action_type": action_type,
+        "action_details": action_details,
+        "user": user,
+        "date": timezone.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "object_before": object_before,
+        "object_after": object_after,
+        "login_url": verification_url,
     }
 
     try:
@@ -1899,50 +2152,50 @@ def send_admin_email(request,user, subject, action_type, action_details, object_
                 send_advanced_email(
                     recipient=el,
                     subject=subject,
-                    template='adminmail.html',
-                    context=context
+                    template="adminmail.html",
+                    context=context,
                 )
-                
+
     except Exception as e:
         print("Erreur lors de l'envoi de l'e-mail :", str(e))
+
+
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
+
+
 def edit_userp(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-        university=University.objects.get(id=university_id)
+        university_id = request.session["uni_id"]
+        university = University.objects.get(id=university_id)
     except:
-        return redirect('logout')
-    
-    
-   
+        return redirect("logout")
 
-    if request.method == 'POST':
+    if request.method == "POST":
         print("Données reçues : ", request.POST)
         try:
-            user_id = request.POST.get('user_id')
+            user_id = request.POST.get("user_id")
             user = get_object_or_404(UserProfile, id=user_id)
 
             # Capturer l'état de l'objet avant modification
             object_before = vars(user).copy()
 
             # Mettre à jour les champs
-            user.nom = request.POST.get('nom')
-            user.prenom = request.POST.get('prenom')
-   
-            user.sexe = request.POST.get('sexe')
-            user.email = request.POST.get('email')
-            user.type = request.POST.get('type')
-            user.realisation_linkedin = request.POST.get('realisation_linkedin')
+            user.nom = request.POST.get("nom")
+            user.prenom = request.POST.get("prenom")
+
+            user.sexe = request.POST.get("sexe")
+            user.email = request.POST.get("email")
+            user.type = request.POST.get("type")
+            user.realisation_linkedin = request.POST.get("realisation_linkedin")
 
             # Mettre à jour la photo de profil (si présente)
-            if 'photo_profil' in request.FILES:
-                user.photo_profil = request.FILES.get('photo_profil')
+            if "photo_profil" in request.FILES:
+                user.photo_profil = request.FILES.get("photo_profil")
 
             # Mettre à jour le mot de passe (si présent)
-         
 
             # Sauvegarder l'utilisateur modifié
             user.save()
@@ -1960,26 +2213,30 @@ def edit_userp(request):
                 object_after=object_after,
             )
 
-            return JsonResponse({'status': 'success', 'message': 'Utilisateur modifié avec succès.'})
+            return JsonResponse(
+                {"status": "success", "message": "Utilisateur modifié avec succès."}
+            )
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)})
+            return JsonResponse({"status": "error", "message": str(e)})
+
 
 def delete_userp(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-        university=University.objects.get(id=university_id)
+        university_id = request.session["uni_id"]
+        university = University.objects.get(id=university_id)
     except:
-        return redirect('logout')
-    
-    
-    if request.method == 'POST':
-        user_id = request.POST.get('user_id')
+        return redirect("logout")
+
+    if request.method == "POST":
+        user_id = request.POST.get("user_id")
         try:
             user = get_object_or_404(UserProfile, id=user_id)
-            user_name = f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
+            user_name = (
+                f"{user.nom} {user.prenom}"  # Récupérer le nom complet de l'utilisateur
+            )
 
             # Supprimer l'utilisateur
             user.delete()
@@ -1991,11 +2248,9 @@ def delete_userp(request):
                 "prenom": user.prenom,
                 "email": user.email,
                 "type": user.type,
-                "linkdin":user.realisation_linkedin,
-                "password":user.password,
-                "sex":user.sexe,
-            
-                
+                "linkdin": user.realisation_linkedin,
+                "password": user.password,
+                "sex": user.sexe,
             }
 
             send_admin_email(
@@ -2004,39 +2259,38 @@ def delete_userp(request):
                 action_type="Suppression",
                 action_details=f"L'utilisateur '{user_name}' avec l'ID: {user_id} a été supprimé.",
                 object_before=object_before,  # Etat avant suppression
-                object_after=None  # Pas d'état après suppression
+                object_after=None,  # Pas d'état après suppression
             )
 
-            messages.success(request, 'Utilisateur supprimé avec succès.')
+            messages.success(request, "Utilisateur supprimé avec succès.")
         except Exception as e:
-            messages.error(request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}")
-        return redirect("admin_university", university_id=request.session.get('uni_id'))
+            messages.error(
+                request, f"Erreur lors de la suppression de l'utilisateur : {str(e)}"
+            )
+        return redirect("admin_university", university_id=request.session.get("uni_id"))
+
 
 def add_userp(request):
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
-        university_id=request.session['uni_id'] 
-        university=University.objects.get(id=university_id)
+        university_id = request.session["uni_id"]
+        university = University.objects.get(id=university_id)
     except:
-        return redirect('logout')
-    
+        return redirect("logout")
 
-
-
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
             # Créer un nouvel utilisateur
             new_user = UserProfile.objects.create(
-                nom=request.POST.get('nom'),
-                prenom=request.POST.get('prenom'),
-           
-                sexe=request.POST.get('sexe'),
-                email=request.POST.get('email'),
-                type=request.POST.get('type'),
-                realisation_linkedin=request.POST.get('realisation_linkedin'),
-                photo_profil=request.FILES.get('photo_profil'),
-                password=make_password(request.POST.get('password'))
+                nom=request.POST.get("nom"),
+                prenom=request.POST.get("prenom"),
+                sexe=request.POST.get("sexe"),
+                email=request.POST.get("email"),
+                type=request.POST.get("type"),
+                realisation_linkedin=request.POST.get("realisation_linkedin"),
+                photo_profil=request.FILES.get("photo_profil"),
+                password=make_password(request.POST.get("password")),
             )
 
             # Préparer les détails pour l'email
@@ -2046,10 +2300,9 @@ def add_userp(request):
                 "prenom": new_user.prenom,
                 "email": new_user.email,
                 "type": new_user.type,
-                "linkdin":new_user.realisation_linkedin,
-                "password":new_user.password,
-                "sex":new_user.sexe,
-        
+                "linkdin": new_user.realisation_linkedin,
+                "password": new_user.password,
+                "sex": new_user.sexe,
             }
 
             send_admin_email(
@@ -2058,13 +2311,15 @@ def add_userp(request):
                 action_type="Ajout",
                 action_details=f"L'utilisateur '{new_user.nom} {new_user.prenom}' a été créé avec le rôle '{new_user.type}'.",
                 object_before=None,  # Pas d'état avant création
-                object_after=object_after  # Détails du nouvel utilisateur
+                object_after=object_after,  # Détails du nouvel utilisateur
             )
 
-            messages.success(request, 'Utilisateur ajouté avec succès.')
+            messages.success(request, "Utilisateur ajouté avec succès.")
         except Exception as e:
             messages.error(request, f"Erreur lors de l'ajout de l'utilisateur : {str(e)}")
-        return redirect("admin_university", university_id=request.session.get('uni_id'))
+        return redirect("admin_university", university_id=request.session.get("uni_id"))
+
+
 def telecharger_pdf(request, memoire_id):
     # Récupérer le mémoire
     memoire = get_object_or_404(Memoire, id=memoire_id)
@@ -2074,20 +2329,26 @@ def telecharger_pdf(request, memoire_id):
 
     # Récupérer l'utilisateur connecté
     try:
-        idp = request.session['user_id']
+        idp = request.session["user_id"]
         user = UserProfile.objects.get(id=idp)
     except KeyError:
-        return redirect('logout')
+        return redirect("logout")
 
     # Enregistrer le téléchargement
     Telechargement.objects.create(memoire=memoire, emailt=user.email)
 
     # Incrémenter le nombre de téléchargements
-    
+
     # Retourner le fichier
-    response = FileResponse(open(memoire.fichier_memoire.path, 'rb'), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{memoire.fichier_memoire.name}"'
+    response = FileResponse(
+        open(memoire.fichier_memoire.path, "rb"), content_type="application/pdf"
+    )
+    response["Content-Disposition"] = (
+        f'attachment; filename="{memoire.fichier_memoire.name}"'
+    )
     return response
+
+
 # views.py
 from django.http import JsonResponse
 from .models import Memoire, NotationCommentaire, UserProfile, Visiteur
@@ -2096,43 +2357,62 @@ from .models import Memoire, NotationCommentaire, UserProfile, Visiteur
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.db.models import Count
-from .models import UserProfile, UserUniversity, University, Memoire, Visiteur, NotationCommentaire, Telechargement, Domaine
+from .models import (
+    UserProfile,
+    UserUniversity,
+    University,
+    Memoire,
+    Visiteur,
+    NotationCommentaire,
+    Telechargement,
+    Domaine,
+)
+
+
 def truncate_title(title, max_length=30):
     """Tronque le titre à une longueur maximale, ajoutant '...' si nécessaire."""
-    return title if len(title) <= max_length else title[:max_length] + '...'
+    return title if len(title) <= max_length else title[:max_length] + "..."
+
+
 def get_memoire_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire.titre for memoire in memoires],
-        'datasets': [{
-            'label': 'Notes Moyennes',
-            'data': [memoire.note_moyenne() for memoire in memoires],
-        }]
+        "labels": [memoire.titre for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Notes Moyennes",
+                "data": [memoire.note_moyenne() for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_user_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     users = UserUniversity.objects.filter(university=university)
     data = {
-        'labels': [f"{user.user.prenom} {user.user.nom}" for user in users],
-        'datasets': [{
-            'label': 'Encadrements',
-            'data': [user.user.encadrements.count() for user in users],
-        }]
+        "labels": [f"{user.user.prenom} {user.user.nom}" for user in users],
+        "datasets": [
+            {
+                "label": "Encadrements",
+                "data": [user.user.encadrements.count() for user in users],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_visiteur_data(request):
     visiteurs = Visiteur.objects.all()
@@ -2143,325 +2423,444 @@ def get_visiteur_data(request):
             data[date] = 0
         data[date] += 1
 
-    return JsonResponse({
-        'labels': list(data.keys()),
-        'datasets': [{
-            'label': 'Visiteurs',
-            'data': list(data.values()),
-        }]
-    })
+    return JsonResponse(
+        {
+            "labels": list(data.keys()),
+            "datasets": [
+                {
+                    "label": "Visiteurs",
+                    "data": list(data.values()),
+                }
+            ],
+        }
+    )
+
 
 def get_notation_data(request):
     memoires = Memoire.objects.all()
     data = {
-        'labels': [memoire.titre for memoire in memoires],
-        'datasets': [{
-            'label': 'Nombre de Notations',
-            'data': [memoire.notations.count() for memoire in memoires],
-        }]
+        "labels": [memoire.titre for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Nombre de Notations",
+                "data": [memoire.notations.count() for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_domaine_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    domaines = {domaine.nom: domaine.memoires.filter(universites=university).count() for domaine in Domaine.objects.filter(universites=university)}
-    return JsonResponse({
-        'labels': list(domaines.keys()),
-        'datasets': [{
-            'label': 'Mémoires par Domaine',
-            'data': list(domaines.values()),
-        }]
-    })
+    domaines = {
+        domaine.nom: domaine.memoires.filter(universites=university).count()
+        for domaine in Domaine.objects.filter(universites=university)
+    }
+    return JsonResponse(
+        {
+            "labels": list(domaines.keys()),
+            "datasets": [
+                {
+                    "label": "Mémoires par Domaine",
+                    "data": list(domaines.values()),
+                }
+            ],
+        }
+    )
+
+
 def get_sexe_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     # Compter les utilisateurs par sexe pour l'université spécifiée
-    sexe_counts = UserUniversity.objects.filter(university=university).values('user__sexe').annotate(count=Count('user__id'))
+    sexe_counts = (
+        UserUniversity.objects.filter(university=university)
+        .values("user__sexe")
+        .annotate(count=Count("user__id"))
+    )
 
     # Créer un dictionnaire pour les résultats
-    data = {sexe['user__sexe']: sexe['count'] for sexe in sexe_counts}
+    data = {sexe["user__sexe"]: sexe["count"] for sexe in sexe_counts}
 
     # Assurez-vous d'ajouter les sexes qui ne sont pas présents dans les résultats
-    for sexe in ['M', 'F', 'A']:  # M, F et A pour Masculin, Féminin, Autre
+    for sexe in ["M", "F", "A"]:  # M, F et A pour Masculin, Féminin, Autre
         if sexe not in data:
             data[sexe] = 0
 
-    return JsonResponse({
-        'labels': list(data.keys()),
-        'datasets': [{
-            'label': 'Utilisateurs par Sexe',
-            'data': list(data.values()),
-        }]
-    })
+    return JsonResponse(
+        {
+            "labels": list(data.keys()),
+            "datasets": [
+                {
+                    "label": "Utilisateurs par Sexe",
+                    "data": list(data.values()),
+                }
+            ],
+        }
+    )
+
 
 def get_encadrement_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     users = UserUniversity.objects.filter(university=university)
     data = {
-        'labels': [f"{user.user.prenom} {user.user.nom}" for user in users],
-        'datasets': [{
-            'label': 'Encadrements',
-            'data': [user.user.encadrements.count() for user in users],
-        }]
+        "labels": [f"{user.user.prenom} {user.user.nom}" for user in users],
+        "datasets": [
+            {
+                "label": "Encadrements",
+                "data": [user.user.encadrements.count() for user in users],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_telechargement_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire.titre for memoire in memoires],
-        'datasets': [{
-            'label': 'Téléchargements',
-            'data': [memoire.telechargements.count() for memoire in memoires],
-        }]
+        "labels": [memoire.titre for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Téléchargements",
+                "data": [memoire.telechargements.count() for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_type_user_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    type_counts = UserProfile.objects.values('type').annotate(count=Count('id')).filter(universites=university)
-    data = {type_user['type']: type_user['count'] for type_user in type_counts}
+    type_counts = (
+        UserProfile.objects.values("type")
+        .annotate(count=Count("id"))
+        .filter(universites=university)
+    )
+    data = {type_user["type"]: type_user["count"] for type_user in type_counts}
 
-    return JsonResponse({
-        'labels': list(data.keys()),
-        'datasets': [{
-            'label': 'Utilisateurs par Type',
-            'data': list(data.values()),
-        }]
-    })
+    return JsonResponse(
+        {
+            "labels": list(data.keys()),
+            "datasets": [
+                {
+                    "label": "Utilisateurs par Type",
+                    "data": list(data.values()),
+                }
+            ],
+        }
+    )
+
 
 def get_user_growth_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    users = UserProfile.objects.filter(universites=university).annotate(year=Count('id')).values('year').annotate(count=Count('id'))
+    users = (
+        UserProfile.objects.filter(universites=university)
+        .annotate(year=Count("id"))
+        .values("year")
+        .annotate(count=Count("id"))
+    )
     data = {
-        'labels': [user['year'].strftime("%Y-%m") for user in users],
-        'datasets': [{
-            'label': 'Utilisateurs au fil du temps',
-            'data': [user['count'] for user in users],
-        }]
+        "labels": [user["year"].strftime("%Y-%m") for user in users],
+        "datasets": [
+            {
+                "label": "Utilisateurs au fil du temps",
+                "data": [user["count"] for user in users],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_participation_rate_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     users = UserProfile.objects.filter(universites=university)
     data = {
-        'labels': [f"{user.prenom} {user.nom}" for user in users],
-        'datasets': [{
-            'label': 'Participation (Notes/Commentaires)',
-            'data': [user.notations.count() for user in users],
-        }]
+        "labels": [f"{user.prenom} {user.nom}" for user in users],
+        "datasets": [
+            {
+                "label": "Participation (Notes/Commentaires)",
+                "data": [user.notations.count() for user in users],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_memoire_per_month_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    memoires = Memoire.objects.filter(universites=university).values('annee_publication').annotate(count=Count('id')).order_by('annee_publication')
+    memoires = (
+        Memoire.objects.filter(universites=university)
+        .values("annee_publication")
+        .annotate(count=Count("id"))
+        .order_by("annee_publication")
+    )
     data = {
-        'labels': [memoire['annee_publication'] for memoire in memoires],
-        'datasets': [{
-            'label': 'Mémoires publiés par mois',
-            'data': [memoire['count'] for memoire in memoires],
-        }]
+        "labels": [memoire["annee_publication"] for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Mémoires publiés par mois",
+                "data": [memoire["count"] for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_memoire_by_year_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire.annee_publication for memoire in memoires],
-        'datasets': [{
-            'label': 'Mémoires par Année',
-            'data': [memoire.id.count() for memoire in memoires],
-        }]
+        "labels": [memoire.annee_publication for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Mémoires par Année",
+                "data": [memoire.id.count() for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_conversion_rate_data(request):
     total_visiteurs = Visiteur.objects.count()
     total_utilisateurs = UserProfile.objects.count()
-    conversion_rate = (total_utilisateurs / total_visiteurs) * 100 if total_visiteurs > 0 else 0
+    conversion_rate = (
+        (total_utilisateurs / total_visiteurs) * 100 if total_visiteurs > 0 else 0
+    )
     data = {
-        'labels': ['Visiteurs', 'Utilisateurs'],
-        'datasets': [{
-            'label': 'Taux de Conversion',
-            'data': [total_visiteurs, total_utilisateurs],
-        }]
+        "labels": ["Visiteurs", "Utilisateurs"],
+        "datasets": [
+            {
+                "label": "Taux de Conversion",
+                "data": [total_visiteurs, total_utilisateurs],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_downloads_per_month_data(request):
-    downloads = Telechargement.objects.values('datet__date').annotate(count=Count('id')).order_by('datet__date')
+    downloads = (
+        Telechargement.objects.values("datet__date")
+        .annotate(count=Count("id"))
+        .order_by("datet__date")
+    )
     data = {
-        'labels': [download['datet__date'].strftime("%Y-%m") for download in downloads],
-        'datasets': [{
-            'label': 'Téléchargements par mois',
-            'data': [download['count'] for download in downloads],
-        }]
+        "labels": [download["datet__date"].strftime("%Y-%m") for download in downloads],
+        "datasets": [
+            {
+                "label": "Téléchargements par mois",
+                "data": [download["count"] for download in downloads],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_memoire_types_data(request):
-    types = Memoire.objects.values('fichier_memoire').annotate(count=Count('id'))
+    types = Memoire.objects.values("fichier_memoire").annotate(count=Count("id"))
     data = {
-        'labels': [type['fichier_memoire'] for type in types],
-        'datasets': [{
-            'label': 'Types de Mémoires',
-            'data': [type['count'] for type in types],
-        }]
+        "labels": [type["fichier_memoire"] for type in types],
+        "datasets": [
+            {
+                "label": "Types de Mémoires",
+                "data": [type["count"] for type in types],
+            }
+        ],
     }
     return JsonResponse(data)
+
+
 from django.db.models import Count, F
+
+
 def get_professeur_domaine_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     # Récupérer le nombre de professeurs par domaine via les encadrements
-    professeur_counts = Encadrement.objects.filter(
-        memoire__universites=university
-    ).annotate(
-        domaine_nom=F('memoire__domaines__nom'),
-        professeur_nom=F('encadrant__nom')
-    ).values(
-        'domaine_nom'
-    ).annotate(
-        count=Count('encadrant')
-    ).order_by('domaine_nom')  # Optionnel : trier par domaine
+    professeur_counts = (
+        Encadrement.objects.filter(memoire__universites=university)
+        .annotate(
+            domaine_nom=F("memoire__domaines__nom"), professeur_nom=F("encadrant__nom")
+        )
+        .values("domaine_nom")
+        .annotate(count=Count("encadrant"))
+        .order_by("domaine_nom")
+    )  # Optionnel : trier par domaine
 
     # Créer un dictionnaire pour les résultats
-    data = {professeur['domaine_nom']: professeur['count'] for professeur in professeur_counts}
-
-    return JsonResponse({
-        'labels': list(data.keys()),
-        'datasets': [{
-            'label': 'Professeurs par Domaine',
-            'data': list(data.values()),
-        }]
-    })
-def get_top_rated_memoires(request):
-    top_memoires = Memoire.objects.annotate(avg_rating=Count('notations__note')).order_by('-avg_rating')[:5]
     data = {
-        'labels': [truncate_title(memoire.titre, max_length=30) for memoire in top_memoires],
-        'datasets': [{
-            'label': 'Top 5 Mémoires',
-            'data': [memoire.note_moyenne() for memoire in top_memoires],
-        }]
+        professeur["domaine_nom"]: professeur["count"] for professeur in professeur_counts
+    }
+
+    return JsonResponse(
+        {
+            "labels": list(data.keys()),
+            "datasets": [
+                {
+                    "label": "Professeurs par Domaine",
+                    "data": list(data.values()),
+                }
+            ],
+        }
+    )
+
+
+def get_top_rated_memoires(request):
+    top_memoires = Memoire.objects.annotate(avg_rating=Count("notations__note")).order_by(
+        "-avg_rating"
+    )[:5]
+    data = {
+        "labels": [
+            truncate_title(memoire.titre, max_length=30) for memoire in top_memoires
+        ],
+        "datasets": [
+            {
+                "label": "Top 5 Mémoires",
+                "data": [memoire.note_moyenne() for memoire in top_memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_encadrement_per_memoire_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    memoires = Memoire.objects.filter(universites=university).values('titre').annotate(count=Count('encadrements')).order_by('titre')
+    memoires = (
+        Memoire.objects.filter(universites=university)
+        .values("titre")
+        .annotate(count=Count("encadrements"))
+        .order_by("titre")
+    )
     data = {
-        'labels': [memoire['titre'] for memoire in memoires],
-        'datasets': [{
-            'label': 'Encadrements par Mémoire',
-            'data': [memoire['count'] for memoire in memoires],
-        }]
+        "labels": [memoire["titre"] for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Encadrements par Mémoire",
+                "data": [memoire["count"] for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_comments_per_memoire_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     memoires = Memoire.objects.filter(universites=university)
     data = {
-        'labels': [memoire.titre for memoire in memoires],
-        'datasets': [{
-            'label': 'Commentaires par Mémoire',
-            'data': [memoire.notations.count() for memoire in memoires],
-        }]
+        "labels": [memoire.titre for memoire in memoires],
+        "datasets": [
+            {
+                "label": "Commentaires par Mémoire",
+                "data": [memoire.notations.count() for memoire in memoires],
+            }
+        ],
     }
     return JsonResponse(data)
+
 
 def get_memoire_per_encadrant_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
-    encadrants = UserProfile.objects.annotate(memoire_count=Count('encadrements')).filter(universites=university)
+    encadrants = UserProfile.objects.annotate(memoire_count=Count("encadrements")).filter(
+        universites=university
+    )
     data = {
-        'labels': [f"{encadrant.prenom} {encadrant.nom}" for encadrant in encadrants],
-        'datasets': [{
-            'label': 'Mémoires par Encadrant',
-            'data': [encadrant.encadrements.filter(memoire__universites=university).count() for encadrant in encadrants],
-        }]
+        "labels": [f"{encadrant.prenom} {encadrant.nom}" for encadrant in encadrants],
+        "datasets": [
+            {
+                "label": "Mémoires par Encadrant",
+                "data": [
+                    encadrant.encadrements.filter(memoire__universites=university).count()
+                    for encadrant in encadrants
+                ],
+            }
+        ],
     }
     return JsonResponse(data)
 
+
 def get_memoire_per_auteur_data(request):
     try:
-        university_id = request.session['uni_id']
+        university_id = request.session["uni_id"]
         university = get_object_or_404(University, id=university_id)
     except KeyError:
-        return JsonResponse({'error': 'User not authenticated'}, status=401)
+        return JsonResponse({"error": "User not authenticated"}, status=401)
 
     auteurs = UserProfile.objects.filter(universites=university)
     data = {
-        'labels': [f"{auteur.prenom} {auteur.nom}" for auteur in auteurs],
-        'datasets': [{
-            'label': 'Mémoires par Auteur',
-            'data': [auteur.memoires.filter(universites=university).count() for auteur in auteurs],
-        }]
+        "labels": [f"{auteur.prenom} {auteur.nom}" for auteur in auteurs],
+        "datasets": [
+            {
+                "label": "Mémoires par Auteur",
+                "data": [
+                    auteur.memoires.filter(universites=university).count()
+                    for auteur in auteurs
+                ],
+            }
+        ],
     }
     return JsonResponse(data)
