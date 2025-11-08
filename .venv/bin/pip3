@@ -1,0 +1,12 @@
+<<<<<<< HEAD:micaenv/bin/pip3
+#!/home/michael/MEMOCLOUDPROJECT/micaenv/bin/python
+=======
+#!/home/mica/MEMOCLOUDPROJECT/.venv/bin/python3
+>>>>>>> 6a1e6e03 (Sauvegarde de mes modifications avant la fusion):.venv/bin/pip3
+# -*- coding: utf-8 -*-
+import re
+import sys
+from pip._internal.cli.main import main
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())
